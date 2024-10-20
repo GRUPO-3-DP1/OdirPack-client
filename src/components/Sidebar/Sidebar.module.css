@@ -39,6 +39,7 @@
   margin-bottom: 20px;
 }
 
+
 .navLink {
   display: flex;
   align-items: center;
@@ -49,8 +50,9 @@
   transition: background-color 0.3s ease;
 }
 
-.navLink:hover {
-  background-color: #f0f4f8;
+.active {
+  background-color: rgba(10, 182, 123, 0.08);
+  color: #00A76F;
 }
 
 .icon {

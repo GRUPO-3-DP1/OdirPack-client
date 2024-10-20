@@ -1,11 +1,13 @@
 import React from 'react';
 import styles from './Sidebar.module.css';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import routes from '../../routes/routes';
 import Logo from '../../assets/Titulo.png';
 import { Button } from '@mui/material';
 
 const Sidebar: React.FC = () => {
+  const location = useLocation();
+
   return (
     <aside className={styles.sidebar}>
       <div>
@@ -15,8 +17,15 @@ const Sidebar: React.FC = () => {
         <nav>
           <ul className={styles.navList}>
             {routes.map((route) => (
-              <li key={route.path} className={styles.navItem}>
-                <Link to={route.path} className={styles.navLink} draggable={false}>
+              <li
+                key={route.path}
+                className={styles.navItem}
+              >
+                <Link
+                  to={route.path}
+                  className={`${styles.navLink} ${location.pathname === route.path ? styles.active : ''}`}
+                  draggable={false}
+                >
                   <span className={styles.icon}>{route.icon}</span>
                   <span className={styles.linkText}>{route.name}</span>
                 </Link>
