@@ -10,13 +10,13 @@ const Sidebar: React.FC = () => {
     <aside className={styles.sidebar}>
       <div>
         <div className={styles.imageContainer}>
-          <img src={Logo} alt="Descripción de mi imagen" className={styles.image} />
+          <img src={Logo} alt="OdiparPack Logo" className={styles.image} draggable={false} />
         </div>
         <nav>
           <ul className={styles.navList}>
             {routes.map((route) => (
               <li key={route.path} className={styles.navItem}>
-                <Link to={route.path} className={styles.navLink}>
+                <Link to={route.path} className={styles.navLink} draggable={false}>
                   <span className={styles.icon}>{route.icon}</span>
                   <span className={styles.linkText}>{route.name}</span>
                 </Link>

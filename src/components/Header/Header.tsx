@@ -2,6 +2,7 @@ import React from 'react';
 import styles from './Header.module.css';
 import { useLocation } from 'react-router-dom';
 import routes from '../../routes/routes';
+import Fecha from '../utils/Fecha';
 
 const Header: React.FC = () => {
   const location = useLocation();
@@ -12,7 +13,10 @@ const Header: React.FC = () => {
 
   return (
     <header className={styles.header}>
-      <h1>{title}</h1>
+      <h2 className={styles.title}>
+        {title}
+      </h2>
+      <Fecha className={styles.currentDate} />
     </header>
   );
 };

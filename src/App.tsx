@@ -5,9 +5,14 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import routes from './routes/routes';
 import Dashboard from './components/Dashboard/Dashboard';
 
-const lightTheme = createTheme({
+const customTheme = createTheme({
   palette: {
     mode: 'light',
+  },
+  typography: {
+    fontFamily: [
+      "Public Sans"
+    ].join(',')
   },
 });
 
@@ -21,7 +26,7 @@ const router = createBrowserRouter([
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider theme={lightTheme}>
+    <ThemeProvider theme={customTheme}>
       <CssBaseline />
       <RouterProvider router={router} />
     </ThemeProvider>

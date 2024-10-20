@@ -1,4 +1,11 @@
-import { Dashboard, DirectionsCar, Inventory, Settings, Warehouse } from "@mui/icons-material";
+import {
+  CellTowerOutlined,
+  VideoSettingsOutlined,
+  LocalShippingOutlined,
+  MailOutlined,
+  SettingsOutlined,
+  WarehouseOutlined
+} from "@mui/icons-material";
 import Operaciones from '../pages/OperacionesDiaDia/Page';
 import Simulaciones from '../pages/Simulaciones/Page';
 import Flota from '../pages/Flota/Page';
@@ -18,37 +25,37 @@ const routes: Route[] = [
   {
     path: "/operaciones",
     name: 'Operaciones día a día',
-    icon: <Dashboard />,
+    icon: <CellTowerOutlined />,
     element: <Operaciones />,
   },
   {
     path: '/simulaciones',
     name: 'Simulaciones',
-    icon: <DirectionsCar />,
+    icon: <VideoSettingsOutlined />,
     element: <Simulaciones />,
   },
   {
     path: '/flota',
     name: 'Flota',
-    icon: <DirectionsCar />,
+    icon: <LocalShippingOutlined />,
     element: <Flota />,
   },
   {
     path: '/almacenes',
     name: 'Almacenes y oficinas',
-    icon: <Warehouse />,
+    icon: <WarehouseOutlined />,
     element: <AlmacenesOficinas />,
   },
   {
     path: '/pedidos',
     name: 'Pedidos',
-    icon: <Inventory />,
+    icon: <MailOutlined />,
     element: <Pedidos />,
   },
   {
     path: '/configuracion',
     name: 'Configuración',
-    icon: <Settings />,
+    icon: <SettingsOutlined />,
     element: <Configuracion />,
   },
 ];
