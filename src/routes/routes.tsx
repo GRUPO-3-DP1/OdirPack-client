@@ -1,4 +1,10 @@
 import { Dashboard, DirectionsCar, Inventory, Settings, Warehouse } from "@mui/icons-material";
+import Operaciones from '../pages/OperacionesDiaDia/Page';
+import Simulaciones from '../pages/Simulaciones/Page';
+import Flota from '../pages/Flota/Page';
+import AlmacenesOficinas from '../pages/AlmacenesOficinas/Page';
+import Pedidos from '../pages/Pedidos/Page';
+import Configuracion from '../pages/Configuracion/Page';
 import React from "react";
 
 type Route = {
@@ -13,37 +19,37 @@ const routes: Route[] = [
     path: "/operaciones",
     name: 'Operaciones día a día',
     icon: <Dashboard />,
-    element: <div>Operaciones del Día</div>,
+    element: <Operaciones />,
   },
   {
     path: '/simulaciones',
     name: 'Simulaciones',
     icon: <DirectionsCar />,
-    element: <div>Simulaciones</div>,
+    element: <Simulaciones />,
   },
   {
     path: '/flota',
     name: 'Flota',
     icon: <DirectionsCar />,
-    element: <div>Gestión de Flota</div>,
+    element: <Flota />,
   },
   {
     path: '/almacenes',
     name: 'Almacenes y oficinas',
     icon: <Warehouse />,
-    element: <div>Gestión de Almacenes</div>,
+    element: <AlmacenesOficinas />,
   },
   {
     path: '/pedidos',
     name: 'Pedidos',
     icon: <Inventory />,
-    element: <div>Gestión de Pedidos</div>,
+    element: <Pedidos />,
   },
   {
     path: '/configuracion',
     name: 'Configuración',
     icon: <Settings />,
-    element: <div>Configuración</div>,
+    element: <Configuracion />,
   },
 ];
 
