@@ -1,0 +1,10 @@
+.header {
+  grid-column: 2/3;
+  grid-row: 1/2;
+
+  border-bottom: 1px solid var(--divider, rgba(0, 0, 0, 0.12));
+  background: #FFF;
+
+  display: flex;
+  align-items: center;
+}
