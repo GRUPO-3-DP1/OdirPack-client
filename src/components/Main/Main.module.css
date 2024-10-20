@@ -1,6 +1,13 @@
-.main {
-  grid-column: 2/3;
-  grid-row: 2/3;
+.container {
+  width: calc(100% - 100px);
+  /*padding: 20px;
+  padding-top: 30px;
+  */
+}
 
-  background: #FFF;
+.main {
+  width: 100%;
+  height: calc(100% - 70px);
+
+  display: flex;
 }

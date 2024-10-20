@@ -1,9 +1,12 @@
 import React from 'react';
 import styles from './page.module.css';
+import Mapa from '../../components/Mapa/Mapa';
 
 const Page: React.FC = () => {
   return (
-    <div className={styles.titulo}>Operacione Dia a Dia</div>
+    <div className={styles.contenedor}>
+      <Mapa />
+    </div>
   );
 };
 
