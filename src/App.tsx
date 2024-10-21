@@ -4,10 +4,24 @@ import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import routes from './routes/routes';
 import Dashboard from './components/Dashboard/Dashboard';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 const customTheme = createTheme({
   palette: {
     mode: 'light',
+    primary: {
+      main: "#00A76F",
+      light: "#58E49B",
+      dark: "#007867",
+      contrastText: "#FFFFFF",
+    },
+    secondary: {
+      main: "#8E33FF",
+      light: "#C684FF",
+      dark: "#5119B7",
+      contrastText: "#FFFFFF",
+    },
   },
   typography: {
     fontFamily: [
@@ -26,10 +40,12 @@ const router = createBrowserRouter([
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider theme={customTheme}>
-      <CssBaseline />
-      <RouterProvider router={router} />
-    </ThemeProvider>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <ThemeProvider theme={customTheme}>
+        <CssBaseline />
+        <RouterProvider router={router} />
+      </ThemeProvider>
+    </LocalizationProvider>
   );
 };
 

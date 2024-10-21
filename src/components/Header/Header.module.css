@@ -3,14 +3,24 @@
   height: 70px;
 
   display: flex;
-  justify-content: center;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
 
   padding-right: 20px;
   padding-left: 20px;
 
   border-bottom: 1px solid var(--divider, rgba(0, 0, 0, 0.12));
   background: #FFFFFF;
+}
+
+.container {
+  width: fit-content;
+  height: 100%;
+
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
 }
 
 .title {
@@ -20,4 +30,13 @@
 .currentDate {
   color: rgba(0, 0, 0, 0.38);
   margin: 0%;
+}
+
+.containerSimulacion {
+  display: flex;
+
+  gap: 20px;
+
+  justify-content: center;
+  align-items: center;
 }
