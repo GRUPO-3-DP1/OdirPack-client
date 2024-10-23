@@ -6,13 +6,14 @@ import {
   SettingsOutlined,
   WarehouseOutlined
 } from "@mui/icons-material";
-import Operaciones from '../pages/OperacionesDiaDia/Page';
-import Simulaciones from '../pages/Simulaciones/Page';
-import Flota from '../pages/Flota/Page';
-import AlmacenesOficinas from '../pages/AlmacenesOficinas/Page';
-import Pedidos from '../pages/Pedidos/Page';
-import Configuracion from '../pages/Configuracion/Page';
+import Operaciones from '../pages/OperacionesDiaDia/Layout';
+import Simulaciones from '../pages/Simulaciones/Layout.tsx';
+import Flota from '../pages/Flota/Layout';
+import AlmacenesOficinas from '../pages/AlmacenesOficinas/Layout';
+import Pedidos from '../pages/Pedidos/Layout';
+import Configuracion from '../pages/Configuracion/Layout';
 import React from "react";
+import { SimulationProvider } from "../context/Simulacion/SimulationContext";
 
 type Route = {
   path: string;
@@ -32,7 +33,11 @@ const routes: Route[] = [
     path: '/simulaciones',
     name: 'Simulaciones',
     icon: <VideoSettingsOutlined />,
-    element: <Simulaciones />,
+    element: (
+      <SimulationProvider>
+        <Simulaciones />
+      </SimulationProvider>
+    ),
   },
   {
     path: '/flota',

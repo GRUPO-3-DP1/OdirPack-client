@@ -6,7 +6,7 @@ type LoadingBarProps = {
   disabled?: boolean;
 };
 
-const LoadingBar: React.FC<LoadingBarProps> = ({ disabled = true }) => {
+const LoadingBar: React.FC<LoadingBarProps> = ({ disabled = false }) => {
   return (
     <>
       {
