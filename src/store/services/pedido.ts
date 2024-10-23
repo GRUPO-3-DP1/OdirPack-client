@@ -7,7 +7,6 @@ async function getPedidos(): Promise<Pedido[]> {
         const response = await axios.get(`${ServicesProperties.BaseUrl}/pedido/list`, {
             headers: ServicesProperties.Headers
         });
-        console.log('Pedidos:', response.data.data);
         return response.data.data; 
     } catch (error) {
         console.error('Error fetching pedidos:', error);

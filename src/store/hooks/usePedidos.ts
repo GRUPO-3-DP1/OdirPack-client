@@ -15,12 +15,12 @@ function usePedidos(): PedidoHooksReturn {
     const [error, setError] = useState<any>(null);
 
     const fetchPedidos = async () => {
-        setLoading(true);  // Cambiar a "true" al iniciar la llamada
-        setError(null);    // Resetear cualquier error anterior
+        setLoading(true);
+        setError(null);
 
         try {
             const data = await getPedidos();
-            setPedidos(data);  // Almacena los pedidos en el estado
+            setPedidos(data); 
         } catch (err) {
             setError("Error en usePedidos: " + (err as Error).message);
         } finally {
