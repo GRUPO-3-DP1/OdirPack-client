@@ -1,6 +1,17 @@
-.header {
+.mainHeader {
   width: 100%;
   height: 70px;
+
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  border-bottom: 1px solid var(--divider, rgba(0, 0, 0, 0.12));
+  background: #FFFFFF;
+}
+
+.header {
+  width: 100%;
+  height: 100%;
 
   display: flex;
   justify-content: space-between;
@@ -9,9 +20,6 @@
 
   padding-right: 20px;
   padding-left: 20px;
-
-  border-bottom: 1px solid var(--divider, rgba(0, 0, 0, 0.12));
-  background: #FFFFFF;
 }
 
 .container {
@@ -32,7 +40,7 @@
   margin: 0%;
 }
 
-.containerSimulacion {
+.childrenContainer {
   display: flex;
 
   gap: 20px;
