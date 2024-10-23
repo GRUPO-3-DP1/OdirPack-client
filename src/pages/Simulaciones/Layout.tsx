@@ -57,6 +57,7 @@ const Layout: React.FC = () => {
         {
           state.isPlaying ?
             <Button
+              className={styles.button}
               variant='contained'
               color='error'
               startIcon={<Stop />}
@@ -67,6 +68,7 @@ const Layout: React.FC = () => {
             </Button>
             :
             <Button
+              className={styles.button}
               variant='contained'
               startIcon={<PlayArrow />}
               onClick={startSimulation}
