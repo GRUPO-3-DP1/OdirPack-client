@@ -1,5 +1,6 @@
 import React, { createContext, useReducer, useEffect } from 'react';
 import initialVehicles from '../../data/prueba';
+import oficinas from '../../data/oficinas';
 
 // Tipos
 interface Location {
@@ -64,12 +65,11 @@ export const SimulationContext = createContext<{
 } | null>(null);
 
 // Coordenadas ficticias para las ubicaciones (en un caso real se obtendrían de una API)
-const locationCoordinates: Record<string, { lat: number; lng: number; }> = {
-  '150101': { lat: -12.04591952, lng: -77.03049615 }, // Lima
-  '070101': { lat: -12.06034168, lng: -77.14068058 }, // Callao
-  '150501': { lat: -13.07775016, lng: -76.38742903 }, // Cañete
-  '150801': { lat: -11.10855265, lng: -77.61040152 }, // Huaura
-};
+// Mapa de coordenadas de las oficinas
+const locationCoordinates: Record<string, { lat: number; lng: number; }> = oficinas.reduce((acc, oficina) => {
+  acc[oficina.ubigeo] = { lat: oficina.latitud, lng: oficina.longitud };
+  return acc;
+}, {} as Record<string, { lat: number; lng: number; }>);
 
 // Reducer
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
