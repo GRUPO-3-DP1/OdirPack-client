@@ -1,6 +1,7 @@
 import React from 'react';
 import { AdvancedMarker, AdvancedMarkerProps } from '@vis.gl/react-google-maps';
 import { Store } from '@mui/icons-material';
+import styles from './OficinaMarker.module.css';
 
 type Oficina = {
   ubigeo: string;
@@ -22,7 +23,7 @@ const OficinaMarker: React.FC<OficinaMarkerProps> = ({ oficina, ...markerProps }
       position={{ lat: oficina.latitud, lng: oficina.longitud }}
       {...markerProps}
     >
-      <Store />
+      <Store className={styles.oficina} />
     </AdvancedMarker>
   );
 };

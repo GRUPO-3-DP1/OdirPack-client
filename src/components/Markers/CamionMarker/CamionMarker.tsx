@@ -1,54 +1,51 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { AdvancedMarker, AdvancedMarkerProps } from '@vis.gl/react-google-maps';
 import { LocalShipping } from '@mui/icons-material';
+import styles from './CamionMarker.module.css';
 
-type Camion = {
-  id: string;
-  latitud: number;
-  longitud: number;
-  almacen: number;
-};
-
-interface CamionMarkerProps extends Omit<AdvancedMarkerProps, 'position'> {
-  camion: Camion;
-  destino: { latitud: number; longitud: number; };
-  duracion: number;
+interface Location {
+  codigo: string;
+  descripcion: string;
 }
 
-const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, destino, duracion, ...markerProps }) => {
-  const [position, setPosition] = useState({ lat: camion.latitud, lng: camion.longitud });
+interface RouteSegment {
+  origen: Location;
+  destino: Location;
+}
 
-  useEffect(() => {
-    let animationFrameId: number;
-    const startLat = camion.latitud;
-    const startLng = camion.longitud;
-    const endLat = destino.latitud;
-    const endLng = destino.longitud;
-    const startTime = performance.now();
+interface Order {
+  idPedido: string;
+  ubigeoDestino: string;
+  fechaRegistro: string;
+  cantidad: number;
+  idCliente: string;
+}
 
-    const animateMarker = (time: number) => {
-      const elapsed = time - startTime;
-      const progress = Math.min(elapsed / duracion, 1);
-      const newLat = startLat + (endLat - startLat) * progress;
-      const newLng = startLng + (endLng - startLng) * progress;
-      setPosition({ lat: newLat, lng: newLng });
+interface Route {
+  tramos: RouteSegment[];
+  pedidos: Order[];
+  fechaInicio: string;
+  fechasSalida: string[];
+  fechasLlegada: string[];
+}
 
-      if (progress < 1) {
-        animationFrameId = requestAnimationFrame(animateMarker);
-      }
-    };
+interface Vehicle {
+  idVehiculo: string;
+  capacidadCarga: number;
+  fechaLibre: string;
+  ruta: Route;
+}
 
-    animationFrameId = requestAnimationFrame(animateMarker);
+interface CamionMarkerProps extends AdvancedMarkerProps {
+  camion?: Vehicle;
+}
 
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [camion.latitud, camion.longitud, destino.latitud, destino.longitud, duracion]);
-
+const CamionMarker: React.FC<CamionMarkerProps> = ({ ...markerProps }) => {
   return (
     <AdvancedMarker
-      position={position}
       {...markerProps}
     >
-      <LocalShipping />
+      <LocalShipping className={styles.camion} />
     </AdvancedMarker>
   );
 };
