@@ -1,8 +1,12 @@
 export type Pedido = {
-    idPedido: string;
-    fechaRegistro: string;
-    totalPaquetes: number;
-    idcliente: string;
-    estado: string;
-    ubigeoDestino: string;
-} //para probar el servicio de pedidos
+    pedidoId: number;
+    fechaRegistro: string; 
+    fechaPlazoMaximo: string; 
+    origenId: string;
+    destinoId: string;
+    cantidadTotal: number;
+    clienteId: string;
+    estado: 'PROCESSING' | 'COMPLETED' | 'CANCELLED'; // revisar estados
+    fechaSalida: string | null;
+    fechaLlegada: string | null;
+};
