@@ -12,7 +12,7 @@ const Header: React.FC = () => {
 
   const currentRoute = routes.find(route => route.path === location.pathname);
 
-  const title = currentRoute ? currentRoute.name : "Dashboard";
+  const title = currentRoute ? currentRoute.name : "Inicio";
 
   const isSimulacion = currentRoute?.name === "Simulaciones";
 
