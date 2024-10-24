@@ -47,7 +47,9 @@ interface SimulationState {
   isPlaying: boolean;
   vehicles: Map<string, VehiclePosition>;
   speed: number; // Factor de velocidad (1 = tiempo real, 10 = 10x más rápido)
+  startTime: Date;
   currentTime: Date;
+  endTime: Date;
 }
 
 type SimulationAction =
@@ -134,8 +136,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   const [state, dispatch] = useReducer(simulationReducer, {
     isPlaying: false,
     vehicles: new Map(),
-    speed: 60,
-    currentTime: new Date(initialVehicles[0].ruta.fechaInicio),
+    speed: 120,
+    startTime: new Date("2024-10-21T00:00:00Z"),
+    currentTime: new Date("2024-10-21T00:00:00Z"),
+    endTime: new Date("2024-10-28T00:00:00Z"),
   });
 
   useEffect(() => {
@@ -194,14 +198,14 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         }
 
         // Detener la simulación cuando todos los vehículos hayan llegado a su destino
-        if (newTime >= endTime) {
+        if (state.currentTime >= state.endTime) {
           dispatch({ type: 'STOP_SIMULATION' });
         }
       });
     }, 1000 / state.speed);
 
     return () => clearInterval(updateInterval);
-  }, [state.isPlaying, state.currentTime, state.speed]);
+  }, [state.isPlaying, state.currentTime, state.speed, state.endTime]);
 
   return (
     <SimulationContext.Provider value={{ state, dispatch, vehicles: initialVehicles }}>
