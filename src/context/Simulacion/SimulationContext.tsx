@@ -53,7 +53,7 @@ interface SimulationState {
 }
 
 type SimulationAction =
-  | { type: 'START_SIMULATION'; }
+  | { type: 'START_SIMULATION'; payload: { startTime: Date; endTime: Date; }; }
   | { type: 'STOP_SIMULATION'; }
   | { type: 'SET_SPEED'; payload: number; }
   | { type: 'UPDATE_VEHICLE_POSITION'; payload: { vehicleId: string; position: VehiclePosition; }; }
@@ -77,7 +77,13 @@ const locationCoordinates: Record<string, { lat: number; lng: number; }> = ofici
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
   switch (action.type) {
     case 'START_SIMULATION':
-      return { ...state, isPlaying: true };
+      return {
+        ...state,
+        isPlaying: true,
+        startTime: action.payload.startTime,
+        currentTime: action.payload.startTime,
+        endTime: action.payload.endTime,
+      };
     case 'STOP_SIMULATION':
       return { ...state, isPlaying: false };
     case 'SET_SPEED':

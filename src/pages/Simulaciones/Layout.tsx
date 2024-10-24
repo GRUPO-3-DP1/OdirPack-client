@@ -17,8 +17,8 @@ const Layout: React.FC = () => {
   const { state, dispatch } = useSimulation();
 
   const startSimulation = () => {
-    const startTime = new Date();
-    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // 1 hora después
+    const startTime = new Date("2024-10-21T00:00:00Z");
+    const endTime = new Date("2024-10-28T00:00:00Z");
     dispatch({ type: 'START_SIMULATION', payload: { startTime, endTime } });
   };
 
