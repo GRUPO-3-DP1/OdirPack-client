@@ -44,6 +44,7 @@ const Layout: React.FC = () => {
           value={selectedDate}
           onChange={(newValue) => setSelectedDate(newValue)}
           sx={{ width: '135px' }}
+          disabled={state.isPlaying}
         />
         <TimeField
           size="small"
@@ -51,6 +52,7 @@ const Layout: React.FC = () => {
           value={selectedTime}
           onChange={(newValue) => setSelectedTime(newValue)}
           sx={{ width: '100px' }}
+          disabled={state.isPlaying}
         />
         <FormControl>
           <InputLabel id="tipo-label" size="small">Tipo</InputLabel>
@@ -62,6 +64,7 @@ const Layout: React.FC = () => {
             size="small"
             onChange={handleChange}
             sx={{ width: '170px' }}
+            disabled={state.isPlaying}
           >
             <MenuItem value="semanal">Semanal</MenuItem>
             <MenuItem value="colapso">Hasta el colapso</MenuItem>

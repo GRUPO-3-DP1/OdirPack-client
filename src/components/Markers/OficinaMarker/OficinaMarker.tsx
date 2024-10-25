@@ -23,7 +23,7 @@ const OficinaMarker: React.FC<OficinaMarkerProps> = ({ oficina, ...markerProps }
       position={{ lat: oficina.latitud, lng: oficina.longitud }}
       {...markerProps}
     >
-      <Store className={styles.oficina} />
+      <Store className={styles.oficina} fontSize='small' />
     </AdvancedMarker>
   );
 };
