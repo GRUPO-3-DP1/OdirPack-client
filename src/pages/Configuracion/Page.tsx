@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
 import WebSocketManager from '../../store/webSocketManager';
+import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
 
 const Page: React.FC = () => {
     const [userId, setUserId] = useState<string>('');
     const [messages, setMessages] = useState<string[]>([]);
     const [socketManager, setSocketManager] = useState<WebSocketManager | null>(null);
+    const [responses, setResponses] = useState<ResponseAlgorithm[]>([]); // Arreglo para almacenar respuestas
 
     useEffect(() => {
         const wsManager = new WebSocketManager((data) => {
@@ -14,8 +16,9 @@ const Page: React.FC = () => {
                 setUserId(data.userId);
                 console.log('userId recibido del servidor:', data.userId);
             }else{
-                console.log('Mensaje recibido del servidor:', data);
-            }
+                const newResponse: ResponseAlgorithm = data; // Asegúrate de que data sea del tipo ResponseAlgorithm
+                setResponses((prevResponses) => [...prevResponses, newResponse]); // Actualiza el estado con la nueva respuesta
+                console.log('Respuesta recibida:', newResponse);            }
         });
 
         wsManager.connect();
@@ -89,9 +92,17 @@ const Page: React.FC = () => {
             <h1>WebSocket Demo</h1>
             <button onClick={handleIniciarSimulacion}>Simulacion</button>
             <div>
-                {messages.map((msg, index) => (
-                    <div key={index}>{`Mensaje del servidor: ${msg}`}</div>
-                ))}
+                <h2>Respuestas recibidas:</h2>
+                {responses.length > 0 ? (
+                    responses.map((response, index) => (
+                        <div key={index} style={{ margin: '5px 0', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
+                            <h3>Respuesta {index + 1}</h3>
+                            <pre>{JSON.stringify(response.pedidosNoPlanificados, null, 2)}</pre> {/* Muestra la respuesta como JSON formateado */}
+                        </div>
+                    ))
+                ) : (
+                    <p>No hay respuestas para mostrar.</p>
+                )}
             </div>
         </div>
     );
