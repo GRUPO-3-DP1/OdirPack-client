@@ -17,7 +17,10 @@ const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ...markerProps }) =
           {...markerProps}
           position={{ lat: camion.position.lat, lng: camion.position.lng }}
         >
-          <LocalShipping className={styles.camion} />
+          <LocalShipping
+            className={styles.camion}
+            fontSize="small"
+          />
         </AdvancedMarker>
       }
     </>

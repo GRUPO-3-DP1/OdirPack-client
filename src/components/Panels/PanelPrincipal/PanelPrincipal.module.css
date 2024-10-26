@@ -13,6 +13,8 @@
 
   display: flex;
   flex-direction: column;
+
+  overflow: hidden;
 }
 
 .titlePanel {
@@ -33,10 +35,12 @@
 .information {
   display: flex;
   flex-direction: column;
+  gap: 5px;
 }
 
 .state {
   display: flex;
+  gap: 5px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
