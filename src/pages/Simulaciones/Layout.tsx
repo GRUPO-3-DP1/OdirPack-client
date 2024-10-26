@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './layout.module.css';
 import Header from '../../components/Header/Header';
 import Page from './Page';
@@ -6,9 +6,13 @@ import { DateField, TimeField } from '@mui/x-date-pickers';
 import { Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import { PlayArrow, Stop } from '@mui/icons-material';
 import { useSimulation } from '../../context/Simulacion/useSimulation';
+import dayjs, { Dayjs } from 'dayjs';
 
 const Layout: React.FC = () => {
-  const [tipo, setTipo] = React.useState("");
+  const [tipo, setTipo] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs("2024-10-21T00:00:00"));
+  const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs("2024-10-21T00:00:00"));
+
 
   const handleChange = (event: SelectChangeEvent) => {
     setTipo(event.target.value);
@@ -17,9 +21,14 @@ const Layout: React.FC = () => {
   const { state, dispatch } = useSimulation();
 
   const startSimulation = () => {
-    const startTime = new Date();
-    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // 1 hora después
-    dispatch({ type: 'START_SIMULATION', payload: { startTime, endTime } });
+    console.log("startSimulation");
+    if (selectedDate && selectedTime) {
+      console.log("entra a startSimulation");
+      const startTime = new Date(selectedDate.year(), selectedDate.month(), selectedDate.date(), selectedTime.hour(), selectedTime.minute());
+      const endTime = new Date(startTime.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 días después
+
+      dispatch({ type: 'START_SIMULATION', payload: { startTime, endTime } });
+    }
   };
 
   const stopSimulation = () => {
@@ -32,12 +41,18 @@ const Layout: React.FC = () => {
         <DateField
           size="small"
           label="Fecha"
+          value={selectedDate}
+          onChange={(newValue) => setSelectedDate(newValue)}
           sx={{ width: '135px' }}
+          disabled={state.isPlaying}
         />
         <TimeField
           size="small"
           label="Hora"
+          value={selectedTime}
+          onChange={(newValue) => setSelectedTime(newValue)}
           sx={{ width: '100px' }}
+          disabled={state.isPlaying}
         />
         <FormControl>
           <InputLabel id="tipo-label" size="small">Tipo</InputLabel>
@@ -49,6 +64,7 @@ const Layout: React.FC = () => {
             size="small"
             onChange={handleChange}
             sx={{ width: '170px' }}
+            disabled={state.isPlaying}
           >
             <MenuItem value="semanal">Semanal</MenuItem>
             <MenuItem value="colapso">Hasta el colapso</MenuItem>
@@ -72,7 +88,7 @@ const Layout: React.FC = () => {
               variant='contained'
               startIcon={<PlayArrow />}
               onClick={startSimulation}
-              disabled={state.isPlaying}
+              disabled={state.isPlaying || tipo !== "semanal"}
             >
               Iniciar
             </Button>
