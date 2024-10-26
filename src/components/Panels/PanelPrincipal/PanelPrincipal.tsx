@@ -2,7 +2,7 @@ import { ControlPosition, MapControl } from '@vis.gl/react-google-maps';
 import React from 'react';
 import styles from './PanelPrincipal.module.css';
 import { useSimulation } from '../../../context/Simulacion/useSimulation';
-import { ExpandMore, ImportContacts } from '@mui/icons-material';
+import { ExpandMore, AccessTimeFilled } from '@mui/icons-material';
 import { Accordion, AccordionDetails, AccordionSummary } from '@mui/material';
 import dayjs from 'dayjs';
 
@@ -17,6 +17,14 @@ const PanelPrincipal: React.FC<PanelPrincipalProps> = ({ show }) => {
     return null;
   }
 
+  const startTime = state.startTime;
+  const currentTime = state.currentTime;
+  const endTime = state.endTime;
+
+  const totalTime = endTime.getTime() - startTime.getTime();
+  const elapsedTime = currentTime.getTime() - startTime.getTime();
+  const progressPercentage = Math.floor((elapsedTime / totalTime) * 100);
+
   return (
     <MapControl position={ControlPosition.TOP_RIGHT}>
       <div className={styles.panel}>
@@ -26,8 +34,11 @@ const PanelPrincipal: React.FC<PanelPrincipalProps> = ({ show }) => {
             <span><b>Simulacion:</b> Semanal</span>
           </div>
           <div className={styles.state}>
-            <ImportContacts className={styles.icon} />
-            <span>Completado: 50%</span>
+            <AccessTimeFilled
+              className={styles.icon}
+              color='primary'
+            />
+            <span><b>Completado: {progressPercentage}%</b></span>
           </div>
         </div>
         <Accordion defaultExpanded disableGutters>
