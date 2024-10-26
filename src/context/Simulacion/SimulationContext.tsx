@@ -1,79 +1,20 @@
 import React, { createContext, useReducer, useEffect } from 'react';
 import initialVehicles from '../../data/prueba';
 import oficinas from '../../data/oficinas';
+import { SimulationAction, SimulationState, Vehicle } from './simulationTypes';
 
-// Tipos
-interface Location {
-  codigo: string;
-  descripcion: string;
-}
-
-interface RouteSegment {
-  origen: Location;
-  destino: Location;
-}
-
-interface Order {
-  idPedido: string;
-  ubigeoDestino: string;
-  fechaRegistro: string;
-  cantidad: number;
-  idCliente: string;
-}
-
-interface Route {
-  tramos: RouteSegment[];
-  pedidos: Order[];
-  fechaInicio: string;
-  fechasSalida: string[];
-  fechasLlegada: string[];
-}
-
-interface Vehicle {
-  idVehiculo: string;
-  capacidadCarga: number;
-  fechaLibre: string;
-  ruta: Route;
-}
-
-interface VehiclePosition {
-  lat: number;
-  lng: number;
-  progress: number;
-  currentSegmentIndex: number;
-}
-
-interface SimulationState {
-  isPlaying: boolean;
-  vehicles: Map<string, VehiclePosition>;
-  speed: number; // Factor de velocidad (1 = tiempo real, 10 = 10x más rápido)
-  startTime: Date;
-  currentTime: Date;
-  endTime: Date;
-}
-
-type SimulationAction =
-  | { type: 'START_SIMULATION'; payload: { startTime: Date; endTime: Date; }; }
-  | { type: 'STOP_SIMULATION'; }
-  | { type: 'SET_SPEED'; payload: number; }
-  | { type: 'UPDATE_VEHICLE_POSITION'; payload: { vehicleId: string; position: VehiclePosition; }; }
-  | { type: 'SET_CURRENT_TIME'; payload: Date; };
-
-// Contexto
 export const SimulationContext = createContext<{
   state: SimulationState;
   dispatch: React.Dispatch<SimulationAction>;
   vehicles: Vehicle[];
 } | null>(null);
 
-// Coordenadas ficticias para las ubicaciones (en un caso real se obtendrían de una API)
-// Mapa de coordenadas de las oficinas
+
 const locationCoordinates: Record<string, { lat: number; lng: number; }> = oficinas.reduce((acc, oficina) => {
   acc[oficina.ubigeo] = { lat: oficina.latitud, lng: oficina.longitud };
   return acc;
 }, {} as Record<string, { lat: number; lng: number; }>);
 
-// Reducer
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
   switch (action.type) {
     case 'START_SIMULATION':
@@ -100,14 +41,12 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
   }
 }
 
-// Función helper para convertir grados a radianes
 function toRad(degrees: number): number {
   return degrees * Math.PI / 180;
 }
 
-// Función mejorada para calcular posición interpolada usando la fórmula Haversine
 function interpolatePosition(start: { lat: number; lng: number; }, end: { lat: number; lng: number; }, progress: number) {
-  const R = 6371; // Radio de la Tierra en kilómetros
+  const R = 6371;
 
   const lat1 = toRad(start.lat);
   const lon1 = toRad(start.lng);
@@ -137,7 +76,6 @@ function interpolatePosition(start: { lat: number; lng: number; }, end: { lat: n
   };
 }
 
-// Provider
 export function SimulationProvider({ children }: { children: React.ReactNode; }) {
   const [state, dispatch] = useReducer(simulationReducer, {
     isPlaying: false,
