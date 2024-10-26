@@ -89,7 +89,6 @@ const Page: React.FC = () => {
 
     return (
         <div>
-            <h1>WebSocket Demo</h1>
             <button onClick={handleIniciarSimulacion}>Simulacion</button>
             <div>
                 <h2>Respuestas recibidas:</h2>
