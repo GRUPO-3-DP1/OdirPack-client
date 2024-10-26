@@ -9,7 +9,6 @@ export const SimulationContext = createContext<{
   vehicles: Vehicle[];
 } | null>(null);
 
-
 const locationCoordinates: Record<string, { lat: number; lng: number; }> = oficinas.reduce((acc, oficina) => {
   acc[oficina.ubigeo] = { lat: oficina.latitud, lng: oficina.longitud };
   return acc;
@@ -29,11 +28,8 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, isPlaying: false };
     case 'SET_SPEED':
       return { ...state, speed: action.payload };
-    case 'UPDATE_VEHICLE_POSITION': {
-      const newVehicles = new Map(state.vehicles);
-      newVehicles.set(action.payload.vehicleId, action.payload.position);
-      return { ...state, vehicles: newVehicles };
-    }
+    case 'UPDATE_VEHICLE_POSITION':
+      return { ...state, vehicles: action.payload };
     case 'SET_CURRENT_TIME':
       return { ...state, currentTime: action.payload };
     default:
@@ -79,8 +75,8 @@ function interpolatePosition(start: { lat: number; lng: number; }, end: { lat: n
 export function SimulationProvider({ children }: { children: React.ReactNode; }) {
   const [state, dispatch] = useReducer(simulationReducer, {
     isPlaying: false,
-    vehicles: new Map(),
-    speed: 120,
+    vehicles: initialVehicles,
+    speed: 1000,
     startTime: new Date("2024-10-21T00:00:00Z"),
     currentTime: new Date("2024-10-21T00:00:00Z"),
     endTime: new Date("2024-10-28T00:00:00Z"),
@@ -91,65 +87,85 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
     const updateInterval = setInterval(() => {
       const newTime = new Date(state.currentTime.getTime() + 1000 * state.speed);
+
+      if (newTime >= state.endTime) {
+        dispatch({ type: 'STOP_SIMULATION' });
+        clearInterval(updateInterval);
+        return;
+      }
+
       dispatch({ type: 'SET_CURRENT_TIME', payload: newTime });
 
-      initialVehicles.forEach(vehicle => {
+      const updatedVehicles = state.vehicles.map(vehicle => {
         const { ruta } = vehicle;
         const startTime = new Date(ruta.fechaInicio);
         const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
 
-        if (newTime >= startTime && newTime <= endTime) {
-          // Encontrar el segmento actual con mayor precisión
-          let currentSegmentIndex = -1;
-          for (let i = 0; i < ruta.fechasSalida.length; i++) {
-            const segmentStart = new Date(ruta.fechasSalida[i]);
-            const segmentEnd = new Date(ruta.fechasLlegada[i]);
+        // Si la simulación aún no llega al tiempo de inicio del vehículo o ya terminó, devolver la posición actual
+        if (newTime < startTime || newTime > endTime) {
+          return {
+            ...vehicle,
+            position: {
+              ...vehicle.position,
+              currentSegmentIndex: -1,
+            },
+          };
+        }
 
-            if (newTime >= segmentStart && newTime <= segmentEnd) {
-              currentSegmentIndex = i;
-              break;
-            }
+        // Encontrar el segmento actual
+        let currentSegmentIndex = -1;
+        for (let i = 0; i < ruta.fechasSalida.length; i++) {
+          const segmentStart = new Date(ruta.fechasSalida[i]);
+          const segmentEnd = new Date(ruta.fechasLlegada[i]);
+
+          if (newTime >= segmentStart && newTime <= segmentEnd) {
+            currentSegmentIndex = i;
+            break;
           }
+        }
 
-          // Si encontramos un segmento válido
-          if (currentSegmentIndex !== -1) {
-            const segmentStart = new Date(ruta.fechasSalida[currentSegmentIndex]);
-            const segmentEnd = new Date(ruta.fechasLlegada[currentSegmentIndex]);
+        // Si encontramos un segmento válido
+        if (currentSegmentIndex !== -1) {
+          const segmentStart = new Date(ruta.fechasSalida[currentSegmentIndex]);
+          const segmentEnd = new Date(ruta.fechasLlegada[currentSegmentIndex]);
 
-            // Calcular progreso con mayor precisión
-            const totalSegmentTime = segmentEnd.getTime() - segmentStart.getTime();
-            const currentSegmentTime = newTime.getTime() - segmentStart.getTime();
-            const progress = Math.max(0, Math.min(1, currentSegmentTime / totalSegmentTime));
+          const totalSegmentTime = segmentEnd.getTime() - segmentStart.getTime();
+          const currentSegmentTime = newTime.getTime() - segmentStart.getTime();
+          const progress = Math.max(0, Math.min(1, currentSegmentTime / totalSegmentTime));
 
+          // Si el vehículo no ha alcanzado el final del segmento, actualizar posición
+          if (progress < 1) {
             const startCoords = locationCoordinates[ruta.tramos[currentSegmentIndex].origen.codigo];
             const endCoords = locationCoordinates[ruta.tramos[currentSegmentIndex].destino.codigo];
-
-            // Usar la función de interpolación mejorada
-            const position = interpolatePosition(startCoords, endCoords, progress);
-
-            dispatch({
-              type: 'UPDATE_VEHICLE_POSITION',
-              payload: {
-                vehicleId: vehicle.idVehiculo,
-                position: {
-                  ...position,
-                  progress,
-                  currentSegmentIndex,
-                },
+            const newPosition = interpolatePosition(startCoords, endCoords, progress);
+            console.log("PosCalculada en progreso: ");
+            console.log(newPosition);
+            return {
+              ...vehicle,
+              position: {
+                ...newPosition,
+                progress,
+                currentSegmentIndex,
               },
-            });
+            };
           }
         }
 
-        // Detener la simulación cuando todos los vehículos hayan llegado a su destino
-        if (state.currentTime >= state.endTime) {
-          dispatch({ type: 'STOP_SIMULATION' });
-        }
+        // Si no estamos en un segmento válido, mantener la posición actual del vehículo
+        return {
+          ...vehicle,
+          position: {
+            ...vehicle.position,
+            currentSegmentIndex: -1,
+          },
+        };
       });
+
+      dispatch({ type: 'UPDATE_VEHICLE_POSITION', payload: updatedVehicles });
     }, 1000 / state.speed);
 
     return () => clearInterval(updateInterval);
-  }, [state.isPlaying, state.currentTime, state.speed, state.endTime]);
+  }, [state.isPlaying, state.currentTime, state.speed, state.endTime, state.vehicles]);
 
   return (
     <SimulationContext.Provider value={{ state, dispatch, vehicles: initialVehicles }}>

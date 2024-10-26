@@ -29,11 +29,11 @@ const Mapa: React.FC = () => {
             oficina={oficina}
           />
         ))}
-        {Array.from(state.vehicles.entries()).map(([vehicleId, position]) => (
+        {state.vehicles.map(vehicle => (
           <CamionMarker
-            key={vehicleId}
-            position={{ lat: position.lat, lng: position.lng }}
-            title={`Vehículo ${vehicleId}`}
+            key={vehicle.idVehiculo}
+            camion={vehicle}
+            title={`Vehículo ${vehicle.idVehiculo}`}
           />
         ))}
       </Map>

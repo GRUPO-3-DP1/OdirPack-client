@@ -4,18 +4,22 @@ import { LocalShipping } from '@mui/icons-material';
 import styles from './CamionMarker.module.css';
 import { Vehicle } from '../../../context/Simulacion/simulationTypes';
 
-interface CamionMarkerProps extends AdvancedMarkerProps {
-  camion?: Vehicle;
-}
+type CamionMarkerProps = Omit<AdvancedMarkerProps, 'position'> & {
+  camion: Vehicle;
+};
 
-const CamionMarker: React.FC<CamionMarkerProps> = ({ ...markerProps }) => {
+const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ...markerProps }) => {
   return (
     <>
-      <AdvancedMarker
-        {...markerProps}
-      >
-        <LocalShipping className={styles.camion} />
-      </AdvancedMarker>
+      {
+        camion.position.currentSegmentIndex !== -1 &&
+        <AdvancedMarker
+          {...markerProps}
+          position={{ lat: camion.position.lat, lng: camion.position.lng }}
+        >
+          <LocalShipping className={styles.camion} />
+        </AdvancedMarker>
+      }
     </>
   );
 };

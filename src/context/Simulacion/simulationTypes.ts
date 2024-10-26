@@ -24,13 +24,6 @@ type Route = {
   fechasLlegada: string[];
 };
 
-export type Vehicle = {
-  idVehiculo: string;
-  capacidadCarga: number;
-  fechaLibre: string;
-  ruta: Route;
-};
-
 export type VehiclePosition = {
   lat: number;
   lng: number;
@@ -38,9 +31,18 @@ export type VehiclePosition = {
   currentSegmentIndex: number;
 };
 
+export type Vehicle = {
+  idVehiculo: string;
+  capacidadCarga: number;
+  fechaLibre: string;
+  ruta: Route;
+  position: VehiclePosition;
+};
+
+
 export type SimulationState = {
   isPlaying: boolean;
-  vehicles: Map<string, VehiclePosition>;
+  vehicles: Vehicle[];
   speed: number;
   startTime: Date;
   currentTime: Date;
@@ -51,5 +53,5 @@ export type SimulationAction =
   | { type: 'START_SIMULATION'; payload: { startTime: Date; endTime: Date; }; }
   | { type: 'STOP_SIMULATION'; }
   | { type: 'SET_SPEED'; payload: number; }
-  | { type: 'UPDATE_VEHICLE_POSITION'; payload: { vehicleId: string; position: VehiclePosition; }; }
+  | { type: 'UPDATE_VEHICLE_POSITION'; payload: Vehicle[]; }
   | { type: 'SET_CURRENT_TIME'; payload: Date; };

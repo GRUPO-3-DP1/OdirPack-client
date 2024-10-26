@@ -87,9 +87,16 @@ const initialVehicles = [
         "2024-10-21T20:50:23",
         "2024-10-22T02:34:51"
       ]
+    },
+    position: {
+      lat: -12.04591952,
+      lng: -77.03049615,
+      progress: 0,
+      currentSegmentIndex: -1
     }
   },
   // Puedes añadir más vehículos siguiendo la misma estructura
+
   {
     idVehiculo: "V002",
     capacidadCarga: 150,
@@ -135,8 +142,15 @@ const initialVehicles = [
         "2024-10-21T06:00:00",
         "2024-10-21T12:00:00"
       ]
+    },
+    position: {
+      lat: -16.29,
+      lng: -63.58,
+      progress: 0,
+      currentSegmentIndex: -1
     }
   }
+
 ];
 
 export default initialVehicles;
