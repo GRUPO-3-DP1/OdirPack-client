@@ -4,7 +4,7 @@ import oficinas from '../../data/oficinas';
 import { SimulationAction, SimulationState, Vehicle } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
 import WebSocketManager from '../../store/webSocketManager';
-import { ResponseAlgorithm, SolucionAlgorithmResponse } from '../../store/types/ResponseAlgorithm';
+import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
 
 export const SimulationContext = createContext<{
   state: SimulationState;
@@ -62,25 +62,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     const wsManager = new WebSocketManager((data) => {
       if (data.userId) {
         setUserId(data.userId);
-        console.log('userId recibido del servidor:', data.userId);
       } else {
-        const newResponse: ResponseAlgorithm = data; // Asegúrate de que data sea del tipo ResponseAlgorithm
-        setSolutions((prevResponses) => [...prevResponses, newResponse]); // Actualiza el estado con la nueva respuesta
+        const newResponse: ResponseAlgorithm = data;
+        setSolutions((prevResponses) => [...prevResponses, newResponse]);
         console.log('Respuesta recibida:', newResponse);
-        newResponse.solucion.forEach((solucion) => {
-          const rutasVehiculos = solucion.rutasVehiculos; // Obtener las rutas de vehículos
-
-          // Itera sobre las claves de rutasVehiculos para acceder dinámicamente a los vehículos
-          for (const key in rutasVehiculos) {
-              if (rutasVehiculos.hasOwnProperty(key)) {
-                  const rutaVehiculo = rutasVehiculos[key]; // Accede al objeto RutaVehiculoAlgorithmResponse
-                  // Asegúrate de que el objeto rutaVehiculo tenga la propiedad vehiculo
-                  if (rutaVehiculo && rutaVehiculo.idVehiculo) {
-                      //console.log('idVehiculo:', rutaVehiculo.idVehiculo); // Imprime el idVehiculo
-                  }
-              }
-          }
-      });
       }
     });
   
@@ -95,57 +80,37 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   
   // Segundo useEffect: Convierte soluciones a vehículos cada vez que se actualiza solutions
   useEffect(() => {
-    if (solutions.length > 0) { // Asegúrate de que hay soluciones
-      const lastResponse = solutions[solutions.length - 1]; // Obtén la última respuesta
-      //console.log('Convirtiendo soluciones a vehículos para:', lastResponse);
+    if (solutions.length > 0) {
+      const lastResponse = solutions[solutions.length - 1];
       
-      // Asegúrate de que lastResponse tenga soluciones
       if (lastResponse && Array.isArray(lastResponse.solucion) && lastResponse.solucion.length > 0) {
-        //console.log('Soluciones válidas:', lastResponse.solucion);
   
         const convertedVehicles = convertSolutionToVehicles(lastResponse);
-        // Si no hay vehículos, establece la primera respuesta del WebSocket
+
         if (convertedVehicles.length > 0 && currentVehiclesIndex==0) {
           dispatch({ type: 'SET_VEHICLES', payload: convertedVehicles });
           console.log('Vehículos iniciales establecidos:', convertedVehicles);
           setCurrentVehiclesIndex(1);
         }
-      }else {
-        //console.warn('Última respuesta no contiene soluciones válidas:', lastResponse);
       }
     }
-  }, [solutions,setSolutions,setUserId,setSocketManager]); // Solo necesitas incluir solutions aquí
+  }, [solutions]);
 
 
   // Función para convertir una solución a vehículos
   const convertSolutionToVehicles = (solution: ResponseAlgorithm): Vehicle[] => {
     const convertedVehicles: Vehicle[] = [];
 
-    // Asegúrate de que la solución tenga rutas
     if (!solution || !Array.isArray(solution.solucion) || solution.solucion.length === 0) {
-        //console.warn('La solución no contiene rutas válidas:', solution);
-        return convertedVehicles; // Retorna un array vacío si no es válida
+        return convertedVehicles;
     }
 
-    //console.log('Convirtiendo soluciones a vehículos para:', solution);
-
     const vehicles = solution.solucion.flatMap(item => {
-        if (!item.rutasVehiculos) {
-            //console.warn('No hay rutas de vehículos en la solución:', item);
-            return []; // Retorna un array vacío si no es válido
-        }
+        if (!item.rutasVehiculos) { return [];}
 
         return Object.values(item.rutasVehiculos).flatMap(vehicleItem => {
-            // Verificación de que vehicleItem y vehicleItem.vehiculo existan
-            if (!vehicleItem) {
-                //console.warn('Item no válido o sin vehículo:', vehicleItem);
-                return []; // Retorna un array vacío si no es válido
-            }
-
-            // Verifica que vehicleItem.ruta y vehicleItem.ruta.tramos sean válidos
-            if (!vehicleItem.ruta) {
-                //console.warn('Ruta no válida o sin tramos:', vehicleItem.ruta);
-                return [];
+            if (!vehicleItem) { return [];}
+            if (!vehicleItem.ruta) { return [];
             }
 
             const firstTramo = vehicleItem.ruta.tramos[0];
@@ -189,11 +154,37 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     });
 
     convertedVehicles.push(...vehicles);
-    //console.log('Vehículos convertidos:', convertedVehicles);
     return convertedVehicles;
   };
 
   const [currentVehiclesIndex, setCurrentVehiclesIndex] = useState(0); // Estado para el índice de soluciones
+  const [elapsedTime, setElapsedTime] = useState(0); // Estado para rastrear el tiempo transcurrido en horas
+
+  /*const advanceToNextReport = () => {
+      console.log("Avanzando al siguiente reporte");
+      // Filtrar los vehículos que están activos y aún no completan su ruta
+      const activeVehicles = state.vehicles.filter(vehicle => {
+        const { ruta } = vehicle;
+        if (!ruta || !ruta.fechasLlegada || ruta.fechasLlegada.length === 0) return false;
+        
+        const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
+        return state.currentTime < endTime; // Vehículo sigue en ruta
+      });
+
+      console.log("Nuevos: ", newVehicles);
+
+      // Convertir la siguiente solución en un conjunto de vehículos
+      const newVehicles = convertSolutionToVehicles(solutions[currentVehiclesIndex + 1]);
+      console.log("Nuevos: ", newVehicles);
+
+      // Fusionar los vehículos activos con los nuevos vehículos
+      const mergedVehicles = [...activeVehicles, ...newVehicles];
+      console.log("Combinados: ", mergedVehicles);
+
+      // Avanzar al siguiente índice y actualizar los vehículos en el estado
+      setCurrentVehiclesIndex(currentVehiclesIndex + 1);
+      dispatch({ type: 'SET_VEHICLES', payload: mergedVehicles });
+  }; */
 
   useEffect(() => {
     if (!state.isPlaying) return;
@@ -285,7 +276,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     
         // Verificamos que la ruta tenga fechasLlegada
         if (!ruta.fechasLlegada || ruta.fechasLlegada.length === 0) {
-            return vehicle.position.currentSegmentIndex === -1; // Consideramos completo si no tiene fechas
+            return true; // Consideramos completo si no tiene fechas
         }
     
         const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
