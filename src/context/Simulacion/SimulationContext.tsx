@@ -48,7 +48,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   const [state, dispatch] = useReducer(simulationReducer, {
     isPlaying: false,
     vehicles: [],
-    speed: 240,
+    speed: 50,
     startTime: new Date("2024-10-21T00:00:00Z"),
     currentTime: new Date("2024-10-21T00:00:00Z"),
     endTime: new Date("2024-10-28T00:00:00Z"),
@@ -65,7 +65,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       } else {
         const newResponse: ResponseAlgorithm = data;
         setSolutions((prevResponses) => [...prevResponses, newResponse]);
-        console.log('Respuesta recibida:', newResponse);
       }
     });
   
@@ -77,25 +76,90 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       wsManager.close();
     };
   }, []);
-  
-  // Segundo useEffect: Convierte soluciones a vehículos cada vez que se actualiza solutions
+
+  const [lastProcessedSolution, setLastProcessedSolution] = useState<string | null>(null);
+  const [indexActualProcess, setIndexActualProcess] = useState(0);
+
   useEffect(() => {
-    if (solutions.length > 0) {
-      const lastResponse = solutions[solutions.length - 1];
+    if (indexActualProcess < solutions.length) {
+      const newResponse = solutions[indexActualProcess];
+
+      // Convertir la solución a cadena para comparar
+      const newSolutionString = JSON.stringify(newResponse.solucion);
+
+      console.log("Solución a Procesar ", newResponse);
       
-      if (lastResponse && Array.isArray(lastResponse.solucion) && lastResponse.solucion.length > 0) {
-  
-        const convertedVehicles = convertSolutionToVehicles(lastResponse);
+      if (newSolutionString !== lastProcessedSolution) {
+        setLastProcessedSolution(newSolutionString); // Actualizar la solución procesada
 
-        if (convertedVehicles.length > 0 && currentVehiclesIndex==0) {
-          dispatch({ type: 'SET_VEHICLES', payload: convertedVehicles });
-          console.log('Vehículos iniciales establecidos:', convertedVehicles);
-          setCurrentVehiclesIndex(1);
+        const newVehicles = convertSolutionToVehicles(newResponse);
+
+        // Si es la primera respuesta y vehicles está vacío
+        if (!state.vehicles || state.vehicles.length === 0) {
+          dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
+          console.log("Primera respuesta: ", newVehicles);
+        }else {
+          console.log("Procesando");
+
+          // Fusionar vehículos existentes con los de la nueva solución
+          const updatedVehicles = state.vehicles.map(existingVehicle => {
+            const matchingNewVehicle = newVehicles.find(v => v.idVehiculo === existingVehicle.idVehiculo);
+        
+            if (matchingNewVehicle) {
+              // Determina la posición
+              const newPosition = (existingVehicle.position.lat === 0)
+              ? {
+                  lat: matchingNewVehicle.position.lat,
+                  lng: matchingNewVehicle.position.lng,
+                  progress: 0,
+                  currentSegmentIndex: -1,
+                }
+              : existingVehicle.position;
+              console.log("Encontró match", existingVehicle.idVehiculo);
+        
+              return {
+                position:newPosition,
+                capacidadCarga: matchingNewVehicle.capacidadCarga,
+                idVehiculo: matchingNewVehicle.idVehiculo,
+                fechaLibre: matchingNewVehicle.fechaLibre,
+                ruta: { 
+                  fechaInicio: matchingNewVehicle.ruta.fechaInicio,
+                  fechasSalida: [
+                    ...(existingVehicle.ruta.fechasSalida || []),
+                    ...(matchingNewVehicle.ruta.fechasSalida || []),
+                  ],
+                  fechasLlegada: [
+                    ...(existingVehicle.ruta.fechasLlegada || []),
+                    ...(matchingNewVehicle.ruta.fechasLlegada || []),
+                  ],
+                  tramos: [
+                    ...(existingVehicle.ruta.tramos || []),
+                    ...(matchingNewVehicle.ruta.tramos || []),
+                  ],
+                  pedidos: [
+                    ...(existingVehicle.ruta.pedidos || []),
+                    ...(matchingNewVehicle.ruta.pedidos || []),
+                  ],
+                },
+            };
+          }
+        
+            return existingVehicle;
+          });
+        
+          // Actualizar el estado con la lista combinada de vehículos
+          dispatch({ type: 'SET_VEHICLES', payload: [...updatedVehicles] });
+          console.log('Vehículos actualizados:', updatedVehicles);
         }
+        
+      }else{
+        console.log("es la misma solu");
       }
-    }
-  }, [solutions]);
 
+      // Actualizar el índice para procesar la siguiente respuesta
+      setIndexActualProcess(indexActualProcess + 1);
+    }
+  }, [setIndexActualProcess, dispatch, dispatchEvent, state.vehicles]);
 
   // Función para convertir una solución a vehículos
   const convertSolutionToVehicles = (solution: ResponseAlgorithm): Vehicle[] => {
@@ -156,35 +220,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     convertedVehicles.push(...vehicles);
     return convertedVehicles;
   };
-
-  const [currentVehiclesIndex, setCurrentVehiclesIndex] = useState(0); // Estado para el índice de soluciones
-  const [elapsedTime, setElapsedTime] = useState(0); // Estado para rastrear el tiempo transcurrido en horas
-
-  /*const advanceToNextReport = () => {
-      console.log("Avanzando al siguiente reporte");
-      // Filtrar los vehículos que están activos y aún no completan su ruta
-      const activeVehicles = state.vehicles.filter(vehicle => {
-        const { ruta } = vehicle;
-        if (!ruta || !ruta.fechasLlegada || ruta.fechasLlegada.length === 0) return false;
-        
-        const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
-        return state.currentTime < endTime; // Vehículo sigue en ruta
-      });
-
-      console.log("Nuevos: ", newVehicles);
-
-      // Convertir la siguiente solución en un conjunto de vehículos
-      const newVehicles = convertSolutionToVehicles(solutions[currentVehiclesIndex + 1]);
-      console.log("Nuevos: ", newVehicles);
-
-      // Fusionar los vehículos activos con los nuevos vehículos
-      const mergedVehicles = [...activeVehicles, ...newVehicles];
-      console.log("Combinados: ", mergedVehicles);
-
-      // Avanzar al siguiente índice y actualizar los vehículos en el estado
-      setCurrentVehiclesIndex(currentVehiclesIndex + 1);
-      dispatch({ type: 'SET_VEHICLES', payload: mergedVehicles });
-  }; */
 
   useEffect(() => {
     if (!state.isPlaying) return;
@@ -265,36 +300,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           },
         };
       });
-
-      const allVehiclesCompleted = updatedVehicles.every(vehicle => {
-        const { ruta } = vehicle;
-    
-        // Si ruta es null, consideramos que el vehículo está completo
-        if (!ruta) {
-            return true;
-        }
-    
-        // Verificamos que la ruta tenga fechasLlegada
-        if (!ruta.fechasLlegada || ruta.fechasLlegada.length === 0) {
-            return true; // Consideramos completo si no tiene fechas
-        }
-    
-        const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
-        return vehicle.position.currentSegmentIndex === -1 && state.currentTime >= endTime;
-      });
-
-      if (allVehiclesCompleted) {
-        //console.log("Todos los vehículos han completado sus movimientos y no hay más movimientos que procesar.");
-        // Actualizar el índice y cargar el siguiente conjunto de vehículos
-        console.log("Numero de soluciones-actual solucion: ",solutions.length,currentVehiclesIndex);
-        if (currentVehiclesIndex + 1 <= solutions.length) {
-          setCurrentVehiclesIndex(currentVehiclesIndex + 1);
-          console.log("Siguiente solucion");
-          dispatch({ type: 'SET_VEHICLES', payload: convertSolutionToVehicles(solutions[currentVehiclesIndex + 1]) });
-        } else {
-          //console.log("No hay más conjuntos de vehículos para procesar.");
-        }
-      }
 
       dispatch({ type: 'UPDATE_VEHICLE_POSITION', payload: updatedVehicles });
 
