@@ -46,6 +46,13 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     startTime: new Date("2024-10-21T00:00:00Z"),
     currentTime: new Date("2024-10-21T00:00:00Z"),
     endTime: new Date("2024-10-28T00:00:00Z"),
+    trucksInMotion: 5,        // Número de camiones en movimiento
+    trucksInMaintenance: 1,   // Número de camiones en mantenimiento
+    totalTrucks: 6,           // Capacidad total de la flota
+    totalOffices: 246,          // Total de oficinas
+    occupiedOffices: 200,       // Oficinas ocupadas
+    ordersDelivered: 1040,       // Pedidos entregados
+    ordersPending: 300,         // Pedidos pendientes
   });
 
   useEffect(() => {

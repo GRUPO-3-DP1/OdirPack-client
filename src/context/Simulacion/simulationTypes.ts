@@ -47,6 +47,13 @@ export type SimulationState = {
   startTime: Date;
   currentTime: Date;
   endTime: Date;
+  trucksInMotion: number;        // Número de camiones en movimiento
+  trucksInMaintenance: number;   // Número de camiones en mantenimiento
+  totalTrucks: number;           // Capacidad total de la flota
+  totalOffices: number;          // Total de oficinas
+  occupiedOffices: number;       // Oficinas ocupadas
+  ordersDelivered: number;       // Pedidos entregados
+  ordersPending: number;         // Pedidos pendientes
 };
 
 export type SimulationAction =
