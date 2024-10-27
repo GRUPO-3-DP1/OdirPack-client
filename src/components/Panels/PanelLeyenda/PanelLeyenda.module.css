@@ -1,0 +1,10 @@
+.container {
+  background-color: inherit;
+  user-select: inherit;
+  box-shadow: inherit;
+  border-radius: inherit;
+
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+}

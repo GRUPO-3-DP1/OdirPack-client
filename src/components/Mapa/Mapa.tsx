@@ -6,6 +6,7 @@ import OficinaMarker from '../Markers/OficinaMarker/OficinaMarker';
 import CamionMarker from '../Markers/CamionMarker/CamionMarker';
 import { useSimulation } from '../../context/Simulacion/useSimulation';
 import PanelPrincipal from '../Panels/PanelPrincipal/PanelPrincipal';
+import PanelLeyenda from '../Panels/PanelLeyenda/PanelLeyenda';
 
 const Mapa: React.FC = () => {
   const { state } = useSimulation();
@@ -22,6 +23,7 @@ const Mapa: React.FC = () => {
         mapId={"49ae42fed52588c3"}
         mapTypeId={"roadmap"}
       >
+        <PanelLeyenda />
         <PanelPrincipal show={state.isPlaying} />
         {oficinas.map((oficina, index) => (
           <OficinaMarker
