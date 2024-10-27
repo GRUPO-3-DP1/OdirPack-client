@@ -34,7 +34,7 @@ export type VehiclePosition = {
 export type Vehicle = {
   idVehiculo: string;
   capacidadCarga: number;
-  fechaLibre: string;
+  fechaLibre: string|null;
   ruta: Route;
   position: VehiclePosition;
 };
@@ -54,4 +54,6 @@ export type SimulationAction =
   | { type: 'STOP_SIMULATION'; }
   | { type: 'SET_SPEED'; payload: number; }
   | { type: 'UPDATE_VEHICLE_POSITION'; payload: Vehicle[]; }
-  | { type: 'SET_CURRENT_TIME'; payload: Date; };
+  | { type: 'SET_CURRENT_TIME'; payload: Date; }
+  | { type: 'SET_VEHICLES'; payload: Vehicle[]; }; // Ensure this is defined
+
