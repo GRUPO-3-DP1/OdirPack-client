@@ -115,6 +115,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                   currentSegmentIndex: -1,
                 }
               : existingVehicle.position;
+              const newFechaInicio = (existingVehicle.ruta.fechaInicio === null)
+              ? matchingNewVehicle.ruta.fechaInicio : existingVehicle.ruta.fechaInicio;
               console.log("Encontró match", existingVehicle.idVehiculo);
         
               return {
@@ -123,7 +125,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                 idVehiculo: matchingNewVehicle.idVehiculo,
                 fechaLibre: matchingNewVehicle.fechaLibre,
                 ruta: { 
-                  fechaInicio: matchingNewVehicle.ruta.fechaInicio,
+                  fechaInicio: newFechaInicio,
                   fechasSalida: [
                     ...(existingVehicle.ruta.fechasSalida || []),
                     ...(matchingNewVehicle.ruta.fechasSalida || []),
