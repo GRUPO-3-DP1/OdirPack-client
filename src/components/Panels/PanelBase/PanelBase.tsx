@@ -5,16 +5,17 @@ import styles from './PanelBase.module.css';
 type PanelBaseProps = {
   show: boolean;
   position: ControlPosition;
+  className?: string;
   children: ReactNode;
 };
 
-const PanelBase: React.FC<PanelBaseProps> = ({ show, position, children }) => {
+const PanelBase: React.FC<PanelBaseProps> = ({ show, position, className, children }) => {
   if (!show) {
     return null;
   }
   return (
     <MapControl position={position}>
-      <div className={styles.panel}>
+      <div className={`${styles.panel} ${className}`}>
         {children}
       </div>
     </MapControl>

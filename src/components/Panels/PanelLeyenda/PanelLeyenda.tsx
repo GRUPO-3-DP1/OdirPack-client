@@ -19,7 +19,7 @@ type PanelLeyendaProps = {
 };
 
 const PanelLeyenda: React.FC<PanelLeyendaProps> = ({ show = true }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   return (
     <>
@@ -34,7 +34,7 @@ const PanelLeyenda: React.FC<PanelLeyendaProps> = ({ show = true }) => {
                   onClick={() => setIsOpen(false)}
                   size='small'
                 >
-                  <Close />
+                  <Close fontSize='inherit' />
                 </IconButton>
               </div>
 
@@ -52,7 +52,11 @@ const PanelLeyenda: React.FC<PanelLeyendaProps> = ({ show = true }) => {
             </div>
           </PanelBase >
           :
-          <PanelBase show={show} position={ControlPosition.BOTTOM_LEFT} >
+          <PanelBase
+            show={show}
+            position={ControlPosition.BOTTOM_LEFT}
+            className={styles.button}
+          >
             <IconButton
               onClick={() => setIsOpen(true)}
               size='small'
@@ -61,7 +65,6 @@ const PanelLeyenda: React.FC<PanelLeyendaProps> = ({ show = true }) => {
             </IconButton>
           </PanelBase >
       }
-
     </>
   );
 };
