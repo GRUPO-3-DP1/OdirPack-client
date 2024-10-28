@@ -28,6 +28,7 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
         startTime: action.payload.startTime,
         currentTime: action.payload.startTime,
         endTime: action.payload.endTime,
+        ends: false
       };
     case 'STOP_SIMULATION':
       return { ...state, isPlaying: false };
@@ -49,6 +50,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     isPlaying: false,
     vehicles: [],
     speed: 900,
+    ends:false,
     startTime: new Date("2024-10-21T00:00:00Z"),
     currentTime: new Date("2024-10-21T00:00:00Z"),
     endTime: new Date("2024-10-28T00:00:00Z"),
@@ -239,6 +241,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       if (newTime >= state.endTime) {
         dispatch({ type: 'STOP_SIMULATION' });
         clearInterval(updateInterval);
+        state.ends=true;
         console.log("Ya paso la fecha Limite");
         return;
       }
@@ -319,7 +322,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
   
   return (
-    <SimulationContext.Provider value={{ state, dispatch, vehicles: initialVehicles, userId , solutions}}>
+    <SimulationContext.Provider value={{ state, dispatch, vehicles: [], userId , solutions}}>
       {children}
     </SimulationContext.Provider>
   );

@@ -47,6 +47,7 @@ export type SimulationState = {
   startTime: Date;
   currentTime: Date;
   endTime: Date;
+  ends: boolean;
   trucksInMotion: number;        // Número de camiones en movimiento
   trucksInMaintenance: number;   // Número de camiones en mantenimiento
   totalTrucks: number;           // Capacidad total de la flota
