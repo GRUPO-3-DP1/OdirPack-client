@@ -59,7 +59,7 @@ const Layout: React.FC = () => {
               slotProps={{
                 textField: {
                   size: 'small',
-                  sx: { width: '165px' },
+                  sx: { width: '149px' },
                   disabled: state.isPlaying,
                 },
               }}
@@ -72,7 +72,7 @@ const Layout: React.FC = () => {
               slotProps={{
                 textField: {
                   size: 'small',
-                  sx: { width: '145px' },
+                  sx: { width: '135px' },
                   disabled: state.isPlaying,
                 },
               }}
