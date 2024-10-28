@@ -6,9 +6,12 @@ import OficinaMarker from '../Markers/OficinaMarker/OficinaMarker';
 import CamionMarker from '../Markers/CamionMarker/CamionMarker';
 import { useSimulation } from '../../context/Simulacion/useSimulation';
 import PanelPrincipal from '../Panels/PanelPrincipal/PanelPrincipal';
+import PanelLeyenda from '../Panels/PanelLeyenda/PanelLeyenda';
+import Bloqueo from './components/Bloqueo/Bloqueo';
 
 const Mapa: React.FC = () => {
   const { state } = useSimulation();
+
   return (
     <APIProvider apiKey="AIzaSyAf4vRvjVvt-AuStWjrfbA-tJNYouHBpb4">
       <Map
@@ -22,6 +25,8 @@ const Mapa: React.FC = () => {
         mapId={"49ae42fed52588c3"}
         mapTypeId={"roadmap"}
       >
+        <Bloqueo inicio={{ lat: 37.772, lng: -122.214 }} fin={{ lat: 21.291, lng: -157.821 }} />
+        <PanelLeyenda />
         <PanelPrincipal show={state.isPlaying} />
         {oficinas.map((oficina, index) => (
           <OficinaMarker

@@ -3,7 +3,7 @@ import styles from './Header.module.css';
 import { useLocation } from 'react-router-dom';
 import routes from '../../routes/routes';
 import Fecha from '../utils/Fecha';
-import LoadingBar from '../Mapa/components/LoadingBar.tsx/LoadingBar';
+import LoadingBar from '../Mapa/components/LoadingBar/LoadingBar';
 
 interface HeaderProps {
   children?: React.ReactNode;
