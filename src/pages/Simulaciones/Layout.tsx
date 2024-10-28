@@ -75,7 +75,21 @@ const Layout: React.FC = () => {
           },
           {
               idPedido: "PED-0006",
-              fechaRegistro: "2024-10-21T01:30:00",
+              fechaRegistro: "2024-10-21T03:30:00",
+              ubigeoDestino: "150201",
+              cantidad: "8",
+              idCliente: "000624"
+          },
+          {
+              idPedido: "PED-0005",
+              fechaRegistro: "2024-10-21T01:00:00",
+              ubigeoDestino: "150401",
+              cantidad: "10",
+              idCliente: "000624"
+          },
+          {
+              idPedido: "PED-0007",
+              fechaRegistro: "2024-10-22T03:30:00",
               ubigeoDestino: "150201",
               cantidad: "8",
               idCliente: "000624"
@@ -90,6 +104,12 @@ const Layout: React.FC = () => {
           },
           {
               idVehiculo: "V002",
+              capacidadCarga: 10,
+              almacenOrigen: "150101",
+              fechaLibre: null
+          },
+          {
+              idVehiculo: "V003",
               capacidadCarga: 10,
               almacenOrigen: "150101",
               fechaLibre: null

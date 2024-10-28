@@ -98,7 +98,7 @@ const initialVehicles = [
   // Puedes añadir más vehículos siguiendo la misma estructura
 
   {
-    idVehiculo: "V002",
+    idVehiculo: "V0010",
     capacidadCarga: 150,
     fechaLibre: "2024-10-22T08:00:00",
     ruta: {
