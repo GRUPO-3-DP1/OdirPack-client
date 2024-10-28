@@ -98,7 +98,7 @@ const initialVehicles = [
   // Puedes añadir más vehículos siguiendo la misma estructura
 
   {
-    idVehiculo: "V002",
+    idVehiculo: "V0010",
     capacidadCarga: 150,
     fechaLibre: "2024-10-22T08:00:00",
     ruta: {
@@ -133,14 +133,14 @@ const initialVehicles = [
           idCliente: "000825"
         }
       ],
-      fechaInicio: "2024-10-21T04:00:00",
+      fechaInicio: "2024-10-21T03:00:00",
       fechasSalida: [
-        "2024-10-21T04:00:00",
-        "2024-10-21T10:00:00"
+        "2024-10-21T03:00:00",
+        "2024-10-21T07:10:21",
       ],
       fechasLlegada: [
-        "2024-10-21T06:00:00",
-        "2024-10-21T12:00:00"
+        "2024-10-21T03:10:21",
+        "2024-10-21T09:09:59",
       ]
     },
     position: {

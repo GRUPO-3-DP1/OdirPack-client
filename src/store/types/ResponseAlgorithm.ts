@@ -24,23 +24,23 @@ export type Ruta = {
     fechasLlegada: string[];
 };
 
+
 export type VehiculoAlgorithmResponse = {
     idVehiculo: string;
     capacidadCarga: number;
     fechaLibre: string | null;
+    ruta: Ruta|null;
 };
 
-export type RutaVehiculoAlgorithmResponse = {
-    vehiculo: VehiculoAlgorithmResponse;
-    ruta: Ruta;
+export type RutasVehiculosAlgorithmResponse = {
+    [key: string]: VehiculoAlgorithmResponse; // Permite claves dinámicas para los vehículos
 };
 
 export type SolucionAlgorithmResponse = {
-    rutasVehiculos: {
-        [key: string]: RutaVehiculoAlgorithmResponse;
-    };
+    rutasVehiculos: RutasVehiculosAlgorithmResponse; // Cambia a la nueva definición
     costoTotal: number;
 };
+
 
 export type OficinaAlgorithmResponse = {
     ubigeo: string;

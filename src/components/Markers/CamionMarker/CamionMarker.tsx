@@ -9,6 +9,10 @@ type CamionMarkerProps = Omit<AdvancedMarkerProps, 'position'> & {
 };
 
 const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ...markerProps }) => {
+  // Log para ver qué camión está siendo renderizado
+  if (camion.position.currentSegmentIndex !== -1) {
+    console.log('Renderizando camión:', camion.idVehiculo, 'Posición:', camion.position);
+  }
   return (
     <>
       {

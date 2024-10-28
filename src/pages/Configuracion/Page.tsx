@@ -6,7 +6,6 @@ import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
 
 const Page: React.FC = () => {
     const [userId, setUserId] = useState<string>('');
-    const [messages, setMessages] = useState<string[]>([]);
     const [socketManager, setSocketManager] = useState<WebSocketManager | null>(null);
     const [responses, setResponses] = useState<ResponseAlgorithm[]>([]); // Arreglo para almacenar respuestas
 
@@ -89,7 +88,6 @@ const Page: React.FC = () => {
 
     return (
         <div>
-            <h1>WebSocket Demo</h1>
             <button onClick={handleIniciarSimulacion}>Simulacion</button>
             <div>
                 <h2>Respuestas recibidas:</h2>
