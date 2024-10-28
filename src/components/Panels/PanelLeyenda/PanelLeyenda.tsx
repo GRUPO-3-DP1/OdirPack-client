@@ -2,12 +2,21 @@ import React, { useState } from 'react';
 import PanelBase from '../PanelBase/PanelBase';
 import { ControlPosition } from '@vis.gl/react-google-maps';
 import styles from './PanelLeyenda.module.css';
-import { Box, Button, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
-import { BuildCircle, Home, LocalShipping, ShowChart, Store } from '@mui/icons-material';
+import { IconButton } from '@mui/material';
+import { BuildCircle, Close, Home, LocalShipping, Map, ShowChart, Store } from '@mui/icons-material';
 
-interface PanelLeyendaProps {
+const leyendaItems: { icon: JSX.Element, text: string; }[] = [
+  { icon: <LocalShipping sx={{ color: "blue" }} fontSize='small' />, text: "Camión" },
+  { icon: <Home sx={{ color: "black" }} fontSize='small' />, text: "Almacén" },
+  { icon: <Store sx={{ color: "blue" }} fontSize='small' />, text: "Oficina" },
+  { icon: <BuildCircle sx={{ color: "red" }} fontSize='small' />, text: "Camión Averiado" },
+  { icon: <ShowChart sx={{ color: "blue" }} fontSize='small' />, text: "Tramo" },
+  { icon: <ShowChart sx={{ color: "red" }} fontSize='small' />, text: "Bloqueo" },
+];
+
+type PanelLeyendaProps = {
   show?: boolean;
-}
+};
 
 const PanelLeyenda: React.FC<PanelLeyendaProps> = ({ show = true }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,85 +27,38 @@ const PanelLeyenda: React.FC<PanelLeyendaProps> = ({ show = true }) => {
         isOpen ?
           <PanelBase show={show} position={ControlPosition.BOTTOM_LEFT} >
             <div className={styles.container}>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  width: 200,
-                  alignItems: "center",
-                  gap: 2.5,
-                  px: 2,
-                  py: 2.5,
-                  bgcolor: "white",
-                  borderRadius: 1,
-                  overflow: "hidden",
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
-                  }}
+
+              <div className={styles.title}>
+                Leyenda
+                <IconButton
+                  onClick={() => setIsOpen(false)}
+                  size='small'
                 >
-                  <Typography variant="h6" component="div">
-                    Leyenda
-                  </Typography>
-                </Box>
+                  <Close />
+                </IconButton>
+              </div>
 
-                <List sx={{ width: "100%" }}>
-                  <ListItem>
-                    <ListItemIcon>
-                      <LocalShipping sx={{ color: "blue" }} fontSize='small' />
-                    </ListItemIcon>
-                    <ListItemText primary="Camión" />
-                  </ListItem>
+              <ul className={styles.lista}>
+                {leyendaItems.map((item, index) =>
+                  <li key={index} className={styles.item}>
+                    <div>
+                      {item.icon}
+                    </div>
+                    <span>{item.text}</span>
+                  </li>
+                )}
+              </ul>
 
-                  <ListItem>
-                    <ListItemIcon>
-                      <Home sx={{ color: "black" }} fontSize='small' />
-                    </ListItemIcon>
-                    <ListItemText primary="Almacén" />
-                  </ListItem>
-
-                  <ListItem>
-                    <ListItemIcon>
-                      <Store sx={{ color: "blue" }} fontSize='small' />
-                    </ListItemIcon>
-                    <ListItemText primary="Oficina" />
-                  </ListItem>
-
-                  <ListItem>
-                    <ListItemIcon>
-                      <BuildCircle sx={{ color: "red" }} fontSize='small' />
-                    </ListItemIcon>
-                    <ListItemText primary="Camión Averiado" />
-                  </ListItem>
-
-                  <ListItem>
-                    <ListItemIcon>
-                      <ShowChart sx={{ color: "blue" }} fontSize='small' />
-                    </ListItemIcon>
-                    <ListItemText primary="Tramo" />
-                  </ListItem>
-
-                  <ListItem>
-                    <ListItemIcon>
-                      <ShowChart sx={{ color: "red" }} fontSize='small' />
-                    </ListItemIcon>
-                    <ListItemText primary="Bloqueo" />
-                  </ListItem>
-                </List>
-              </Box>
             </div>
           </PanelBase >
           :
           <PanelBase show={show} position={ControlPosition.BOTTOM_LEFT} >
-            <Button
+            <IconButton
               onClick={() => setIsOpen(true)}
+              size='small'
             >
-              Leyenda
-            </Button>
+              <Map />
+            </IconButton>
           </PanelBase >
       }
 
