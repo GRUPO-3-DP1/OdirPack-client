@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import PanelBase from '../PanelBase/PanelBase';
 import { ControlPosition } from '@vis.gl/react-google-maps';
 import styles from './PanelResultados.module.css';
-import { IconButton, TableSortLabel } from '@mui/material';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { useSimulation } from '../../../context/Simulacion/useSimulation';
 import { PedidoAlgorithmResponse, ResponseAlgorithm } from '../../../store/types/ResponseAlgorithm';
@@ -31,123 +30,19 @@ type RutaTableRow = {
 };
 
 const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true }) => {
-  const { state, solutions } = useSimulation();
+  const { solutions } = useSimulation();
 
   const [pedidos, setPedidos] = useState<PedidoTableRow[]>([]);
   const [rutas, setRutas] = useState<RutaTableRow[]>([]);
-  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+  /* const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState<string>('idPedido');
 
   const handleSortRequest = (property: string) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
-  };
+  }; */
 
-  // Función para formatear la fecha
-  const formatDate = (isoDate:string) => {
-    const date = new Date(isoDate);
-    return date.toLocaleString('es-PE', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false // Formato de 24 horas
-    });
-  };
-
-  const extractAllPedidos = (solutions: ResponseAlgorithm[]) => {
-    const allPedidos: PedidoAlgorithmResponse[] = [];
-  
-    // Iterar sobre todas las soluciones
-    solutions.forEach(solution => {
-      const planificadosPedidos = solution.solucion.flatMap(solucionItem => {
-        if (!solucionItem.rutasVehiculos) return [];
-  
-        return Object.values(solucionItem.rutasVehiculos).flatMap(vehicleItem => {
-          if (vehicleItem && vehicleItem.ruta) {
-            return (vehicleItem.ruta.pedidos || []).map(pedido => ({
-              ...pedido,
-              estado: 'Planificado'
-            }));
-          }
-          return [];
-        });
-      });
-  
-      // Agregar o actualizar los pedidos en la lista total
-      planificadosPedidos.forEach(pedido => {
-        const existingPedido = allPedidos.find(p => p.idPedido === pedido.idPedido);
-  
-        if (existingPedido) {
-          // Si el pedido ya existe, sumar la cantidad
-          existingPedido.cantidad += pedido.cantidad;
-        } else {
-          // Si no existe, agregarlo a la lista
-          allPedidos.push(pedido);
-        }
-      });
-    });
-  
-    return allPedidos;
-  };
-
-  // Generador de ID para rutas
-  let lastIdNumber = 0;
-
-  const generateRouteId = () => {
-    lastIdNumber += 1;
-    return `R${lastIdNumber.toString().padStart(3, '0')}`;
-  };
-
-
-  const extractAllRutas = (solutions: ResponseAlgorithm[]) => {
-    const allRutas: { idRuta: string; fechaInicio: string; placa: string; origen: string; cantidadPedidos: number }[] = [];
-  
-    // Iterar sobre todas las soluciones
-    solutions.forEach(solution => {
-      const rutas = solution.solucion.flatMap(solucionItem => {
-        if (!solucionItem.rutasVehiculos) return [];
-  
-        return Object.values(solucionItem.rutasVehiculos).flatMap(vehicleItem => {
-          if (vehicleItem && vehicleItem.ruta) {
-            // Calcular la cantidad total de paquetes en esta ruta
-            const cantidadPedidos = (vehicleItem.ruta.pedidos || []).reduce((total, pedido) => total + (pedido.cantidad || 0), 0);
-  
-            if (cantidadPedidos > 0) {
-              return [{
-                idRuta: generateRouteId(), // Generar un ID único para cada ruta
-                fechaInicio: vehicleItem.ruta.fechaInicio,
-                placa: vehicleItem.idVehiculo,
-                origen: "LIMA",
-                cantidadPedidos: cantidadPedidos
-              }];
-            }
-          }
-          return [];
-        });
-      });
-  
-      // Agregar o actualizar las rutas en la lista total
-      rutas.forEach(ruta => {
-        const existingRuta = allRutas.find(r => r.fechaInicio === ruta.fechaInicio && r.placa === ruta.placa);
-  
-        if (existingRuta) {
-          // Si la ruta ya existe, sumar la cantidad de pedidos
-          existingRuta.cantidadPedidos += ruta.cantidadPedidos;
-        } else {
-          // Si no existe, agregarla a la lista con un nuevo ID
-          allRutas.push(ruta);
-        }
-      });
-    });
-  
-    return allRutas;
-  };
-  
-  
   // Extraer Pedidos
   useEffect(() => {
     const pedidosData = extractAllPedidos(solutions).map((pedido) => ({
@@ -157,7 +52,7 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true }) => {
       destino: pedido.ubigeoDestino,
       fechaRegistro: pedido.fechaRegistro,
       fechaPlazoMaximo: pedido.fechaPlazoMaximo,
-      estado: pedido.estado? pedido.estado:"No Planificado",
+      estado: pedido.estado ? pedido.estado : "No Planificado",
     }));
 
     // Extraer las rutas
@@ -239,3 +134,106 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true }) => {
 };
 
 export default PanelResultados;
+
+
+const formatDate = (isoDate: string) => {
+  const date = new Date(isoDate);
+  return date.toLocaleString('es-PE', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false // Formato de 24 horas
+  });
+};
+
+const extractAllPedidos = (solutions: ResponseAlgorithm[]) => {
+  const allPedidos: PedidoAlgorithmResponse[] = [];
+
+  // Iterar sobre todas las soluciones
+  solutions.forEach(solution => {
+    const planificadosPedidos = solution.solucion.flatMap(solucionItem => {
+      if (!solucionItem.rutasVehiculos) return [];
+
+      return Object.values(solucionItem.rutasVehiculos).flatMap(vehicleItem => {
+        if (vehicleItem && vehicleItem.ruta) {
+          return (vehicleItem.ruta.pedidos || []).map(pedido => ({
+            ...pedido,
+            estado: 'Planificado'
+          }));
+        }
+        return [];
+      });
+    });
+
+    // Agregar o actualizar los pedidos en la lista total
+    planificadosPedidos.forEach(pedido => {
+      const existingPedido = allPedidos.find(p => p.idPedido === pedido.idPedido);
+
+      if (existingPedido) {
+        // Si el pedido ya existe, sumar la cantidad
+        existingPedido.cantidad += pedido.cantidad;
+      } else {
+        // Si no existe, agregarlo a la lista
+        allPedidos.push(pedido);
+      }
+    });
+  });
+
+  return allPedidos;
+};
+
+// Generador de ID para rutas
+let lastIdNumber = 0;
+
+const generateRouteId = () => {
+  lastIdNumber += 1;
+  return `R${lastIdNumber.toString().padStart(3, '0')}`;
+};
+
+
+const extractAllRutas = (solutions: ResponseAlgorithm[]) => {
+  const allRutas: { idRuta: string; fechaInicio: string; placa: string; origen: string; cantidadPedidos: number; }[] = [];
+
+  // Iterar sobre todas las soluciones
+  solutions.forEach(solution => {
+    const rutas = solution.solucion.flatMap(solucionItem => {
+      if (!solucionItem.rutasVehiculos) return [];
+
+      return Object.values(solucionItem.rutasVehiculos).flatMap(vehicleItem => {
+        if (vehicleItem && vehicleItem.ruta) {
+          // Calcular la cantidad total de paquetes en esta ruta
+          const cantidadPedidos = (vehicleItem.ruta.pedidos || []).reduce((total, pedido) => total + (pedido.cantidad || 0), 0);
+
+          if (cantidadPedidos > 0) {
+            return [{
+              idRuta: generateRouteId(), // Generar un ID único para cada ruta
+              fechaInicio: vehicleItem.ruta.fechaInicio,
+              placa: vehicleItem.idVehiculo,
+              origen: "LIMA",
+              cantidadPedidos: cantidadPedidos
+            }];
+          }
+        }
+        return [];
+      });
+    });
+
+    // Agregar o actualizar las rutas en la lista total
+    rutas.forEach(ruta => {
+      const existingRuta = allRutas.find(r => r.fechaInicio === ruta.fechaInicio && r.placa === ruta.placa);
+
+      if (existingRuta) {
+        // Si la ruta ya existe, sumar la cantidad de pedidos
+        existingRuta.cantidadPedidos += ruta.cantidadPedidos;
+      } else {
+        // Si no existe, agregarla a la lista con un nuevo ID
+        allRutas.push(ruta);
+      }
+    });
+  });
+
+  return allRutas;
+};
