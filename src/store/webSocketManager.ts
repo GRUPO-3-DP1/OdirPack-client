@@ -17,7 +17,7 @@ class WebSocketManager {
 
         this.socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            //console.log('Mensaje recibido del servidor desde WebSocketManager:', data);
+            console.log('Mensaje recibido del servidor desde WebSocketManager:', data);
             this.onMessageCallback(data);
         };
 

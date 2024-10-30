@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useEffect, useState } from 'react';
-import initialVehicles from '../../data/prueba';
+//import initialVehicles from '../../data/prueba';
 import oficinas from '../../data/oficinas';
 import { SimulationAction, SimulationState, Vehicle } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
@@ -64,6 +64,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   });
 
   const [userId, setUserId] = useState<string>('');
+
+  // @ts-ignore
   const [socketManager, setSocketManager] = useState<WebSocketManager | null>(null);
   const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]); // Arreglo para almacenar respuestas
 
@@ -73,6 +75,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         setUserId(data.userId);
       } else {
         const newResponse: ResponseAlgorithm = data;
+        console.log("Respuesta del algoritmo recibida:", newResponse);
         setSolutions((prevResponses) => [...prevResponses, newResponse]);
       }
     });
