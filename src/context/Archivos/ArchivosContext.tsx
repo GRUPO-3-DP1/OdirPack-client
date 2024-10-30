@@ -1,5 +1,6 @@
 import { createContext, useState } from "react";
 import { Archivo, ArchivosContextProps } from "./archivosTypes";
+import { generarUUID } from "../../utils/generarUUID";
 
 export const ArchivosContext = createContext<ArchivosContextProps | undefined>(undefined);
 
@@ -8,7 +9,7 @@ export const ArchivosProvider: React.FC<{ children: React.ReactNode; }> = ({ chi
 
   const subirArchivo = (file: File) => {
     const nuevoArchivo: Archivo = {
-      id: crypto.randomUUID(),
+      id: generarUUID(),
       name: file.name,
       size: file.size,
       type: file.type,
