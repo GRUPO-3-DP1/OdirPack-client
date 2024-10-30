@@ -32,7 +32,7 @@ const Mapa: React.FC = () => {
         mapId={"49ae42fed52588c3"}
         mapTypeId={"roadmap"}
       >
-        {bloqueos && Object.entries(bloqueos).map(([, bloqueosDelMes]) =>
+        {bloqueos && state.isPlaying && Object.entries(bloqueos).map(([, bloqueosDelMes]) =>
           bloqueosDelMes.map((bloqueo) => {
             const { inicio, fin } = getFechaBloqueo(bloqueo, currentYear);
 
