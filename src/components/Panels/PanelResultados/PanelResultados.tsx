@@ -34,7 +34,6 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true }) => {
 
   const [pedidos, setPedidos] = useState<PedidoTableRow[]>([]);
   const [rutas, setRutas] = useState<RutaTableRow[]>([]);
-  const [isOpen, setIsOpen] = useState(show);
   /* const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState<string>('idPedido');
 
@@ -69,7 +68,7 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true }) => {
   }, [solutions]);
 
   return (
-    <PanelBase show={isOpen} position={ControlPosition.CENTER}>
+    <PanelBase show={show} position={ControlPosition.CENTER}>
       <div className={styles.container}>
         <div className={styles.title}>Pedidos</div>
         <TableContainer component={Paper} className={styles.tableContainer}>
@@ -134,7 +133,6 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true }) => {
         <Button
           variant='contained'
           className={styles.buttton}
-          onClick={() => setIsOpen(false)}
         >
           Salir
         </Button>
