@@ -2,7 +2,6 @@
   border: 1px solid #ccc;
   max-width: auto;
   max-height: 600px;
-  margin: 20px auto;
   padding: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
@@ -32,11 +31,16 @@
 }
 
 .title {
-  font-size: 24px; /* Tamaño de fuente más grande para el título */
-  font-weight: bold; /* Negrita */
-  text-align: left; /* Centrar el texto */
-  margin-top: 20px; /* Espacio encima del título */
-  margin-bottom: 10px; /* Espacio debajo del título */
+  font-size: 24px;
+  /* Tamaño de fuente más grande para el título */
+  font-weight: bold;
+  /* Negrita */
+  text-align: left;
+  /* Centrar el texto */
+  margin-top: 20px;
+  /* Espacio encima del título */
+  margin-bottom: 10px;
+  /* Espacio debajo del título */
 }
 
 .titlePanel {
@@ -67,3 +71,11 @@
   align-items: center;
   justify-content: center;
 }
+
+.buttonContainer {
+  display: flex;
+  justify-content: end;
+  padding: 5px;
+}
+
+.button {}
