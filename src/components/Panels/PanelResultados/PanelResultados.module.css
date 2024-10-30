@@ -71,3 +71,11 @@
   align-items: center;
   justify-content: center;
 }
+
+.buttonContainer {
+  display: flex;
+  justify-content: end;
+  padding: 5px;
+}
+
+.button {}

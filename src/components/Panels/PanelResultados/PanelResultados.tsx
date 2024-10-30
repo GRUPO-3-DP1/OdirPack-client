@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PanelBase from '../PanelBase/PanelBase';
 import { ControlPosition } from '@vis.gl/react-google-maps';
 import styles from './PanelResultados.module.css';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
 import { useSimulation } from '../../../context/Simulacion/useSimulation';
 import { PedidoAlgorithmResponse, ResponseAlgorithm } from '../../../store/types/ResponseAlgorithm';
 import MapIcon from '@mui/icons-material/Map';
@@ -34,6 +34,7 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true }) => {
 
   const [pedidos, setPedidos] = useState<PedidoTableRow[]>([]);
   const [rutas, setRutas] = useState<RutaTableRow[]>([]);
+  const [isOpen, setIsOpen] = useState(show);
   /* const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState<string>('idPedido');
 
@@ -68,7 +69,7 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true }) => {
   }, [solutions]);
 
   return (
-    <PanelBase show={true} position={ControlPosition.CENTER}>
+    <PanelBase show={isOpen} position={ControlPosition.CENTER}>
       <div className={styles.container}>
         <div className={styles.title}>Pedidos</div>
         <TableContainer component={Paper} className={styles.tableContainer}>
@@ -128,6 +129,15 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true }) => {
             </TableBody>
           </Table>
         </TableContainer>
+      </div>
+      <div className={styles.buttonContainer}>
+        <Button
+          variant='contained'
+          className={styles.buttton}
+          onClick={() => setIsOpen(false)}
+        >
+          Salir
+        </Button>
       </div>
     </PanelBase >
   );
