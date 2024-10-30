@@ -9,10 +9,16 @@ import PanelPrincipal from '../Panels/PanelPrincipal/PanelPrincipal';
 import PanelLeyenda from '../Panels/PanelLeyenda/PanelLeyenda';
 import Bloqueo from './components/Bloqueo/Bloqueo';
 import PanelResultados from '../Panels/PanelResultados/PanelResultados';
+import { useArchivos } from '../../context/Archivos/useArchivos';
+import { getFechaBloqueo } from '../../data/bloqueos';
 
 const Mapa: React.FC = () => {
   const { state } = useSimulation();
 
+  const { bloqueos } = useArchivos();
+
+  const currentTime = state.currentTime;
+  const currentYear = new Date().getFullYear();
   return (
     <APIProvider apiKey="AIzaSyAf4vRvjVvt-AuStWjrfbA-tJNYouHBpb4">
       <Map
@@ -26,7 +32,18 @@ const Mapa: React.FC = () => {
         mapId={"49ae42fed52588c3"}
         mapTypeId={"roadmap"}
       >
-        <Bloqueo inicio={{ lat: 37.772, lng: -122.214 }} fin={{ lat: 21.291, lng: -157.821 }} />
+        {bloqueos && Object.entries(bloqueos).map(([, bloqueosDelMes]) =>
+          bloqueosDelMes.map((bloqueo) => {
+            const { inicio, fin } = getFechaBloqueo(bloqueo, currentYear);
+
+            if (inicio <= currentTime && fin >= currentTime) {
+              return (
+                <Bloqueo key={`${bloqueo.ugOri}-${bloqueo.ugDes}-${bloqueo.mesInicio}-${bloqueo.diaInicio}`} inicio={bloqueo.posicionOrigen} fin={bloqueo.posicionDestino} />
+              );
+            }
+            return null;
+          })
+        )}
         <PanelLeyenda />
         <PanelPrincipal show={state.isPlaying} />
         {oficinas.map((oficina, index) => (
