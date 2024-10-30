@@ -34,7 +34,7 @@ export type VehiclePosition = {
 export type Vehicle = {
   idVehiculo: string;
   capacidadCarga: number;
-  fechaLibre: string|null;
+  fechaLibre: string | null;
   ruta: Route;
   position: VehiclePosition;
 };
