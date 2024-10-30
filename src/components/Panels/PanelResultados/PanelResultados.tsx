@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PanelBase from '../PanelBase/PanelBase';
 import { ControlPosition } from '@vis.gl/react-google-maps';
 import styles from './PanelResultados.module.css';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
 import { useSimulation } from '../../../context/Simulacion/useSimulation';
 import { PedidoAlgorithmResponse, ResponseAlgorithm, TramoAlgorithmResponse } from '../../../store/types/ResponseAlgorithm';
 import { AddRoad } from '@mui/icons-material';
