@@ -36,7 +36,6 @@ const Mapa: React.FC = () => {
           bloqueosDelMes.map((bloqueo) => {
             const { inicio, fin } = getFechaBloqueo(bloqueo, currentYear);
 
-            // Verifica si el bloqueo está activo en el tiempo actual
             if (inicio <= currentTime && fin >= currentTime) {
               return (
                 <Bloqueo key={`${bloqueo.ugOri}-${bloqueo.ugDes}-${bloqueo.mesInicio}-${bloqueo.diaInicio}`} inicio={bloqueo.posicionOrigen} fin={bloqueo.posicionDestino} />
