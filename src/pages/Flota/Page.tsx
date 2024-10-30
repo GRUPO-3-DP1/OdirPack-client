@@ -1,9 +1,11 @@
-import React from 'react';
-import styles from './page.module.css';
+import React, { useState } from 'react';
+import PanelLeyenda from '../../components/Panels/PanelLeyenda/PanelLeyenda';
 
 const Page: React.FC = () => {
+  const [showPanel, setShowPanel] = useState(true);
+
   return (
-    <div className={styles.titulo}>Flota</div>
+      <PanelLeyenda show={true}/>
   );
 };
 
