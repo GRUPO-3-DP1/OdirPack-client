@@ -10,10 +10,14 @@ export type TramoAlgorithmResponse = {
 
 export type PedidoAlgorithmResponse = {
     idPedido: string;
+    ubigeoOrigen: string|null;
     ubigeoDestino: string; // Código del ubigeo de destino
     fechaRegistro: string;
+    fechaLlegada: string|null;
+    fechaPlazoMaximo: string;
     cantidad: number;
     idCliente: string;
+    estado: string;
 };
 
 export type Ruta = {
@@ -54,3 +58,4 @@ export type ResponseAlgorithm = {
     oficinas: OficinaAlgorithmResponse[];
     yaNoPlanificar: boolean;
 };
+
