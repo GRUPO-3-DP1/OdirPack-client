@@ -68,7 +68,7 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true }) => {
   }, [solutions]);
 
   return (
-    <PanelBase show={show} position={ControlPosition.CENTER} >
+    <PanelBase show={true} position={ControlPosition.CENTER}>
       <div className={styles.container}>
         <div className={styles.title}>Pedidos</div>
         <TableContainer component={Paper} className={styles.tableContainer}>
