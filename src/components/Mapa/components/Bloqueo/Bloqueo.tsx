@@ -26,7 +26,7 @@ const Bloqueo: React.FC<BloqueoProps> = ({ inicio, fin }) => {
     geodesic: false,
     strokeColor: "#FF0000",
     strokeOpacity: 1.0,
-    strokeWeight: 0.5,
+    strokeWeight: 0.2,
   });
 
   flightPath.setMap(map);
