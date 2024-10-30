@@ -24,7 +24,9 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 const Page: React.FC = () => {
-  const { archivos, subirArchivo, eliminarArchivo } = useArchivos();
+  const { archivos, bloqueos, subirArchivo, eliminarArchivo } = useArchivos();
+
+  console.log(bloqueos);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
