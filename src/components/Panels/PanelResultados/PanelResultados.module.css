@@ -67,3 +67,40 @@
   align-items: center;
   justify-content: center;
 }
+
+.headerContainer {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 60px;
+  margin-bottom: 20px; /* Add some space below the header */
+}
+
+.backButton {
+  border: 1px solid #3f51b5; /* Example border color */
+  border-radius: 5px;
+  padding: 5px; /* Add padding for better touch target */
+  background-color: #e0e0e0; /* Light background for the button */
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+}
+.routeInfo {
+  display: flex;
+  align-items: center; /* Center items vertically */
+  padding: 10px; /* Add padding */
+  border: 1px solid #ccc; /* Light border */
+  border-radius: 8px; /* Rounded corners */
+  background-color: #f9f9f9; /* Light background color */
+  margin-top: 10px; /* Space above the route info */
+}
+
+.routeInfo > div {
+  margin-right: 20px; /* Space between attributes */
+}
+
+.routeInfo > div:last-child {
+  margin-right: 0; /* No margin on the last item */
+}
