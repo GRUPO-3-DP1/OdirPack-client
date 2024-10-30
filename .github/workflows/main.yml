@@ -15,7 +15,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Build and push frontend image (Adaptar para cada repositorio)
+      - name: Build and push frontend image
         uses: docker/build-push-action@v3
         with:
           context: .
