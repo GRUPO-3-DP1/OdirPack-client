@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PanelLeyenda from '../../components/Panels/PanelLeyenda/PanelLeyenda';
 
 const Page: React.FC = () => {
-  const [showPanel, setShowPanel] = useState(true);
+  //const [showPanel, setShowPanel] = useState(true);
 
   return (
-      <PanelLeyenda show={true}/>
+    <PanelLeyenda show={true} />
   );
 };
 

@@ -1,4 +1,4 @@
-import { APIProvider, ColorScheme, ControlPosition, Map } from '@vis.gl/react-google-maps';
+import { APIProvider, ColorScheme, Map } from '@vis.gl/react-google-maps';
 import React from 'react';
 import styles from './Mapa.module.css';
 import oficinas from '../../data/oficinas';
@@ -8,9 +8,7 @@ import { useSimulation } from '../../context/Simulacion/useSimulation';
 import PanelPrincipal from '../Panels/PanelPrincipal/PanelPrincipal';
 import PanelLeyenda from '../Panels/PanelLeyenda/PanelLeyenda';
 import Bloqueo from './components/Bloqueo/Bloqueo';
-import PanelBase from '../Panels/PanelBase/PanelBase';
 import PanelResultados from '../Panels/PanelResultados/PanelResultados';
-import { Dialog } from '@mui/material';
 
 const Mapa: React.FC = () => {
   const { state } = useSimulation();
@@ -46,7 +44,7 @@ const Mapa: React.FC = () => {
         ))}
         <PanelResultados show={state.ends} />
       </Map>
-      </APIProvider>
+    </APIProvider>
   );
 };
 
