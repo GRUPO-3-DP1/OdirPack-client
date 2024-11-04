@@ -1,11 +1,9 @@
 import React from 'react';
-import PanelLeyenda from '../../components/Panels/PanelLeyenda/PanelLeyenda';
+import Mapa from '../../components/Mapa/components/Mapa/MapaLeaflet/Mapa';
 
 const Page: React.FC = () => {
-  //const [showPanel, setShowPanel] = useState(true);
-
   return (
-    <PanelLeyenda show={true} />
+    <Mapa />
   );
 };
 
