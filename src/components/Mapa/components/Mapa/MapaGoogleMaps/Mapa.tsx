@@ -1,16 +1,16 @@
 import { APIProvider, ColorScheme, Map } from '@vis.gl/react-google-maps';
 import React from 'react';
 import styles from './Mapa.module.css';
-import oficinas from '../../../../../data/oficinas';
-import OficinaMarker from '../../../../Markers/OficinaMarker/OficinaMarker';
-import CamionMarker from '../../../../Markers/CamionMarker/CamionMarker';
 import { useSimulation } from '../../../../../context/Simulacion/useSimulation';
-import PanelPrincipal from '../../../../Panels/PanelPrincipal/PanelPrincipal';
-import PanelLeyenda from '../../../../Panels/PanelLeyenda/PanelLeyenda';
-import Bloqueo from '../../Bloqueo/Bloqueo';
-import PanelResultados from '../../../../Panels/PanelResultados/PanelResultados';
 import { useArchivos } from '../../../../../context/Archivos/useArchivos';
 import { getFechaBloqueo } from '../../../../../data/bloqueos';
+import Bloqueo from '../../Bloqueo/Bloqueo';
+import PanelLeyenda from '../../../../Panels/PanelLeyenda/PanelLeyenda';
+import PanelPrincipal from '../../../../Panels/PanelPrincipal/PanelPrincipal';
+import OficinaMarker from '../../../../Markers/OficinaMarker/OficinaMarker';
+import oficinas from '../../../../../data/oficinas';
+import CamionMarker from '../../../../Markers/CamionMarker/CamionMarker';
+import PanelResultados from '../../../../Panels/PanelResultados/PanelResultados';
 
 const Mapa: React.FC = () => {
   const { state } = useSimulation();
