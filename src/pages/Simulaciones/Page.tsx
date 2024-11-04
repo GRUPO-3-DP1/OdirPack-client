@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './page.module.css';
-import Mapa from '../../components/Mapa/components/Mapa/MapaGoogleMaps/Mapa';
+import Mapa from '../../components/Mapa/components/Mapa/MapaLeaflet/Mapa';
 
 const Page: React.FC = () => {
   return (
