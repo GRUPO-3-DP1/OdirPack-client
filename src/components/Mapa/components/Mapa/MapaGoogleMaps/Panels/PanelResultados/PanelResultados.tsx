@@ -3,11 +3,11 @@ import PanelBase from '../PanelBase/PanelBase';
 import { ControlPosition } from '@vis.gl/react-google-maps';
 import styles from './PanelResultados.module.css';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
-import { useSimulation } from '../../../context/Simulacion/useSimulation';
-import { PedidoAlgorithmResponse, ResponseAlgorithm, TramoAlgorithmResponse } from '../../../store/types/ResponseAlgorithm';
 import { AddRoad } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useSimulation } from '../../../../../../../context/Simulacion/useSimulation';
+import { PedidoAlgorithmResponse, ResponseAlgorithm, TramoAlgorithmResponse } from '../../../../../../../store/types/ResponseAlgorithm';
 
 type PanelResultadosProps = {
   show?: boolean;
