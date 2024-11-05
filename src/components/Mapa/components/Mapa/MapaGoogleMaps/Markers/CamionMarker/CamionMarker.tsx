@@ -2,7 +2,7 @@ import React from 'react';
 import { AdvancedMarker, AdvancedMarkerProps } from '@vis.gl/react-google-maps';
 import { LocalShipping } from '@mui/icons-material';
 import styles from './CamionMarker.module.css';
-import { Vehicle } from '../../../context/Simulacion/simulationTypes';
+import { Vehicle } from '../../../../../../../context/Simulacion/simulationTypes';
 
 type CamionMarkerProps = Omit<AdvancedMarkerProps, 'position'> & {
   camion: Vehicle;
