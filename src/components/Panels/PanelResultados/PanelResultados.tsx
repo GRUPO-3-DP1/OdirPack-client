@@ -34,7 +34,6 @@ type RutaTableRow = {
 
 const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true }) => {
   const { solutions } = useSimulation();
-
   const [pedidos, setPedidos] = useState<PedidoTableRow[]>([]);
   const [rutas, setRutas] = useState<RutaTableRow[]>([]);
   const [mostrarTramos, setMostrarTramos] = useState(false);
@@ -183,10 +182,19 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true }) => {
                 </TableBody>
               </Table>
             </TableContainer>
-          </div>
-        </PanelBase>
-      )}
-    </>
+            </div>
+            <div className={styles.buttonContainer}>
+              <Button
+                variant='contained'
+                className={styles.buttton}
+                onClick={() => {}}
+              >
+                Salir
+              </Button>
+            </div>
+          </PanelBase>
+        )}
+      </>
   );
 };
 
