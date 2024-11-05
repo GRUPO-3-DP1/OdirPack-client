@@ -7,9 +7,9 @@ import { getFechaBloqueo } from '../../../../../data/bloqueos';
 import Bloqueo from '../../Bloqueo/Bloqueo';
 import PanelLeyenda from '../../../../Panels/PanelLeyenda/PanelLeyenda';
 import PanelPrincipal from '../../../../Panels/PanelPrincipal/PanelPrincipal';
-import OficinaMarker from '../../../../Markers/OficinaMarker/OficinaMarker';
+import OficinaMarker from './Markers/OficinaMarker/OficinaMarker';
 import oficinas from '../../../../../data/oficinas';
-import CamionMarker from '../../../../Markers/CamionMarker/CamionMarker';
+import CamionMarker from './Markers/CamionMarker/CamionMarker';
 import PanelResultados from '../../../../Panels/PanelResultados/PanelResultados';
 
 const Mapa: React.FC = () => {
