@@ -4,15 +4,23 @@ import MapaLeaflet from '../MapaLeaflet/Mapa';
 import { MapMarkersProvider } from '../../../../../context/MapMarker/MapMarkerContext';
 
 const BaseMap: React.FC = () => {
-  const isGoogleMaps = true;
+  const [isGoogleMaps, setIsGoogleMaps] = React.useState<boolean>(true);
   return (
-    <MapMarkersProvider>
-      {isGoogleMaps ?
-        <MapaGoogleMaps />
-        :
-        <MapaLeaflet />
-      }
-    </MapMarkersProvider>
+    <>
+      <button
+        className="mapa__button"
+        onClick={() => setIsGoogleMaps(!isGoogleMaps)}
+      >
+        {isGoogleMaps ? 'Cambiar a Leaflet' : 'Cambiar a Google Maps'}
+      </button>
+      <MapMarkersProvider>
+        {isGoogleMaps ?
+          <MapaGoogleMaps />
+          :
+          <MapaLeaflet />
+        }
+      </MapMarkersProvider>
+    </>
   );
 };
 
