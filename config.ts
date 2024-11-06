@@ -5,7 +5,7 @@ export const Services = {
     //BaseUrl:"http://54.235.188.31",
     //https://api.daoch.me
     //WebUrl: "ws://localhost:8081",
-    WebUrl: import.meta.env.VITE_WEB_URL || "ws://200.16.7.178/api",
+    WebUrl: import.meta.env.VITE_WEB_URL || "200.16.7.178/ws",
     Headers: {
         'Content-Type': 'application/json'
     },
