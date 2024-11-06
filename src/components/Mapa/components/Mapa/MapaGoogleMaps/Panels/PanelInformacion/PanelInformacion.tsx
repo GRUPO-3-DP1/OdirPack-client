@@ -1,6 +1,6 @@
 // PanelInformacion.tsx
 import { ControlPosition, MapControl } from '@vis.gl/react-google-maps';
-import React from 'react';
+import React, { useState } from 'react';
 import { useSimulation } from '../../../../../../../context/Simulacion/useSimulation';
 import {
   ExpandMore,
@@ -13,6 +13,11 @@ import {
   AccordionSummary,
   Typography,
   Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Button,
 } from '@mui/material';
 import dayjs from 'dayjs';
 import duration, { Duration } from 'dayjs/plugin/duration';
@@ -21,15 +26,19 @@ import styles from './PanelInformacion.module.css';
 dayjs.extend(duration);
 
 import { Oficina } from '../../Markers/OficinaMarker/OficinaMarker';
+import { Vehicle as Camion } from '../../../../../../../context/Simulacion/simulationTypes';
 
 interface PanelInformacionProps {
   show: boolean;
   selectedOficina: Oficina | null;
+  selectedCamion: Camion | null;
   operationType: 'semanal' | 'colapso' | 'diaadia';
 }
 
-const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOficina, operationType }) => {
+const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOficina, operationType, selectedCamion }) => {
   const { state } = useSimulation();
+  const [tipoAveria, setTipoAveria] = useState<string>('');
+
 
   if (!show) {
     return null;
@@ -76,7 +85,73 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOfici
   return (
     <MapControl position={ControlPosition.TOP_RIGHT}>
       <div className={styles.panel}>
-        {selectedOficina ? (
+        {selectedCamion ? (
+          // Información del camión seleccionado
+          <>
+            <Box
+              sx={{
+                backgroundColor: '#f5f5f5',
+                padding: '8px',
+                borderRadius: '4px',
+                marginBottom: '8px',
+              }}
+            >
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <div>
+                  <Typography variant="subtitle1" color="textPrimary">
+                    <b>Información del Camión</b>
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    <b>ID del Camión:</b>{' '}
+                    <Typography component="span" variant="body2" color="textPrimary">
+                      {selectedCamion.idVehiculo}
+                    </Typography>
+                  </Typography>
+                  {/* Otros detalles del camión pueden ir aquí */}
+                </div>
+              </Box>
+            </Box>
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="panel-averias-content"
+                id="panel-averias-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>Registrar Avería</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                  <InputLabel id="tipo-averia-label">Tipo de Avería</InputLabel>
+                  <Select
+                    labelId="tipo-averia-label"
+                    id="tipo-averia-select"
+                    value={tipoAveria}
+                    label="Tipo de Avería"
+                    onChange={(e) => setTipoAveria(e.target.value as string)}
+                  >
+                    <MenuItem value="tipo1">Tipo 1</MenuItem>
+                    <MenuItem value="tipo2">Tipo 2</MenuItem>
+                    <MenuItem value="tipo3">Tipo 3</MenuItem>
+                  </Select>
+                </FormControl>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  disabled={!tipoAveria}
+                  onClick={() => {
+                    console.log(`Avería registrada para el camión ${selectedCamion.idVehiculo}: ${tipoAveria}`);
+                    // Aquí puedes manejar la lógica para registrar la avería, por ejemplo, hacer una solicitud al servidor
+                  }}
+                >
+                  Registrar Avería
+                </Button>
+              </AccordionDetails>
+            </Accordion>
+          </>
+        ) : selectedOficina ? (
           // Información de la oficina seleccionada
           <>
             <Box
@@ -110,130 +185,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOfici
                 </Box>
               </Box>
             </Box>
-            <Accordion defaultExpanded disableGutters>
-              <AccordionSummary
-                expandIcon={<ExpandMore />}
-                aria-controls="panel1-content"
-                id="panel1-header"
-                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
-              >
-                <Typography variant="subtitle2" color="textPrimary">
-                  <b>Detalles de simulación</b>
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-                <Box>
-                  <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    sx={{ mb: 1 }}
-                  >
-                    <Box>
-                      <Typography variant="body2" color="textSecondary">
-                        Fecha y hora
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary">
-                        {dayjs(currentTime).format('DD/MM/YYYY HH:mm:ss')}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" color="textSecondary">
-                        Tiempo transcurrido
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary">
-                        {formattedElapsedTime}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              </AccordionDetails>
-            </Accordion>
-            <Accordion defaultExpanded disableGutters>
-              <AccordionSummary
-                expandIcon={<ExpandMore />}
-                aria-controls="panel2-content"
-                id="panel2-header"
-                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
-              >
-                <Typography variant="subtitle2" color="textPrimary">
-                  <b>Detalles de oficina</b>
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-                <Box>
-                  <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    sx={{ mb: 1 }}
-                  >
-                    <Box display="flex">
-                      <Typography variant="body2" color="textSecondary">
-                        Código:
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                        OFC-{selectedOficina.almacen}
-                      </Typography>
-                    </Box>
-                    <Box display="flex">
-                      <Typography variant="body2" color="textSecondary">
-                        Ubigeo:
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                        {selectedOficina.ubigeo}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Box display="flex">
-                      <Typography variant="body2" color="textSecondary">
-                        Latitud:
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                        {selectedOficina.latitud}
-                      </Typography>
-                    </Box>
-                    <Box display="flex">
-                      <Typography variant="body2" color="textSecondary">
-                        Longitud:
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                        {selectedOficina.longitud}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              </AccordionDetails>
-            </Accordion>
-            <Accordion defaultExpanded disableGutters>
-              <AccordionSummary
-                expandIcon={<ExpandMore />}
-                aria-controls="panel3-content"
-                id="panel3-header"
-                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
-              >
-                <Typography variant="subtitle2" color="textPrimary">
-                  <b>Operación</b>
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-                <Box>
-                  <Typography variant="body2" color="textSecondary">
-                    Cantidad de paquetes:{' '}
-                    <Typography component="span" variant="body2" color="textPrimary">
-                      200 / 500 (92%)
-                    </Typography>
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    Cantidad de paquetes recibidos:{' '}
-                    <Typography component="span" variant="body2" color="textPrimary">
-                      420
-                    </Typography>
-                  </Typography>
-                </Box>
-              </AccordionDetails>
-            </Accordion>
+            {/* Secciones de detalles de la oficina */}
           </>
         ) : (
           // Información de la simulación por defecto

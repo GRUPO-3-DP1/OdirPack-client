@@ -81,8 +81,9 @@ import Bloqueo from '../../Bloqueo/Bloqueo';
 import PanelLeyenda from './Panels/PanelLeyenda/PanelLeyenda';
 import PanelInformacion from './Panels/PanelInformacion/PanelInformacion';
 import OficinaMarker, { Oficina } from './Markers/OficinaMarker/OficinaMarker';
-import oficinas from '../../../../../data/oficinas';
 import CamionMarker from './Markers/CamionMarker/CamionMarker';
+import { Vehicle as Camion } from '../../../../../context/Simulacion/simulationTypes';
+import oficinas from '../../../../../data/oficinas';
 import PanelResultados from './Panels/PanelResultados/PanelResultados';
 import { useMapMarker } from '../../../../../context/MapMarker/useMapMarker';
 
@@ -91,7 +92,7 @@ interface MapaProps {
   operationType?: 'semanal' | 'colapso' | 'diaadia';
 }
 
-const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType= 'semanal' }) => {
+const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType = 'semanal' }) => {
   const { state } = useSimulation();
   const { bloqueos } = useArchivos();
   const { visibility } = useMapMarker();
@@ -102,14 +103,25 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType=
   // Estado para la oficina seleccionada
   const [selectedOficina, setSelectedOficina] = useState<Oficina | null>(null);
 
+  // Estado para el camión seleccionado
+  const [selectedCamion, setSelectedCamion] = useState<Camion | null>(null);
+
   // Maneja el clic en una oficina
   const handleOficinaClick = (oficina: Oficina) => {
     setSelectedOficina(oficina);
+    setSelectedCamion(null);
   };
 
   // Maneja el clic en el mapa para deseleccionar la oficina
   const handleMapClick = () => {
     setSelectedOficina(null);
+    setSelectedCamion(null);
+  };
+
+  // Maneja el clic en un camión
+  const handleCamionClick = (camion: Camion) => {
+    setSelectedCamion(camion);
+    setSelectedOficina(null); // Deselecciona cualquier oficina seleccionada
   };
 
   return (
@@ -128,11 +140,12 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType=
       >
         {/*Paneles */}
         <PanelLeyenda />
-        <PanelInformacion 
-            show={alwaysShowInfoPanel || state.isPlaying} 
-            selectedOficina={selectedOficina} 
-            operationType={operationType}
-          />
+        <PanelInformacion
+          show={alwaysShowInfoPanel || state.isPlaying}
+          selectedOficina={selectedOficina}
+          selectedCamion={selectedCamion}
+          operationType={operationType}
+        />
         <PanelResultados show={state.ends} />
         {/*MArkers */}
         {
@@ -176,6 +189,10 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType=
               key={vehicle.idVehiculo}
               camion={vehicle}
               title={`Vehículo ${vehicle.idVehiculo}`}
+              onClick={(e) => {
+                e.domEvent.stopPropagation(); // Evita que el evento se propague al mapa
+                handleCamionClick(vehicle);
+              }}
             />
           ))
         }
