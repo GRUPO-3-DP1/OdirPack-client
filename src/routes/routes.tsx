@@ -27,7 +27,11 @@ const routes: Route[] = [
     path: "/operaciones",
     name: 'Operaciones día a día',
     icon: <CellTowerOutlined />,
-    element: <Operaciones />,
+    element: (
+      <SimulationProvider>
+        <Operaciones />
+      </SimulationProvider>
+    )
   },
   {
     path: '/simulaciones',

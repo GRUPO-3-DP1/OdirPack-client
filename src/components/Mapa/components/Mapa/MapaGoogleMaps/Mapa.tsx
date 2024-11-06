@@ -82,13 +82,19 @@ import Bloqueo from '../../Bloqueo/Bloqueo';
 import PanelLeyenda from './Panels/PanelLeyenda/PanelLeyenda';
 import PanelInformacion from './Panels/PanelInformacion/PanelInformacion';
 import OficinaMarker, { Oficina } from './Markers/OficinaMarker/OficinaMarker';
-import oficinas from '../../../../../data/oficinas';
 import CamionMarker from './Markers/CamionMarker/CamionMarker';
+import { Vehicle as Camion } from '../../../../../context/Simulacion/simulationTypes';
+import oficinas from '../../../../../data/oficinas';
 import PanelResultados from './Panels/PanelResultados/PanelResultados';
 import { useMapMarker } from '../../../../../context/MapMarker/useMapMarker';
 import { obtenerDatosOficina, OficinaData } from '../../../../../store/services/oficinas'; // Importamos el servicio y el tipo
 
-const Mapa: React.FC = () => {
+interface MapaProps {
+  alwaysShowInfoPanel?: boolean;
+  operationType?: 'semanal' | 'colapso' | 'diaadia';
+}
+
+const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType = 'semanal' }) => {
   const { state } = useSimulation();
   const { bloqueos } = useArchivos();
   const { visibility } = useMapMarker();
@@ -99,6 +105,8 @@ const Mapa: React.FC = () => {
   // Estado para la oficina seleccionada
   const [selectedOficina, setSelectedOficina] = useState<Oficina | null>(null);
 
+  // Estado para el camión seleccionado
+  const [selectedCamion, setSelectedCamion] = useState<Camion | null>(null);
   // Estados para los datos de la oficina y el estado de carga
   const [oficinaData, setOficinaData] = useState<OficinaData | null>(null);
   const [loadingOficinaData, setLoadingOficinaData] = useState<boolean>(false);
@@ -106,11 +114,19 @@ const Mapa: React.FC = () => {
   // Maneja el clic en una oficina
   const handleOficinaClick = (oficina: Oficina) => {
     setSelectedOficina(oficina);
+    setSelectedCamion(null);
   };
 
   // Maneja el clic en el mapa para deseleccionar la oficina
   const handleMapClick = () => {
     setSelectedOficina(null);
+    setSelectedCamion(null);
+  };
+
+  // Maneja el clic en un camión
+  const handleCamionClick = (camion: Camion) => {
+    setSelectedCamion(camion);
+    setSelectedOficina(null); // Deselecciona cualquier oficina seleccionada
     setOficinaData(null); // Limpiamos los datos de la oficina
   };
 
@@ -153,8 +169,10 @@ const Mapa: React.FC = () => {
         {/* Paneles */}
         <PanelLeyenda />
         <PanelInformacion
-          show={state.isPlaying}
+          show={alwaysShowInfoPanel || state.isPlaying}
           selectedOficina={selectedOficina}
+          selectedCamion={selectedCamion}
+          operationType={operationType}
           oficinaData={oficinaData}
           loadingOficinaData={loadingOficinaData}
         />
@@ -199,6 +217,10 @@ const Mapa: React.FC = () => {
               key={vehicle.idVehiculo}
               camion={vehicle}
               title={`Vehículo ${vehicle.idVehiculo}`}
+              onClick={(e) => {
+                e.domEvent.stopPropagation(); // Evita que el evento se propague al mapa
+                handleCamionClick(vehicle);
+              }}
             />
           ))}
       </Map>

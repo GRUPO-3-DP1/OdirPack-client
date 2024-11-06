@@ -51,7 +51,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
   const [state, dispatch] = useReducer(simulationReducer, {
     isPlaying: false,
     vehicles: [],
-    speed: 800,
+    speed: 200,
     ends: false,
     startTime: new Date('2024-10-21T00:00:00Z'),
     currentTime: new Date('2024-10-21T00:00:00Z'),

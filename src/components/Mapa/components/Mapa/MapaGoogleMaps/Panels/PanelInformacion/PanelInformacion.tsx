@@ -1,6 +1,6 @@
 // PanelInformacion.tsx
 import { ControlPosition, MapControl } from '@vis.gl/react-google-maps';
-import React from 'react';
+import React, { useState } from 'react';
 import { useSimulation } from '../../../../../../../context/Simulacion/useSimulation';
 import {
   ExpandMore,
@@ -13,6 +13,11 @@ import {
   AccordionSummary,
   Typography,
   Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Button,
   CircularProgress, // Importamos CircularProgress para el indicador de carga
 } from '@mui/material';
 import dayjs from 'dayjs';
@@ -22,11 +27,14 @@ import styles from './PanelInformacion.module.css';
 dayjs.extend(duration);
 
 import { Oficina } from '../../Markers/OficinaMarker/OficinaMarker';
+import { Vehicle as Camion } from '../../../../../../../context/Simulacion/simulationTypes';
 import { OficinaData } from '../../../../../../../store/services/oficinas'; // Importamos OficinaData
 
 interface PanelInformacionProps {
   show: boolean;
   selectedOficina: Oficina | null;
+  selectedCamion: Camion | null;
+  operationType: 'semanal' | 'colapso' | 'diaadia';
   oficinaData: OficinaData | null; // Añadimos oficinaData
   loadingOficinaData: boolean;     // Añadimos loadingOficinaData
 }
@@ -36,8 +44,12 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   selectedOficina,
   oficinaData,
   loadingOficinaData,
+  selectedCamion,
+  operationType,
 }) => {
   const { state } = useSimulation();
+  const [tipoAveria, setTipoAveria] = useState<string>('');
+
 
   if (!show) {
     return null;
@@ -84,7 +96,168 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   return (
     <MapControl position={ControlPosition.TOP_RIGHT}>
       <div className={styles.panel}>
-        {selectedOficina ? (
+        {selectedCamion ? (
+          // Información del camión seleccionado
+          <>
+            <Box
+              sx={{
+                backgroundColor: '#f5f5f5',
+                padding: '8px',
+                borderRadius: '4px',
+                marginBottom: '8px',
+              }}
+            >
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <div>
+                  <Typography variant="subtitle1" color="textPrimary">
+                    <b>Información del Camión</b>
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    <b>Código del Camión:</b>{' '}
+                    <Typography component="span" variant="body2" color="textPrimary">
+                      {selectedCamion.idVehiculo}
+                    </Typography>
+                  </Typography>
+                </div>
+              </Box>
+            </Box>
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="panel1-content"
+                id="panel1-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>Detalles de simulación</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                <Box>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    sx={{ mb: 1 }}
+                  >
+                    <Box>
+                      <Typography variant="body2" color="textSecondary">
+                        Fecha y hora
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary">
+                        {dayjs(currentTime).format('DD/MM/YYYY HH:mm:ss')}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="textSecondary">
+                        Tiempo transcurrido
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary">
+                        {formattedElapsedTime}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="panel2-content"
+                id="panel2-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>Detalles de camión</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                <Box>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    sx={{ mb: 1 }}
+                  >
+                    <Box display="flex">
+                      <Typography variant="body2" color="textSecondary">
+                        Código:
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                        CMN-{selectedCamion.idVehiculo}
+                      </Typography>
+                    </Box>
+                    <Box display="flex">
+                      <Typography variant="body2" color="textSecondary">
+                        Tipo Camión:
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                        {selectedCamion.idVehiculo}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Box display="flex">
+                      <Typography variant="body2" color="textSecondary">
+                        Velocidad Máxima:
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                        {selectedCamion.idVehiculo}
+                      </Typography>
+                    </Box>
+                    <Box display="flex">
+                      <Typography variant="body2" color="textSecondary">
+                        Capacidedad Carga:
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                        {selectedCamion.idVehiculo}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="panel-averias-content"
+                id="panel-averias-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>Registrar Avería</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                  <InputLabel id="tipo-averia-label">Tipo de Avería</InputLabel>
+                  <Select
+                    labelId="tipo-averia-label"
+                    id="tipo-averia-select"
+                    value={tipoAveria}
+                    label="Tipo de Avería"
+                    onChange={(e) => setTipoAveria(e.target.value as string)}
+                  >
+                    <MenuItem value="tipo1">Tipo 1 - Dos horas detenido</MenuItem>
+                    <MenuItem value="tipo2">Tipo 2 - No disponible en 1 turno</MenuItem>
+                    <MenuItem value="tipo3">Tipo 3 - Mantenimiento correctivo</MenuItem>
+                  </Select>
+                </FormControl>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  disabled={!tipoAveria}
+                  onClick={() => {
+                    console.log(`Avería registrada para el camión ${selectedCamion.idVehiculo}: ${tipoAveria}`);
+                    // Aquí puedes manejar la lógica para registrar la avería, por ejemplo, hacer una solicitud al servidor
+                  }}
+                >
+                  Registrar Avería
+                </Button>
+              </AccordionDetails>
+            </Accordion>
+          </>
+        ) : selectedOficina ? (
           // Información de la oficina seleccionada
           <>
             <Box
@@ -271,24 +444,27 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <div>
                   <Typography variant="subtitle1" color="textPrimary">
-                    <b>Información de la simulación</b>
+                    <b>Información de la {operationType === 'diaadia' ? 'operación' : 'simulación'}</b>
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    <b>Simulación:</b>{' '}
+                    <b>{operationType === 'diaadia' ? 'Operación' : 'Simulación'}:</b>{' '}
                     <Typography component="span" variant="body2" color="textPrimary">
-                      Semanal
+                      {operationType === 'semanal' ? 'Semanal' : operationType === 'colapso' ? 'Hasta el colapso' : 'Día a día'}
                     </Typography>
                   </Typography>
                 </div>
-                <Box display="flex" flexDirection="column" alignItems="center">
-                  <AccessTimeFilled color="primary" sx={{ mb: 0.5 }} />
-                  <Typography variant="body2" color="textSecondary">
-                    <b>Completado:</b>{' '}
-                    <Typography component="span" variant="body2" color="textPrimary">
-                      {progressPercentage}%
+                {operationType !== 'diaadia' && (
+                  <Box display="flex" flexDirection="column" alignItems="center">
+                    <AccessTimeFilled color="primary" sx={{ mb: 0.5 }} />
+                    <Typography variant="body2" color="textSecondary">
+                      <b>Completado:</b>{' '}
+                      <Typography component="span" variant="body2" color="textPrimary">
+                        {progressPercentage}%
+                      </Typography>
                     </Typography>
-                  </Typography>
-                </Box>
+                  </Box>
+                )}
+
               </Box>
             </Box>
             <Accordion defaultExpanded disableGutters>
@@ -396,8 +572,8 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
             </Accordion>
           </>
         )}
-      </div>
-    </MapControl>
+      </div >
+    </MapControl >
   );
 };
 

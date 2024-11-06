@@ -2,11 +2,16 @@ import React from 'react';
 import styles from './layout.module.css';
 import Header from '../../components/Header/Header';
 import Page from './Page';
+import { useSimulation } from '../../context/Simulacion/useSimulation';
 
 const Layout: React.FC = () => {
+  const { state } = useSimulation();
+
   return (
     <div className={styles.container}>
-      <Header />
+      <Header isLoading={state.isPlaying}>
+        
+      </Header>
       <main className={styles.main}>
         <Page />
       </main>
