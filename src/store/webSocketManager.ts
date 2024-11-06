@@ -9,7 +9,7 @@ class WebSocketManager {
     }
 
     connect() {
-        this.socket = new WebSocket(`ws://${ServicesProperties.WebUrl}/conexion-websocket`);
+        this.socket = new WebSocket(`${ServicesProperties.WebUrl}/conexion-websocket`);
 
         this.socket.onopen = () => {
             console.log('Conexión WebSocket establecida');
