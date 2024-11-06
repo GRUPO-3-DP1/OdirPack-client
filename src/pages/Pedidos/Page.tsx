@@ -9,7 +9,7 @@ import {
 import { Add, UploadFile } from '@mui/icons-material';
 
 const Page: React.FC = () => {
-  const { pedidos} = useOperacion();
+  const {pedidos} = useOperacion();
 
   const [tipo, setTipo] = useState<string>('');
   const [pedidoId, setPedidoId] = useState('');

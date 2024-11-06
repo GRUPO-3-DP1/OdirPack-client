@@ -6,4 +6,5 @@ export type OperacionContextProps = {
   pedidos: Pedido[];
   planificando: boolean;
   setPlanificando: Dispatch<SetStateAction<boolean>>;
+  startTime: Date|null;
 };

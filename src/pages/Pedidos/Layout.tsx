@@ -12,22 +12,10 @@ const Layout: React.FC = () => {
   const startPlanificacion = async () => {
     console.log("startPlanificacion");
     setPlanificando(true);
-    await handleIniciarPlanificacion();
-  };
-
-  const handleIniciarPlanificacion = async () => {
-    try {
-      /*const response = await axios.post(
-        `${ServicesProperties.BaseUrl}/simulacion/iniciar?userId=${userId}`, dataPrueba,
-        { headers: ServicesProperties.Headers }
-      );*/
-      //console.log('Simulación iniciada, respuesta del servidor:', response.data);
-    } catch (error) {
-      console.error('Error al iniciar la simulación:', error);
-    }
   };
 
   const stopPlanificacion = () => {
+
     setPlanificando(false);
   };
 
