@@ -19,6 +19,6 @@ export const initialVisibilityState: VisibilityState = {
   almacenes: true,
   oficinas: true,
   camionesAveriados: true,
-  tramos: true,
+  tramos: false,
   tramosBloqueados: false,
 };
