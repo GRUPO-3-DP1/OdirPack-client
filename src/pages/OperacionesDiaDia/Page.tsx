@@ -5,6 +5,9 @@ import Mapa from '../../components/Mapa/components/Mapa/MapaGoogleMaps/Mapa';
 import { MapMarkersProvider } from '../../context/MapMarker/MapMarkerContext';
 
 const Page: React.FC = () => {
+  
+  //const{ pedidos }=useOperacion();
+
   return (
     <div className={styles.contenedor}>
       <MapMarkersProvider>

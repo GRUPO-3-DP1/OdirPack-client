@@ -32,15 +32,10 @@
 
 .title {
   font-size: 24px;
-  /* Tamaño de fuente más grande para el título */
   font-weight: bold;
-  /* Negrita */
   text-align: left;
-  /* Centrar el texto */
   margin-top: 20px;
-  /* Espacio encima del título */
   margin-bottom: 10px;
-  /* Espacio debajo del título */
 }
 
 .titlePanel {
@@ -72,6 +67,43 @@
   justify-content: center;
 }
 
+.headerContainer {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 60px;
+  margin-bottom: 20px;
+}
+
+.backButton {
+  border: 1px solid #3f51b5;
+  border-radius: 5px;
+  padding: 5px;
+  background-color: #e0e0e0;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.routeInfo {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  margin-top: 10px;
+}
+
+.routeInfo > div {
+  margin-right: 20px;
+}
+
+.routeInfo > div:last-child {
+  margin-right: 0;
+}
 .buttonContainer {
   display: flex;
   justify-content: end;
