@@ -1,13 +1,27 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { Archivo, ArchivosContextProps } from "./archivosTypes";
 import { generarUUID } from "../../utils/generarUUID";
 import { Bloqueo, parseBloqueoFile } from "../../data/bloqueos";
+import { createTramoMap, parseTramos, TramoMap } from "../../utils/routeParser";
+import { rutasString } from "../../data/rutasString";
+import oficinas from "../../data/oficinas";
 
 export const ArchivosContext = createContext<ArchivosContextProps | undefined>(undefined);
 
 export const ArchivosProvider: React.FC<{ children: React.ReactNode; }> = ({ children }) => {
   const [archivos, setArchivos] = useState<Archivo[]>([]);
+  const [rutas, setRutas] = useState<TramoMap>();
   const [bloqueos, setBloqueos] = useState<{ [mes: string]: Bloqueo[]; }>();
+
+  useEffect(() => {
+    const tramos = parseTramos(rutasString, oficinas);
+    setRutas(createTramoMap(tramos));
+    console.log(tramos);
+
+    return () => {
+      console.log("Componente ArchivosProvider desmontado");
+    };
+  }, []);
 
   const subirArchivo = (file: File) => {
     const nuevoArchivo: Archivo = {
@@ -63,7 +77,7 @@ export const ArchivosProvider: React.FC<{ children: React.ReactNode; }> = ({ chi
   };
 
   return (
-    <ArchivosContext.Provider value={{ archivos, bloqueos, subirArchivo, limpiarArchivos, eliminarArchivo }}>
+    <ArchivosContext.Provider value={{ archivos, bloqueos, rutas, subirArchivo, limpiarArchivos, eliminarArchivo }}>
       {children}
     </ArchivosContext.Provider>
   );

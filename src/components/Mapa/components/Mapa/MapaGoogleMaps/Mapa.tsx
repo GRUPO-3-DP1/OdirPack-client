@@ -87,10 +87,11 @@ import CamionMarker from './Markers/CamionMarker/CamionMarker';
 import PanelResultados from './Panels/PanelResultados/PanelResultados';
 import { useMapMarker } from '../../../../../context/MapMarker/useMapMarker';
 import { obtenerDatosOficina, OficinaData } from '../../../../../store/services/oficinas'; // Importamos el servicio y el tipo
+import Ruta from '../../Ruta/Ruta';
 
 const Mapa: React.FC = () => {
   const { state } = useSimulation();
-  const { bloqueos } = useArchivos();
+  const { bloqueos, rutas } = useArchivos();
   const { visibility } = useMapMarker();
 
   const currentTime = state.currentTime;
@@ -160,8 +161,23 @@ const Mapa: React.FC = () => {
         />
         <PanelResultados show={state.ends} />
 
+        {/* Rutas */}
+        {
+          visibility.tramos &&
+          rutas &&
+          Object.values(rutas).map((ruta) =>
+            ruta.connections.map((connection) => (
+              <Ruta
+                key={`${ruta.coords.lat}-${ruta.coords.lng}-${connection.coords.lat}-${connection.coords.lng}`}
+                inicio={ruta.coords}
+                fin={connection.coords}
+              />
+            ))
+          )
+        }
         {/* Marcadores */}
-        {visibility.tramosBloqueados &&
+        {
+          visibility.tramosBloqueados &&
           bloqueos &&
           state.isPlaying &&
           Object.entries(bloqueos).map(([, bloqueosDelMes]) =>
@@ -179,9 +195,11 @@ const Mapa: React.FC = () => {
               }
               return null;
             })
-          )}
+          )
+        }
 
-        {visibility.oficinas &&
+        {
+          visibility.oficinas &&
           oficinas.map((oficina, index) => (
             <OficinaMarker
               key={index}
@@ -191,16 +209,19 @@ const Mapa: React.FC = () => {
                 handleOficinaClick(oficina);
               }}
             />
-          ))}
+          ))
+        }
 
-        {visibility.camiones &&
+        {
+          visibility.camiones &&
           state.vehicles.map((vehicle) => (
             <CamionMarker
               key={vehicle.idVehiculo}
               camion={vehicle}
               title={`Vehículo ${vehicle.idVehiculo}`}
             />
-          ))}
+          ))
+        }
       </Map>
     </APIProvider>
   );
