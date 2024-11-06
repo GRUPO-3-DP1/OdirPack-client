@@ -70,8 +70,9 @@ export default Mapa;
 
 */
 
+
 // Mapa.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Importamos useEffect
 import { APIProvider, ColorScheme, Map } from '@vis.gl/react-google-maps';
 import styles from './Mapa.module.css';
 import { useSimulation } from '../../../../../context/Simulacion/useSimulation';
@@ -86,6 +87,7 @@ import { Vehicle as Camion } from '../../../../../context/Simulacion/simulationT
 import oficinas from '../../../../../data/oficinas';
 import PanelResultados from './Panels/PanelResultados/PanelResultados';
 import { useMapMarker } from '../../../../../context/MapMarker/useMapMarker';
+import { obtenerDatosOficina, OficinaData } from '../../../../../store/services/oficinas'; // Importamos el servicio y el tipo
 
 interface MapaProps {
   alwaysShowInfoPanel?: boolean;
@@ -105,6 +107,9 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
 
   // Estado para el camión seleccionado
   const [selectedCamion, setSelectedCamion] = useState<Camion | null>(null);
+  // Estados para los datos de la oficina y el estado de carga
+  const [oficinaData, setOficinaData] = useState<OficinaData | null>(null);
+  const [loadingOficinaData, setLoadingOficinaData] = useState<boolean>(false);
 
   // Maneja el clic en una oficina
   const handleOficinaClick = (oficina: Oficina) => {
@@ -122,10 +127,33 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
   const handleCamionClick = (camion: Camion) => {
     setSelectedCamion(camion);
     setSelectedOficina(null); // Deselecciona cualquier oficina seleccionada
+    setOficinaData(null); // Limpiamos los datos de la oficina
   };
 
+  // Efecto para obtener los datos de la oficina seleccionada
+  useEffect(() => {
+    const fetchOficinaData = async () => {
+      if (selectedOficina) {
+        setLoadingOficinaData(true);
+        try {
+          const data = await obtenerDatosOficina(selectedOficina.almacen);
+          setOficinaData(data);
+        } catch (error) {
+          console.error('Error al obtener datos de la oficina:', error);
+          setOficinaData(null); // Limpiamos los datos en caso de error
+        } finally {
+          setLoadingOficinaData(false);
+        }
+      } else {
+        setOficinaData(null); // Limpiamos los datos si no hay oficina seleccionada
+      }
+    };
+
+    fetchOficinaData();
+  }, [selectedOficina]);
+
   return (
-    <APIProvider apiKey="AIzaSyAf4vRvjVvt-AuStWjrfbA-tJNYouHBpb4">
+    <APIProvider apiKey="AIzaSyAf4vRvjVvt-AuStWjrfbA-tJNYouHBpb4"> {/* Reemplaza con tu API Key */}
       <Map
         className={styles.mapa}
         defaultCenter={{ lat: -11.566435, lng: -75.044072 }}
@@ -136,20 +164,22 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
         colorScheme={ColorScheme.LIGHT}
         mapId="49ae42fed52588c3"
         mapTypeId="roadmap"
-        onClick={handleMapClick}
+        onClick={handleMapClick} // Maneja el clic en el mapa
       >
-        {/*Paneles */}
+        {/* Paneles */}
         <PanelLeyenda />
         <PanelInformacion
           show={alwaysShowInfoPanel || state.isPlaying}
           selectedOficina={selectedOficina}
           selectedCamion={selectedCamion}
           operationType={operationType}
+          oficinaData={oficinaData}
+          loadingOficinaData={loadingOficinaData}
         />
         <PanelResultados show={state.ends} />
-        {/*MArkers */}
-        {
-          visibility.tramosBloqueados &&
+
+        {/* Marcadores */}
+        {visibility.tramosBloqueados &&
           bloqueos &&
           state.isPlaying &&
           Object.entries(bloqueos).map(([, bloqueosDelMes]) =>
@@ -167,10 +197,9 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
               }
               return null;
             })
-          )
-        }
-        {
-          visibility.oficinas &&
+          )}
+
+        {visibility.oficinas &&
           oficinas.map((oficina, index) => (
             <OficinaMarker
               key={index}
@@ -180,10 +209,9 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
                 handleOficinaClick(oficina);
               }}
             />
-          ))
-        }
-        {
-          visibility.camiones &&
+          ))}
+
+        {visibility.camiones &&
           state.vehicles.map((vehicle) => (
             <CamionMarker
               key={vehicle.idVehiculo}
@@ -194,8 +222,7 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
                 handleCamionClick(vehicle);
               }}
             />
-          ))
-        }
+          ))}
       </Map>
     </APIProvider>
   );

@@ -18,6 +18,7 @@ import {
   Select,
   MenuItem,
   Button,
+  CircularProgress, // Importamos CircularProgress para el indicador de carga
 } from '@mui/material';
 import dayjs from 'dayjs';
 import duration, { Duration } from 'dayjs/plugin/duration';
@@ -27,15 +28,25 @@ dayjs.extend(duration);
 
 import { Oficina } from '../../Markers/OficinaMarker/OficinaMarker';
 import { Vehicle as Camion } from '../../../../../../../context/Simulacion/simulationTypes';
+import { OficinaData } from '../../../../../../../store/services/oficinas'; // Importamos OficinaData
 
 interface PanelInformacionProps {
   show: boolean;
   selectedOficina: Oficina | null;
   selectedCamion: Camion | null;
   operationType: 'semanal' | 'colapso' | 'diaadia';
+  oficinaData: OficinaData | null; // Añadimos oficinaData
+  loadingOficinaData: boolean;     // Añadimos loadingOficinaData
 }
 
-const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOficina, operationType, selectedCamion }) => {
+const PanelInformacion: React.FC<PanelInformacionProps> = ({
+  show,
+  selectedOficina,
+  oficinaData,
+  loadingOficinaData,
+  selectedCamion,
+  operationType,
+}) => {
   const { state } = useSimulation();
   const [tipoAveria, setTipoAveria] = useState<string>('');
 
@@ -176,16 +187,153 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOfici
                 </div>
                 <Box display="flex" flexDirection="column" alignItems="center">
                   <Business color="primary" sx={{ mb: 0.5 }} />
-                  <Typography variant="body2" color="textSecondary">
-                    <b>Carga:</b>{' '}
-                    <Typography component="span" variant="body2" color="textPrimary">
-                      92%
+                  {loadingOficinaData ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    <Typography variant="body2" color="textSecondary">
+                      <b>Carga:</b>{' '}
+                      <Typography component="span" variant="body2" color="textPrimary">
+                        {oficinaData ? `${oficinaData.cargaPorcentaje}%` : 'N/A'}
+                      </Typography>
                     </Typography>
-                  </Typography>
+                  )}
                 </Box>
               </Box>
             </Box>
-            {/* Secciones de detalles de la oficina */}
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="panel1-content"
+                id="panel1-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>Detalles de simulación</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                <Box>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    sx={{ mb: 1 }}
+                  >
+                    <Box>
+                      <Typography variant="body2" color="textSecondary">
+                        Fecha y hora
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary">
+                        {dayjs(currentTime).format('DD/MM/YYYY HH:mm:ss')}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="textSecondary">
+                        Tiempo transcurrido
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary">
+                        {formattedElapsedTime}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="panel2-content"
+                id="panel2-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>Detalles de oficina</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                <Box>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    sx={{ mb: 1 }}
+                  >
+                    <Box display="flex">
+                      <Typography variant="body2" color="textSecondary">
+                        Código:
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                        OFC-{selectedOficina.almacen}
+                      </Typography>
+                    </Box>
+                    <Box display="flex">
+                      <Typography variant="body2" color="textSecondary">
+                        Ubigeo:
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                        {selectedOficina.ubigeo}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Box display="flex">
+                      <Typography variant="body2" color="textSecondary">
+                        Latitud:
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                        {selectedOficina.latitud}
+                      </Typography>
+                    </Box>
+                    <Box display="flex">
+                      <Typography variant="body2" color="textSecondary">
+                        Longitud:
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                        {selectedOficina.longitud}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="panel3-content"
+                id="panel3-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>Operación</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                {loadingOficinaData ? (
+                  <Box display="flex" justifyContent="center">
+                    <CircularProgress />
+                  </Box>
+                ) : oficinaData ? (
+                  <Box>
+                    <Typography variant="body2" color="textSecondary">
+                      Cantidad de paquetes:{' '}
+                      <Typography component="span" variant="body2" color="textPrimary">
+                        {oficinaData.cantidadPaquetes} / {oficinaData.capacidadTotal} ({oficinaData.cargaPorcentaje}%)
+                      </Typography>
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Cantidad de paquetes recibidos:{' '}
+                      <Typography component="span" variant="body2" color="textPrimary">
+                        {oficinaData.paquetesRecibidos}
+                      </Typography>
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="textSecondary">
+                    No se pudo obtener la información de la oficina.
+                  </Typography>
+                )}
+              </AccordionDetails>
+            </Accordion>
           </>
         ) : (
           // Información de la simulación por defecto
@@ -201,7 +349,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOfici
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <div>
                   <Typography variant="subtitle1" color="textPrimary">
-                  <b>Información de la {operationType === 'diaadia' ? 'operación' : 'simulación'}</b>
+                    <b>Información de la {operationType === 'diaadia' ? 'operación' : 'simulación'}</b>
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     <b>{operationType === 'diaadia' ? 'Operación' : 'Simulación'}:</b>{' '}
@@ -212,14 +360,14 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOfici
                 </div>
                 {operationType !== 'diaadia' && (
                   <Box display="flex" flexDirection="column" alignItems="center">
-                  <AccessTimeFilled color="primary" sx={{ mb: 0.5 }} />
-                  <Typography variant="body2" color="textSecondary">
-                    <b>Completado:</b>{' '}
-                    <Typography component="span" variant="body2" color="textPrimary">
-                      {progressPercentage}%
+                    <AccessTimeFilled color="primary" sx={{ mb: 0.5 }} />
+                    <Typography variant="body2" color="textSecondary">
+                      <b>Completado:</b>{' '}
+                      <Typography component="span" variant="body2" color="textPrimary">
+                        {progressPercentage}%
+                      </Typography>
                     </Typography>
-                  </Typography>
-                </Box>
+                  </Box>
                 )}
 
               </Box>
@@ -329,8 +477,8 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOfici
             </Accordion>
           </>
         )}
-      </div>
-    </MapControl>
+      </div >
+    </MapControl >
   );
 };
 
