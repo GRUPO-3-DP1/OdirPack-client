@@ -86,7 +86,12 @@ import CamionMarker from './Markers/CamionMarker/CamionMarker';
 import PanelResultados from './Panels/PanelResultados/PanelResultados';
 import { useMapMarker } from '../../../../../context/MapMarker/useMapMarker';
 
-const Mapa: React.FC = () => {
+interface MapaProps {
+  alwaysShowInfoPanel?: boolean;
+  operationType?: 'semanal' | 'colapso' | 'diaadia';
+}
+
+const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType= 'semanal' }) => {
   const { state } = useSimulation();
   const { bloqueos } = useArchivos();
   const { visibility } = useMapMarker();
@@ -123,7 +128,11 @@ const Mapa: React.FC = () => {
       >
         {/*Paneles */}
         <PanelLeyenda />
-        <PanelInformacion show={state.isPlaying} selectedOficina={selectedOficina} />
+        <PanelInformacion 
+            show={alwaysShowInfoPanel || state.isPlaying} 
+            selectedOficina={selectedOficina} 
+            operationType={operationType}
+          />
         <PanelResultados show={state.ends} />
         {/*MArkers */}
         {

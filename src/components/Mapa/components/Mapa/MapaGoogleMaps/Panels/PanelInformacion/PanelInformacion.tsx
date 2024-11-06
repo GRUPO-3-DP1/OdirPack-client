@@ -25,9 +25,10 @@ import { Oficina } from '../../Markers/OficinaMarker/OficinaMarker';
 interface PanelInformacionProps {
   show: boolean;
   selectedOficina: Oficina | null;
+  operationType: 'semanal' | 'colapso' | 'diaadia';
 }
 
-const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOficina }) => {
+const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOficina, operationType }) => {
   const { state } = useSimulation();
 
   if (!show) {
@@ -248,16 +249,17 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOfici
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <div>
                   <Typography variant="subtitle1" color="textPrimary">
-                    <b>Información de la simulación</b>
+                  <b>Información de la {operationType === 'diaadia' ? 'operación' : 'simulación'}</b>
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    <b>Simulación:</b>{' '}
+                    <b>{operationType === 'diaadia' ? 'Operación' : 'Simulación'}:</b>{' '}
                     <Typography component="span" variant="body2" color="textPrimary">
-                      Semanal
+                      {operationType === 'semanal' ? 'Semanal' : operationType === 'colapso' ? 'Hasta el colapso' : 'Día a día'}
                     </Typography>
                   </Typography>
                 </div>
-                <Box display="flex" flexDirection="column" alignItems="center">
+                {operationType !== 'diaadia' && (
+                  <Box display="flex" flexDirection="column" alignItems="center">
                   <AccessTimeFilled color="primary" sx={{ mb: 0.5 }} />
                   <Typography variant="body2" color="textSecondary">
                     <b>Completado:</b>{' '}
@@ -266,6 +268,8 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOfici
                     </Typography>
                   </Typography>
                 </Box>
+                )}
+
               </Box>
             </Box>
             <Accordion defaultExpanded disableGutters>
