@@ -34,7 +34,7 @@ const PanelLeyenda: React.FC<PanelLeyendaProps> = ({ show = true }) => {
               <ul className={styles.lista}>
                 {leyendaItems.map((item, index) =>
                   <li key={index} className={styles.item}>
-                    <Switch size='small' defaultChecked={visibility[item.name]} onClick={() => toggleVisibility(item.name)} />
+                    <Switch size='small' checked={visibility[item.name]} onClick={() => toggleVisibility(item.name)} />
                     <div>
                       {item.icon}
                     </div>
