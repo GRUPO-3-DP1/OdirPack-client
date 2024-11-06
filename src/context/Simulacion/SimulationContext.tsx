@@ -1,5 +1,5 @@
 // SimulationContext.tsx
-import React, { createContext, useReducer, useEffect, useState } from 'react';
+import React, { createContext, useReducer, useEffect, useState, useRef } from 'react';
 import oficinas from '../../data/oficinas';
 import { SimulationAction, SimulationState, Vehicle } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
@@ -14,10 +14,10 @@ export const SimulationContext = createContext<{
   solutions: ResponseAlgorithm[];
 } | null>(null);
 
-const locationCoordinates: Record<string, { lat: number; lng: number; }> = oficinas.reduce((acc, oficina) => {
+const locationCoordinates: Record<string, { lat: number; lng: number }> = oficinas.reduce((acc, oficina) => {
   acc[oficina.ubigeo] = { lat: oficina.latitud, lng: oficina.longitud };
   return acc;
-}, {} as Record<string, { lat: number; lng: number; }>);
+}, {} as Record<string, { lat: number; lng: number }>);
 
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
   switch (action.type) {
@@ -28,7 +28,7 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
         startTime: action.payload.startTime,
         currentTime: action.payload.startTime,
         endTime: action.payload.endTime,
-        ends: false
+        ends: false,
       };
     case 'STOP_SIMULATION':
       return { ...state, isPlaying: false };
@@ -41,52 +41,52 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
     case 'SET_VEHICLES':
       return { ...state, vehicles: action.payload };
     case 'UPDATE_SIMULATION_DATA':
-      return { ...state, ...action.payload }; // Agregamos esta acción para actualizar datos de simulación
+      return { ...state, ...action.payload }; // Acción para actualizar datos de simulación
     default:
       return state;
   }
 }
 
-export function SimulationProvider({ children }: { children: React.ReactNode; }) {
+export function SimulationProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(simulationReducer, {
     isPlaying: false,
     vehicles: [],
     speed: 800,
     ends: false,
-    startTime: new Date("2024-10-21T00:00:00Z"),
-    currentTime: new Date("2024-10-21T00:00:00Z"),
-    endTime: new Date("2024-10-28T00:00:00Z"),
+    startTime: new Date('2024-10-21T00:00:00Z'),
+    currentTime: new Date('2024-10-21T00:00:00Z'),
+    endTime: new Date('2024-10-28T00:00:00Z'),
     trucksInMotion: 0,        // Inicialmente 0
-    trucksInMaintenance: 0,   // Inicialmente 0 (puedes actualizarlo según tus datos)
+    trucksInMaintenance: 0,   // Inicialmente 0
     totalTrucks: 0,           // Se actualizará según los vehículos recibidos
-    totalOffices: oficinas.length,  // Total de oficinas basado en tu data
-    occupiedOffices: 0,       // Inicialmente 0 (puedes actualizarlo según tus datos)
+    totalOffices: oficinas.length,  // Total de oficinas basado en tus datos
+    occupiedOffices: 0,       // Inicialmente 0
     ordersDelivered: 0,       // Inicialmente 0
     ordersPending: 0,         // Inicialmente 0
   });
 
   const [userId, setUserId] = useState<string>('');
-
-  const [socketManager, setSocketManager] = useState<WebSocketManager | null>(null);
+  const socketManagerRef = useRef<WebSocketManager | null>(null); // Usamos useRef en lugar de useState
   const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]); // Arreglo para almacenar respuestas
 
   useEffect(() => {
-    const wsManager = new WebSocketManager((data) => {
+    socketManagerRef.current = new WebSocketManager((data) => {
       if (data.userId) {
         setUserId(data.userId);
       } else {
         const newResponse: ResponseAlgorithm = data;
-        console.log("Respuesta del algoritmo recibida:", newResponse);
+        console.log('Respuesta del algoritmo recibida:', newResponse);
         setSolutions((prevResponses) => [...prevResponses, newResponse]);
       }
     });
 
-    wsManager.connect();
-    setSocketManager(wsManager);
+    socketManagerRef.current.connect();
 
     // Cleanup para cerrar el WebSocket al desmontar
     return () => {
-      wsManager.close();
+      if (socketManagerRef.current) {
+        socketManagerRef.current.close();
+      }
     };
   }, []);
 
@@ -100,7 +100,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       // Convertir la solución a cadena para comparar
       const newSolutionString = JSON.stringify(newResponse.solucion);
 
-      console.log("Solución a Procesar ", newResponse);
+      console.log('Solución a procesar:', newResponse);
 
       if (newSolutionString !== lastProcessedSolution) {
         setLastProcessedSolution(newSolutionString); // Actualizar la solución procesada
@@ -110,7 +110,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         // Si es la primera respuesta y vehicles está vacío
         if (!state.vehicles || state.vehicles.length === 0) {
           dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
-          console.log("Primera respuesta: ", newVehicles);
+          console.log('Primera respuesta:', newVehicles);
 
           // Actualizar datos de simulación
           dispatch({
@@ -120,25 +120,26 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
             },
           });
         } else {
-          console.log("Procesando");
+          console.log('Procesando');
 
           // Fusionar vehículos existentes con los de la nueva solución
-          const updatedVehicles = state.vehicles.map(existingVehicle => {
-            const matchingNewVehicle = newVehicles.find(v => v.idVehiculo === existingVehicle.idVehiculo);
+          const updatedVehicles = state.vehicles.map((existingVehicle) => {
+            const matchingNewVehicle = newVehicles.find((v) => v.idVehiculo === existingVehicle.idVehiculo);
 
             if (matchingNewVehicle) {
               // Determina la posición
-              const newPosition = (existingVehicle.position.lat === 0)
-                ? {
-                  lat: matchingNewVehicle.position.lat,
-                  lng: matchingNewVehicle.position.lng,
-                  progress: 0,
-                  currentSegmentIndex: -1,
-                }
-                : existingVehicle.position;
-              const newFechaInicio = (existingVehicle.ruta.fechaInicio === null)
-                ? matchingNewVehicle.ruta.fechaInicio : existingVehicle.ruta.fechaInicio;
-              console.log("Encontró match", existingVehicle.idVehiculo);
+              const newPosition =
+                existingVehicle.position.lat === 0
+                  ? {
+                      lat: matchingNewVehicle.position.lat,
+                      lng: matchingNewVehicle.position.lng,
+                      progress: 0,
+                      currentSegmentIndex: -1,
+                    }
+                  : existingVehicle.position;
+              const newFechaInicio =
+                existingVehicle.ruta.fechaInicio === null ? matchingNewVehicle.ruta.fechaInicio : existingVehicle.ruta.fechaInicio;
+              console.log('Encontró match', existingVehicle.idVehiculo);
 
               return {
                 ...existingVehicle,
@@ -147,22 +148,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                 fechaLibre: matchingNewVehicle.fechaLibre,
                 ruta: {
                   fechaInicio: newFechaInicio,
-                  fechasSalida: [
-                    ...(existingVehicle.ruta.fechasSalida || []),
-                    ...(matchingNewVehicle.ruta.fechasSalida || []),
-                  ],
-                  fechasLlegada: [
-                    ...(existingVehicle.ruta.fechasLlegada || []),
-                    ...(matchingNewVehicle.ruta.fechasLlegada || []),
-                  ],
-                  tramos: [
-                    ...(existingVehicle.ruta.tramos || []),
-                    ...(matchingNewVehicle.ruta.tramos || []),
-                  ],
-                  pedidos: [
-                    ...(existingVehicle.ruta.pedidos || []),
-                    ...(matchingNewVehicle.ruta.pedidos || []),
-                  ],
+                  fechasSalida: [...(existingVehicle.ruta.fechasSalida || []), ...(matchingNewVehicle.ruta.fechasSalida || [])],
+                  fechasLlegada: [...(existingVehicle.ruta.fechasLlegada || []), ...(matchingNewVehicle.ruta.fechasLlegada || [])],
+                  tramos: [...(existingVehicle.ruta.tramos || []), ...(matchingNewVehicle.ruta.tramos || [])],
+                  pedidos: [...(existingVehicle.ruta.pedidos || []), ...(matchingNewVehicle.ruta.pedidos || [])],
                 },
               };
             }
@@ -182,9 +171,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
             },
           });
         }
-
       } else {
-        console.log("Es la misma solución");
+        console.log('Es la misma solución');
       }
 
       // Actualizar el índice para procesar la siguiente respuesta
@@ -200,11 +188,15 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       return convertedVehicles;
     }
 
-    const vehicles = solution.solucion.flatMap(item => {
-      if (!item.rutasVehiculos) { return []; }
+    const vehicles = solution.solucion.flatMap((item) => {
+      if (!item.rutasVehiculos) {
+        return [];
+      }
 
-      return Object.values(item.rutasVehiculos).flatMap(vehicleItem => {
-        if (!vehicleItem) { return []; }
+      return Object.values(item.rutasVehiculos).flatMap((vehicleItem) => {
+        if (!vehicleItem) {
+          return [];
+        }
         if (!vehicleItem.ruta) {
           return [];
         }
@@ -218,33 +210,33 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           capacidadCarga: vehicleItem.capacidadCarga,
           fechaLibre: vehicleItem.fechaLibre || null,
           ruta: {
-            tramos: vehicleItem.ruta.tramos.map(tramo => ({
+            tramos: vehicleItem.ruta.tramos.map((tramo) => ({
               origen: {
                 codigo: tramo.origen.codigo,
-                descripcion: tramo.origen.descripcion
+                descripcion: tramo.origen.descripcion,
               },
               destino: {
                 codigo: tramo.destino.codigo,
-                descripcion: tramo.destino.descripcion
-              }
+                descripcion: tramo.destino.descripcion,
+              },
             })),
-            pedidos: vehicleItem.ruta.pedidos.map(pedido => ({
+            pedidos: vehicleItem.ruta.pedidos.map((pedido) => ({
               idPedido: pedido.idPedido,
               ubigeoDestino: pedido.ubigeoDestino,
               fechaRegistro: pedido.fechaRegistro,
               cantidad: pedido.cantidad,
-              idCliente: pedido.idCliente
+              idCliente: pedido.idCliente,
             })),
             fechaInicio: vehicleItem.ruta.fechaInicio,
             fechasSalida: vehicleItem.ruta.fechasSalida,
-            fechasLlegada: vehicleItem.ruta.fechasLlegada
+            fechasLlegada: vehicleItem.ruta.fechasLlegada,
           },
           position: {
             lat: locationCoordinate.lat,
             lng: locationCoordinate.lng,
             progress: 0,
             currentSegmentIndex: -1,
-          }
+          },
         };
       });
     });
@@ -255,14 +247,14 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
   // Función para calcular camiones en movimiento
   const calculateTrucksInMotion = (vehicles: Vehicle[]): number => {
-    return vehicles.filter(vehicle => vehicle.position.currentSegmentIndex !== -1).length;
+    return vehicles.filter((vehicle) => vehicle.position.currentSegmentIndex !== -1).length;
   };
 
   // Función para calcular pedidos entregados
   const calculateOrdersDelivered = (vehicles: Vehicle[], currentTime: Date): number => {
     let deliveredOrders = 0;
 
-    vehicles.forEach(vehicle => {
+    vehicles.forEach((vehicle) => {
       const { ruta } = vehicle;
       for (let i = 0; i < ruta.fechasLlegada.length; i++) {
         const arrivalTime = new Date(ruta.fechasLlegada[i]);
@@ -280,7 +272,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     let totalOrders = 0;
     let deliveredOrders = 0;
 
-    vehicles.forEach(vehicle => {
+    vehicles.forEach((vehicle) => {
       totalOrders += vehicle.ruta.pedidos.length;
       const { ruta } = vehicle;
       for (let i = 0; i < ruta.fechasLlegada.length; i++) {
@@ -304,13 +296,13 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         dispatch({ type: 'STOP_SIMULATION' });
         clearInterval(updateInterval);
         state.ends = true;
-        console.log("Ya pasó la fecha límite");
+        console.log('Ya pasó la fecha límite');
         return;
       }
 
       dispatch({ type: 'SET_CURRENT_TIME', payload: newTime });
 
-      const updatedVehicles = state.vehicles.map(vehicle => {
+      const updatedVehicles = state.vehicles.map((vehicle) => {
         const { ruta } = vehicle;
         const startTime = new Date(ruta.fechaInicio);
         const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
@@ -384,7 +376,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           ordersPending: calculateOrdersPending(updatedVehicles, newTime),
         },
       });
-
     }, 1000 / state.speed);
 
     return () => clearInterval(updateInterval);
