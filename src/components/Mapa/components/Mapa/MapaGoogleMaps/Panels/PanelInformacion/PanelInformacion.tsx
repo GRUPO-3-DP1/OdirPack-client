@@ -113,15 +113,110 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                     <b>Información del Camión</b>
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    <b>ID del Camión:</b>{' '}
+                    <b>Código del Camión:</b>{' '}
                     <Typography component="span" variant="body2" color="textPrimary">
                       {selectedCamion.idVehiculo}
                     </Typography>
                   </Typography>
-                  {/* Otros detalles del camión pueden ir aquí */}
                 </div>
               </Box>
             </Box>
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="panel1-content"
+                id="panel1-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>Detalles de simulación</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                <Box>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    sx={{ mb: 1 }}
+                  >
+                    <Box>
+                      <Typography variant="body2" color="textSecondary">
+                        Fecha y hora
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary">
+                        {dayjs(currentTime).format('DD/MM/YYYY HH:mm:ss')}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="textSecondary">
+                        Tiempo transcurrido
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary">
+                        {formattedElapsedTime}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="panel2-content"
+                id="panel2-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>Detalles de camión</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                <Box>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    sx={{ mb: 1 }}
+                  >
+                    <Box display="flex">
+                      <Typography variant="body2" color="textSecondary">
+                        Código:
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                        CMN-{selectedCamion.idVehiculo}
+                      </Typography>
+                    </Box>
+                    <Box display="flex">
+                      <Typography variant="body2" color="textSecondary">
+                        Tipo Camión:
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                        {selectedCamion.idVehiculo}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Box display="flex">
+                      <Typography variant="body2" color="textSecondary">
+                        Velocidad Máxima:
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                        {selectedCamion.idVehiculo}
+                      </Typography>
+                    </Box>
+                    <Box display="flex">
+                      <Typography variant="body2" color="textSecondary">
+                        Capacidedad Carga:
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                        {selectedCamion.idVehiculo}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
             <Accordion defaultExpanded disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
@@ -143,9 +238,9 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                     label="Tipo de Avería"
                     onChange={(e) => setTipoAveria(e.target.value as string)}
                   >
-                    <MenuItem value="tipo1">Tipo 1</MenuItem>
-                    <MenuItem value="tipo2">Tipo 2</MenuItem>
-                    <MenuItem value="tipo3">Tipo 3</MenuItem>
+                    <MenuItem value="tipo1">Tipo 1 - Dos horas detenido</MenuItem>
+                    <MenuItem value="tipo2">Tipo 2 - No disponible en 1 turno</MenuItem>
+                    <MenuItem value="tipo3">Tipo 3 - Mantenimiento correctivo</MenuItem>
                   </Select>
                 </FormControl>
                 <Button
