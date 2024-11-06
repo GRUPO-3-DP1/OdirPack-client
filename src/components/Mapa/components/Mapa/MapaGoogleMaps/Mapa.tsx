@@ -84,10 +84,12 @@ import OficinaMarker, { Oficina } from './Markers/OficinaMarker/OficinaMarker';
 import oficinas from '../../../../../data/oficinas';
 import CamionMarker from './Markers/CamionMarker/CamionMarker';
 import PanelResultados from './Panels/PanelResultados/PanelResultados';
+import { useMapMarker } from '../../../../../context/MapMarker/useMapMarker';
 
 const Mapa: React.FC = () => {
   const { state } = useSimulation();
   const { bloqueos } = useArchivos();
+  const { visibility } = useMapMarker();
 
   const currentTime = state.currentTime;
   const currentYear = new Date().getFullYear();
@@ -119,7 +121,14 @@ const Mapa: React.FC = () => {
         mapTypeId="roadmap"
         onClick={handleMapClick}
       >
-        {bloqueos &&
+        {/*Paneles */}
+        <PanelLeyenda />
+        <PanelInformacion show={state.isPlaying} selectedOficina={selectedOficina} />
+        <PanelResultados show={state.ends} />
+        {/*MArkers */}
+        {
+          visibility.tramosBloqueados &&
+          bloqueos &&
           state.isPlaying &&
           Object.entries(bloqueos).map(([, bloqueosDelMes]) =>
             bloqueosDelMes.map((bloqueo) => {
@@ -136,27 +145,31 @@ const Mapa: React.FC = () => {
               }
               return null;
             })
-          )}
-        <PanelLeyenda />
-        <PanelInformacion show={state.isPlaying} selectedOficina={selectedOficina} />
-        {oficinas.map((oficina, index) => (
-          <OficinaMarker
-            key={index}
-            oficina={oficina}
-            onClick={(e) => {
-              e.domEvent.stopPropagation(); // Evita que el evento se propague al mapa
-              handleOficinaClick(oficina);
-            }}
-          />
-        ))}
-        {state.vehicles.map((vehicle) => (
-          <CamionMarker
-            key={vehicle.idVehiculo}
-            camion={vehicle}
-            title={`Vehículo ${vehicle.idVehiculo}`}
-          />
-        ))}
-        <PanelResultados show={state.ends} />
+          )
+        }
+        {
+          visibility.oficinas &&
+          oficinas.map((oficina, index) => (
+            <OficinaMarker
+              key={index}
+              oficina={oficina}
+              onClick={(e) => {
+                e.domEvent.stopPropagation(); // Evita que el evento se propague al mapa
+                handleOficinaClick(oficina);
+              }}
+            />
+          ))
+        }
+        {
+          visibility.camiones &&
+          state.vehicles.map((vehicle) => (
+            <CamionMarker
+              key={vehicle.idVehiculo}
+              camion={vehicle}
+              title={`Vehículo ${vehicle.idVehiculo}`}
+            />
+          ))
+        }
       </Map>
     </APIProvider>
   );

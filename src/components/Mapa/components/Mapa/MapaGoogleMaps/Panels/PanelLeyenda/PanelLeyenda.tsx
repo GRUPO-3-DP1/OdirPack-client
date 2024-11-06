@@ -2,17 +2,10 @@ import React, { useState } from 'react';
 import PanelBase from '../PanelBase/PanelBase';
 import { ControlPosition } from '@vis.gl/react-google-maps';
 import styles from './PanelLeyenda.module.css';
-import { IconButton } from '@mui/material';
-import { BuildCircle, Close, Home, LocalShipping, Map, ShowChart, Store } from '@mui/icons-material';
-
-const leyendaItems: { icon: JSX.Element, text: string; }[] = [
-  { icon: <LocalShipping sx={{ color: "blue" }} fontSize='small' />, text: "Camión" },
-  { icon: <Home sx={{ color: "black" }} fontSize='small' />, text: "Almacén" },
-  { icon: <Store sx={{ color: "blue" }} fontSize='small' />, text: "Oficina" },
-  { icon: <BuildCircle sx={{ color: "red" }} fontSize='small' />, text: "Camión Averiado" },
-  { icon: <ShowChart sx={{ color: "blue" }} fontSize='small' />, text: "Tramo" },
-  { icon: <ShowChart sx={{ color: "red" }} fontSize='small' />, text: "Bloqueo" },
-];
+import { IconButton, Switch } from '@mui/material';
+import { Close, Map } from '@mui/icons-material';
+import { leyendaItems } from '../../../../../../../data/leyendaItems';
+import { useMapMarker } from '../../../../../../../context/MapMarker/useMapMarker';
 
 type PanelLeyendaProps = {
   show?: boolean;
@@ -20,6 +13,7 @@ type PanelLeyendaProps = {
 
 const PanelLeyenda: React.FC<PanelLeyendaProps> = ({ show = true }) => {
   const [isOpen, setIsOpen] = useState(true);
+  const { visibility, toggleVisibility } = useMapMarker();
 
   return (
     <>
@@ -27,7 +21,6 @@ const PanelLeyenda: React.FC<PanelLeyendaProps> = ({ show = true }) => {
         isOpen ?
           <PanelBase show={show} position={ControlPosition.BOTTOM_LEFT} >
             <div className={styles.container}>
-
               <div className={styles.title}>
                 Leyenda
                 <IconButton
@@ -41,6 +34,7 @@ const PanelLeyenda: React.FC<PanelLeyendaProps> = ({ show = true }) => {
               <ul className={styles.lista}>
                 {leyendaItems.map((item, index) =>
                   <li key={index} className={styles.item}>
+                    <Switch size='small' defaultChecked={visibility[item.name]} onClick={() => toggleVisibility(item.name)} />
                     <div>
                       {item.icon}
                     </div>
@@ -48,7 +42,6 @@ const PanelLeyenda: React.FC<PanelLeyendaProps> = ({ show = true }) => {
                   </li>
                 )}
               </ul>
-
             </div>
           </PanelBase >
           :
