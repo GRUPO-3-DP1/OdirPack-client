@@ -13,6 +13,7 @@ import {
   AccordionSummary,
   Typography,
   Box,
+  CircularProgress, // Importamos CircularProgress para el indicador de carga
 } from '@mui/material';
 import dayjs from 'dayjs';
 import duration, { Duration } from 'dayjs/plugin/duration';
@@ -21,13 +22,21 @@ import styles from './PanelInformacion.module.css';
 dayjs.extend(duration);
 
 import { Oficina } from '../../Markers/OficinaMarker/OficinaMarker';
+import { OficinaData } from '../../../../../../../store/services/oficinas'; // Importamos OficinaData
 
 interface PanelInformacionProps {
   show: boolean;
   selectedOficina: Oficina | null;
+  oficinaData: OficinaData | null; // Añadimos oficinaData
+  loadingOficinaData: boolean;     // Añadimos loadingOficinaData
 }
 
-const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOficina }) => {
+const PanelInformacion: React.FC<PanelInformacionProps> = ({
+  show,
+  selectedOficina,
+  oficinaData,
+  loadingOficinaData,
+}) => {
   const { state } = useSimulation();
 
   if (!show) {
@@ -100,12 +109,16 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOfici
                 </div>
                 <Box display="flex" flexDirection="column" alignItems="center">
                   <Business color="primary" sx={{ mb: 0.5 }} />
-                  <Typography variant="body2" color="textSecondary">
-                    <b>Carga:</b>{' '}
-                    <Typography component="span" variant="body2" color="textPrimary">
-                      92%
+                  {loadingOficinaData ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    <Typography variant="body2" color="textSecondary">
+                      <b>Carga:</b>{' '}
+                      <Typography component="span" variant="body2" color="textPrimary">
+                        {oficinaData ? `${oficinaData.cargaPorcentaje}%` : 'N/A'}
+                      </Typography>
                     </Typography>
-                  </Typography>
+                  )}
                 </Box>
               </Box>
             </Box>
@@ -217,20 +230,30 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({ show, selectedOfici
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-                <Box>
-                  <Typography variant="body2" color="textSecondary">
-                    Cantidad de paquetes:{' '}
-                    <Typography component="span" variant="body2" color="textPrimary">
-                      200 / 500 (92%)
+                {loadingOficinaData ? (
+                  <Box display="flex" justifyContent="center">
+                    <CircularProgress />
+                  </Box>
+                ) : oficinaData ? (
+                  <Box>
+                    <Typography variant="body2" color="textSecondary">
+                      Cantidad de paquetes:{' '}
+                      <Typography component="span" variant="body2" color="textPrimary">
+                        {oficinaData.cantidadPaquetes} / {oficinaData.capacidadTotal} ({oficinaData.cargaPorcentaje}%)
+                      </Typography>
                     </Typography>
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    Cantidad de paquetes recibidos:{' '}
-                    <Typography component="span" variant="body2" color="textPrimary">
-                      420
+                    <Typography variant="body2" color="textSecondary">
+                      Cantidad de paquetes recibidos:{' '}
+                      <Typography component="span" variant="body2" color="textPrimary">
+                        {oficinaData.paquetesRecibidos}
+                      </Typography>
                     </Typography>
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="textSecondary">
+                    No se pudo obtener la información de la oficina.
                   </Typography>
-                </Box>
+                )}
               </AccordionDetails>
             </Accordion>
           </>

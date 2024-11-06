@@ -63,5 +63,6 @@ export type SimulationAction =
   | { type: 'SET_SPEED'; payload: number; }
   | { type: 'UPDATE_VEHICLE_POSITION'; payload: Vehicle[]; }
   | { type: 'SET_CURRENT_TIME'; payload: Date; }
-  | { type: 'SET_VEHICLES'; payload: Vehicle[]; };
+  | { type: 'SET_VEHICLES'; payload: Vehicle[]; }
+  | { type: 'UPDATE_SIMULATION_DATA'; payload: Partial<SimulationState>; }; //Nuevo recien creado
 
