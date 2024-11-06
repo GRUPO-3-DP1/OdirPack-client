@@ -24,7 +24,7 @@ class WebSocketManager {
         this.socket.onclose = () => {
             console.log('Conexión WebSocket cerrada');
         };
-        
+
     }
 
     close() {
@@ -33,7 +33,7 @@ class WebSocketManager {
             console.log('Conexión WebSocket cerrada');
         }
     }
-    
+
     getSocket() {
         return this.socket;
     }

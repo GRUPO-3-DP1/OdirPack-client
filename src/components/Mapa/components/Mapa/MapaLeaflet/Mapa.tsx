@@ -24,8 +24,8 @@ const Mapa: React.FC<MapaProps> = ({ children }) => {
 
   return (
     <MapContainer
-      center={[-11.566435, -75.044072]}
-      zoom={5}
+      center={[-9.566435, -72.044072]}
+      zoom={6}
       scrollWheelZoom={false}
       className={styles.map}
     >
