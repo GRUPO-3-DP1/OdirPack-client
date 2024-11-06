@@ -1,6 +1,6 @@
 export const Services = {
-    BaseUrl: import.meta.env.VITE_API_URL || "xd",
-    WebUrl: import.meta.env.VITE_WEBSOCKET_URL || "xd",
+    BaseUrl: import.meta.env.VITE_API_URL || "https://1inf54-982-3c.inf.pucp.edu.pe/api",
+    WebUrl: import.meta.env.VITE_WEBSOCKET_URL || "wss://1inf54-982-3c.inf.pucp.edu.pe/api",
     Headers: {
         'Content-Type': 'application/json'
     },
