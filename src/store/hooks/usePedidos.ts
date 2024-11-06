@@ -7,6 +7,7 @@ type PedidoHooksReturn = {
     loading: boolean;
     error: any;
     fetchPedidos: () => Promise<void>;
+    setPedidos: React.Dispatch<React.SetStateAction<Pedido[]>>;
 };
 
 function usePedidos(): PedidoHooksReturn {
@@ -28,7 +29,7 @@ function usePedidos(): PedidoHooksReturn {
         }
     }
 
-    return { pedidos, loading, error, fetchPedidos };
+    return { pedidos, loading, error, fetchPedidos, setPedidos };
 }
 
 export default usePedidos;
