@@ -1,6 +1,14 @@
 # Usa una imagen de Node para construir la aplicación
 FROM node:20 AS build
 WORKDIR /home/app
+
+ARG VITE_API_URL
+ARG VITE_WEBSOCKET_URL
+
+# Definir las variables de entorno
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_WEBSOCKET_URL=$VITE_WEBSOCKET_URL
+
 COPY . .
 RUN npm install
 RUN npm run build
