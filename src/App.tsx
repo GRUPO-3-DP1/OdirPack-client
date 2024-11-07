@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard/Dashboard';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { ArchivosProvider } from './context/Archivos/ArchivosContext';
+import { OperacionProvider } from './context/OperacionDia/OperacionContext';
 
 const customTheme = createTheme({
   palette: {
@@ -42,12 +43,14 @@ const router = createBrowserRouter([
 const App: React.FC = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <ArchivosProvider>
-        <ThemeProvider theme={customTheme}>
-          <CssBaseline />
-          <RouterProvider router={router} />
-        </ThemeProvider>
-      </ArchivosProvider>
+      <OperacionProvider>
+        <ArchivosProvider>
+          <ThemeProvider theme={customTheme}>
+            <CssBaseline />
+            <RouterProvider router={router} />
+          </ThemeProvider>
+        </ArchivosProvider>
+      </OperacionProvider>
     </LocalizationProvider>
   );
 };
