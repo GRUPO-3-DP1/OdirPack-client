@@ -1,10 +1,10 @@
 // SimulationContext.tsx
 import React, { createContext, useReducer, useEffect, useState, useRef } from 'react';
 import oficinas from '../../data/oficinas';
-import { SimulationAction, SimulationState, Vehicle, Oficina, Pedido, HoraStock } from './simulationTypes';
+import { SimulationAction, SimulationState, Vehicle, Oficina, Order } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
 import WebSocketManager from '../../store/webSocketManager';
-import { ResponseAlgorithm, OficinaAlgorithmResponse, PedidoAlgorithmResponse } from '../../store/types/ResponseAlgorithm';
+import { ResponseAlgorithm, OficinaAlgorithmResponse } from '../../store/types/ResponseAlgorithm';
 
 export const SimulationContext = createContext<{
   state: SimulationState;
@@ -277,8 +277,12 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
   // Función para convertir oficinas
   const convertOffices = (oficinasData: OficinaAlgorithmResponse[]): Oficina[] => {
     return oficinasData.map((oficinaData) => {
+      const matchingOficina = oficinas.find((o) => o.ubigeo === oficinaData.ubigeo);
+      if (!matchingOficina) {
+        throw new Error(`No se encontró una oficina con ubigeo ${oficinaData.ubigeo}`);
+      }
       return {
-        ubigeo: oficinaData.ubigeo,
+        ...matchingOficina,
         horasStock: oficinaData.horas_stock,
         currentOrders: [],
       };
@@ -289,7 +293,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
   const calculateOccupiedOffices = (offices: Oficina[]): number => {
     let occupied = 0;
     offices.forEach((office) => {
-      if (office.horasStock.some((horaStock) => horaStock.stock > 0)) {
+      if ((office.horasStock ?? []).some((horaStock) => horaStock.stock > 0)) {
         occupied += 1;
       }
     });
@@ -431,15 +435,17 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
 
       state.vehicles.forEach((vehicle) => {
         vehicle.ruta.pedidos.forEach((pedido) => {
-          const arrivalTime = new Date(pedido.fechaLlegada);
-          if (arrivalTime > state.currentTime && arrivalTime <= newTime) {
-            if (!state.processedOrderIds.includes(pedido.idPedido)) {
-              // Pedido llega a la oficina
-              arrivedOrders.push({
-                order: pedido,
-                arrivalTime: arrivalTime,
-                ubigeoDestino: pedido.ubigeoDestino,
-              });
+          if (pedido.fechaLlegada) {
+            const arrivalTime = new Date(pedido.fechaLlegada);
+            if (arrivalTime > state.currentTime && arrivalTime <= newTime) {
+              if (!state.processedOrderIds.includes(pedido.idPedido)) {
+                // Pedido llega a la oficina
+                arrivedOrders.push({
+                  order: pedido,
+                  arrivalTime: arrivalTime,
+                  ubigeoDestino: pedido.ubigeoDestino,
+                });
+              }
             }
           }
         });
@@ -453,7 +459,9 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
 
       // Procesar salidas de pedidos
       const updatedOffices = state.offices.map((office) => {
-        const updatedOffice = { ...office, currentOrders: [...office.currentOrders] };
+        //const updatedOffice = { ...office, currentOrders: [...office.currentOrders] };
+
+        const updatedOffice = { ...office, currentOrders: [...(office.currentOrders ?? [])] };
 
         // Agregar pedidos que llegan
         arrivedOrders.forEach((arrivedOrder) => {

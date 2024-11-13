@@ -18,7 +18,6 @@ import {
   Select,
   MenuItem,
   Button,
-  CircularProgress, // Importamos CircularProgress para el indicador de carga
 } from '@mui/material';
 import dayjs from 'dayjs';
 import duration, { Duration } from 'dayjs/plugin/duration';
@@ -28,7 +27,6 @@ dayjs.extend(duration);
 
 import { Oficina } from '../../../../../../../context/Simulacion/simulationTypes';
 import { Vehicle as Camion } from '../../../../../../../context/Simulacion/simulationTypes';
-import { OficinaData } from '../../../../../../../store/services/oficinas'; // Importamos OficinaData
 
 interface PanelInformacionProps {
   show: boolean;
@@ -55,8 +53,8 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     trucksInMotion,
     trucksInMaintenance,
     totalTrucks,
-    totalOffices,
-    occupiedOffices,
+    //totalOffices,
+    //occupiedOffices,
     ordersDelivered,
     ordersPending,
     startTime,
@@ -66,7 +64,8 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
 
   const officeData = state.offices.find((office) => office.ubigeo === selectedOficina?.ubigeo);
   // Calcula la carga actual
-  const currentLoad = officeData ? officeData.currentOrders.length : 'N/A';
+  //const currentLoad = officeData ? officeData.currentOrders.length : 'N/A';
+  const currentLoad = officeData ? (officeData.currentOrders?.length ?? 'N/A') : 'N/A';
   const maxCapacity = 60;
 
   const totalTime = endTime.getTime() - startTime.getTime();
@@ -74,7 +73,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   const progressPercentage = Math.floor((elapsedTime / totalTime) * 100);
 
   const fleetSaturation = `${trucksInMotion + trucksInMaintenance} / ${totalTrucks}`;
-  const officeSaturation = `${occupiedOffices} / ${totalOffices}`;
+  //const officeSaturation = `${occupiedOffices} / ${totalOffices}`;
 
   const elapsedDuration = dayjs.duration(elapsedTime);
   const formattedElapsedTime = formatElapsedTime(elapsedDuration);

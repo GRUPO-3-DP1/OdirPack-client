@@ -8,7 +8,7 @@ type RouteSegment = {
   destino: Location;
 };
 
-type Order = {
+export type Order = {
   idPedido: string;
   ubigeoDestino: string;
   fechaRegistro: string;
@@ -75,8 +75,8 @@ export type Oficina = {
   longitud: number;
   regionNatural: string;
   almacen: number;
-  horasStock: HoraStock[];
-  currentOrders: {
+  horasStock?: HoraStock[];
+  currentOrders?: {
     order: Order;
     arrivalTime: Date;
   }[];

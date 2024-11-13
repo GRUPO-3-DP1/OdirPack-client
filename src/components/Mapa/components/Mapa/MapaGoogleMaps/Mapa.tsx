@@ -72,7 +72,7 @@ export default Mapa;
 
 
 // Mapa.tsx
-import React, { useState, useEffect } from 'react'; // Importamos useEffect
+import React, { useState } from 'react'; // Importamos useEffect
 import { APIProvider, ColorScheme, Map } from '@vis.gl/react-google-maps';
 import styles from './Mapa.module.css';
 import { useSimulation } from '../../../../../context/Simulacion/useSimulation';
@@ -81,13 +81,15 @@ import { getFechaBloqueo } from '../../../../../data/bloqueos';
 import Bloqueo from '../../Bloqueo/Bloqueo';
 import PanelLeyenda from './Panels/PanelLeyenda/PanelLeyenda';
 import PanelInformacion from './Panels/PanelInformacion/PanelInformacion';
-import OficinaMarker, { Oficina } from './Markers/OficinaMarker/OficinaMarker';
+
+import OficinaMarker from './Markers/OficinaMarker/OficinaMarker';
+import { Oficina } from '../../../../../context/Simulacion/simulationTypes'; 
+
 import CamionMarker from './Markers/CamionMarker/CamionMarker';
 import { Vehicle as Camion } from '../../../../../context/Simulacion/simulationTypes';
 import oficinas from '../../../../../data/oficinas';
 import PanelResultados from './Panels/PanelResultados/PanelResultados';
 import { useMapMarker } from '../../../../../context/MapMarker/useMapMarker';
-import { obtenerDatosOficina, OficinaData } from '../../../../../store/services/oficinas'; // Importamos el servicio y el tipo
 import Ruta from '../../Ruta/Ruta';
 
 interface MapaProps {
@@ -109,8 +111,8 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
   // Estado para el camión seleccionado
   const [selectedCamion, setSelectedCamion] = useState<Camion | null>(null);
   // Estados para los datos de la oficina y el estado de carga
-  const [oficinaData, setOficinaData] = useState<OficinaData | null>(null);
-  const [loadingOficinaData, setLoadingOficinaData] = useState<boolean>(false);
+  //const [oficinaData, setOficinaData] = useState<OficinaData | null>(null);
+  //const [loadingOficinaData, setLoadingOficinaData] = useState<boolean>(false);
 
   // Maneja el clic en una oficina
   const handleOficinaClick = (oficina: Oficina) => {
@@ -128,30 +130,7 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
   const handleCamionClick = (camion: Camion) => {
     setSelectedCamion(camion);
     setSelectedOficina(null); // Deselecciona cualquier oficina seleccionada
-    setOficinaData(null); // Limpiamos los datos de la oficina
   };
-
-  // Efecto para obtener los datos de la oficina seleccionada
-  useEffect(() => {
-    const fetchOficinaData = async () => {
-      if (selectedOficina) {
-        setLoadingOficinaData(true);
-        try {
-          const data = await obtenerDatosOficina(selectedOficina.almacen);
-          setOficinaData(data);
-        } catch (error) {
-          console.error('Error al obtener datos de la oficina:', error);
-          setOficinaData(null); // Limpiamos los datos en caso de error
-        } finally {
-          setLoadingOficinaData(false);
-        }
-      } else {
-        setOficinaData(null); // Limpiamos los datos si no hay oficina seleccionada
-      }
-    };
-
-    fetchOficinaData();
-  }, [selectedOficina]);
 
   return (
     <APIProvider apiKey="AIzaSyAf4vRvjVvt-AuStWjrfbA-tJNYouHBpb4">
@@ -174,8 +153,6 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
           selectedOficina={selectedOficina}
           selectedCamion={selectedCamion}
           operationType={operationType}
-          oficinaData={oficinaData}
-          loadingOficinaData={loadingOficinaData}
         />
         <PanelResultados show={state.ends} />
 
