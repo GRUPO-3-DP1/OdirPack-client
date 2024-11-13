@@ -271,7 +271,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <div>
                   <Typography variant="subtitle1" color="textPrimary">
-                    <b>Información oficina</b>
+                    <b>Información de las oficinas</b>
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     <b>Oficina:</b>{' '}
@@ -391,44 +391,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 </Box>
               </AccordionDetails>
             </Accordion>
-            <Accordion defaultExpanded disableGutters>
-              <AccordionSummary
-                expandIcon={<ExpandMore />}
-                aria-controls="panel3-content"
-                id="panel3-header"
-                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
-              >
-                <Typography variant="subtitle2" color="textPrimary">
-                  <b>Operación</b>
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-                {loadingOficinaData ? (
-                  <Box display="flex" justifyContent="center">
-                    <CircularProgress />
-                  </Box>
-                ) : oficinaData ? (
-                  <Box>
-                    <Typography variant="body2" color="textSecondary">
-                      Cantidad de paquetes:{' '}
-                      <Typography component="span" variant="body2" color="textPrimary">
-                        {oficinaData.cantidadPaquetes} / {oficinaData.capacidadTotal} ({oficinaData.cargaPorcentaje}%)
-                      </Typography>
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      Cantidad de paquetes recibidos:{' '}
-                      <Typography component="span" variant="body2" color="textPrimary">
-                        {oficinaData.paquetesRecibidos}
-                      </Typography>
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Typography variant="body2" color="textSecondary">
-                    No se pudo obtener la información de la oficina.
-                  </Typography>
-                )}
-              </AccordionDetails>
-            </Accordion>
           </>
         ) : (
           // Información de la simulación por defecto
@@ -449,7 +411,11 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                   <Typography variant="body2" color="textSecondary">
                     <b>{operationType === 'diaadia' ? 'Operación' : 'Simulación'}:</b>{' '}
                     <Typography component="span" variant="body2" color="textPrimary">
-                      {operationType === 'semanal' ? 'Semanal' : operationType === 'colapso' ? 'Hasta el colapso' : 'Día a día'}
+                      {operationType === 'semanal'
+                        ? 'Semanal'
+                        : operationType === 'colapso'
+                        ? 'Hasta el colapso'
+                        : 'Día a día'}
                     </Typography>
                   </Typography>
                 </div>
@@ -464,9 +430,9 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                     </Typography>
                   </Box>
                 )}
-
               </Box>
             </Box>
+            {/* Accordion para Detalles de simulación */}
             <Accordion defaultExpanded disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
@@ -480,7 +446,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
                 <Box>
-                  {/* Mismo contenido que en PanelPrincipal */}
                   <Box
                     display="flex"
                     justifyContent="space-between"
@@ -504,76 +469,87 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                       </Typography>
                     </Box>
                   </Box>
-
-                  {/* Sección Camiones */}
-                  <Typography variant="subtitle2" color="textPrimary" sx={{ mt: 1 }}>
-                    <b>Camiones</b>
-                  </Typography>
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Box display="flex">
-                      <Typography variant="body2" color="textSecondary">
-                        En movimiento:
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                        {trucksInMotion}
-                      </Typography>
-                    </Box>
-                    <Box display="flex">
-                      <Typography variant="body2" color="textSecondary">
-                        En mantenimiento:
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                        {trucksInMaintenance}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Typography variant="body2" color="textSecondary" gutterBottom>
-                    Saturación de flota:{' '}
-                    <Typography component="span" variant="body2" color="textPrimary">
-                      {fleetSaturation}
-                    </Typography>
-                  </Typography>
-
-                  {/* Sección Oficinas */}
-                {/* <Typography variant="subtitle2" color="textPrimary" sx={{ mt: 1 }}>
-                  <b>Oficinas</b>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+            {/* Accordion para Detalles de camiones */}
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="panel-camiones-content"
+                id="panel-camiones-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>Detalles de camiones</b>
                 </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                {/* Contenido de Detalles de camiones */}
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Box display="flex">
+                    <Typography variant="body2" color="textSecondary">
+                      En movimiento:
+                    </Typography>
+                    <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                      {trucksInMotion}
+                    </Typography>
+                  </Box>
+                  <Box display="flex">
+                    <Typography variant="body2" color="textSecondary">
+                      En mantenimiento:
+                    </Typography>
+                    <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                      {trucksInMaintenance}
+                    </Typography>
+                  </Box>
+                </Box>
                 <Typography variant="body2" color="textSecondary" gutterBottom>
-                  Saturación de oficinas:{' '}
+                  Saturación de flota:{' '}
                   <Typography component="span" variant="body2" color="textPrimary">
-                    {officeSaturation}
+                    {fleetSaturation}
                   </Typography>
-                </Typography> */}
-
-                  {/* Sección Pedidos */}
-                  <Typography variant="subtitle2" color="textPrimary" sx={{ mt: 1 }}>
-                    <b>Pedidos</b>
-                  </Typography>
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Box display="flex">
-                      <Typography variant="body2" color="textSecondary">
-                        Entregados:
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                        {ordersDelivered}
-                      </Typography>
-                    </Box>
-                    <Box display="flex">
-                      <Typography variant="body2" color="textSecondary">
-                        Pendientes:
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                        {ordersPending}
-                      </Typography>
-                    </Box>
+                </Typography>
+              </AccordionDetails>
+            </Accordion>
+            {/* Accordion para Detalles de pedidos */}
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="panel-pedidos-content"
+                id="panel-pedidos-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>Detalles de pedidos</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                {/* Contenido de Detalles de pedidos */}
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Box display="flex">
+                    <Typography variant="body2" color="textSecondary">
+                      Entregados:
+                    </Typography>
+                    <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                      {ordersDelivered}
+                    </Typography>
+                  </Box>
+                  <Box display="flex">
+                    <Typography variant="body2" color="textSecondary">
+                      Pendientes:
+                    </Typography>
+                    <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                      {ordersPending}
+                    </Typography>
                   </Box>
                 </Box>
               </AccordionDetails>
             </Accordion>
           </>
         )}
-      </div >
-    </MapControl >
+      </div>
+    </MapControl>
   );
 };
 
