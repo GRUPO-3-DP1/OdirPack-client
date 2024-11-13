@@ -58,6 +58,7 @@ export type SimulationState = {
   ordersPending: number;         // Pedidos pendientes
   offices: Oficina[];             // Añadir oficinas
   unplannedOrders: Order[];      // Añadir pedidos no planificados
+  processedOrderIds: string[];
 };
 
 
@@ -68,20 +69,30 @@ export type HoraStock = {
 
 export type Oficina = {
   ubigeo: string;
+  departamento: string;
+  provincia: string;
+  latitud: number;
+  longitud: number;
+  regionNatural: string;
+  almacen: number;
   horasStock: HoraStock[];
+  currentOrders: {
+    order: Order;
+    arrivalTime: Date;
+  }[];
 };
 
-// export type Pedido = {
-//   idPedido: string;
-//   ubigeoOrigen: string | null;
-//   ubigeoDestino: string;
-//   fechaRegistro: string;
-//   fechaLlegada: string | null;
-//   fechaPlazoMaximo: string;
-//   cantidad: number;
-//   idCliente: string;
-//   estado: string;
-// };
+export type Pedido = {
+  idPedido: string;
+  ubigeoOrigen: string | null;
+  ubigeoDestino: string;
+  fechaRegistro: string;
+  fechaLlegada: string | null;
+  fechaPlazoMaximo: string;
+  cantidad: number;
+  idCliente: string;
+  estado: string;
+};
 
 export type SimulationAction =
   | { type: 'START_SIMULATION'; payload: { startTime: Date; endTime: Date; }; }
@@ -92,5 +103,6 @@ export type SimulationAction =
   | { type: 'SET_VEHICLES'; payload: Vehicle[]; }
   | { type: 'UPDATE_SIMULATION_DATA'; payload: Partial<SimulationState>; }
   | { type: 'SET_OFFICES'; payload: Oficina[] }                
-  | { type: 'SET_UNPLANNED_ORDERS'; payload: Order[] };   
+  | { type: 'SET_UNPLANNED_ORDERS'; payload: Order[] }
+  | { type: 'SET_PROCESSED_ORDER_IDS'; payload: string[] };   
   

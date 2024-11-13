@@ -26,7 +26,7 @@ import styles from './PanelInformacion.module.css';
 
 dayjs.extend(duration);
 
-import { Oficina } from '../../Markers/OficinaMarker/OficinaMarker';
+import { Oficina } from '../../../../../../../context/Simulacion/simulationTypes';
 import { Vehicle as Camion } from '../../../../../../../context/Simulacion/simulationTypes';
 import { OficinaData } from '../../../../../../../store/services/oficinas'; // Importamos OficinaData
 
@@ -35,15 +35,11 @@ interface PanelInformacionProps {
   selectedOficina: Oficina | null;
   selectedCamion: Camion | null;
   operationType: 'semanal' | 'colapso' | 'diaadia';
-  oficinaData: OficinaData | null; // Añadimos oficinaData
-  loadingOficinaData: boolean;     // Añadimos loadingOficinaData
 }
 
 const PanelInformacion: React.FC<PanelInformacionProps> = ({
   show,
   selectedOficina,
-  oficinaData,
-  loadingOficinaData,
   selectedCamion,
   operationType,
 }) => {
@@ -67,6 +63,11 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     currentTime,
     endTime,
   } = state;
+
+  const officeData = state.offices.find((office) => office.ubigeo === selectedOficina?.ubigeo);
+  // Calcula la carga actual
+  const currentLoad = officeData ? officeData.currentOrders.length : 'N/A';
+  const maxCapacity = 60;
 
   const totalTime = endTime.getTime() - startTime.getTime();
   const elapsedTime = currentTime.getTime() - startTime.getTime();
@@ -280,18 +281,15 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                     </Typography>
                   </Typography>
                 </div>
+
                 <Box display="flex" flexDirection="column" alignItems="center">
                   <Business color="primary" sx={{ mb: 0.5 }} />
-                  {loadingOficinaData ? (
-                    <CircularProgress size={20} />
-                  ) : (
-                    <Typography variant="body2" color="textSecondary">
-                      <b>Carga:</b>{' '}
-                      <Typography component="span" variant="body2" color="textPrimary">
-                        {oficinaData ? `${oficinaData.cargaPorcentaje}%` : 'N/A'}
-                      </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    <b>Carga:</b>{' '}
+                    <Typography component="span" variant="body2" color="textPrimary">
+                      {currentLoad !== 'N/A' ? `${currentLoad}/${maxCapacity}` : 'N/A'}
                     </Typography>
-                  )}
+                  </Typography>
                 </Box>
               </Box>
             </Box>
