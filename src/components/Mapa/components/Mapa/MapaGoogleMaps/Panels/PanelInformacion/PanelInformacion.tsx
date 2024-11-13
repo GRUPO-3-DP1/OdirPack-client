@@ -535,7 +535,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                   </Typography>
 
                   {/* Sección Oficinas */}
-                <Typography variant="subtitle2" color="textPrimary" sx={{ mt: 1 }}>
+                {/* <Typography variant="subtitle2" color="textPrimary" sx={{ mt: 1 }}>
                   <b>Oficinas</b>
                 </Typography>
                 <Typography variant="body2" color="textSecondary" gutterBottom>
@@ -543,7 +543,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                   <Typography component="span" variant="body2" color="textPrimary">
                     {officeSaturation}
                   </Typography>
-                </Typography>
+                </Typography> */}
 
                   {/* Sección Pedidos */}
                   <Typography variant="subtitle2" color="textPrimary" sx={{ mt: 1 }}>
