@@ -7,12 +7,15 @@ import {
   TextField
 } from '@mui/material';
 import { Add, UploadFile } from '@mui/icons-material';
+import ModalCargaMasiva from '../../components/Pedidos/ModalCargaMasiva';
 
 const Page: React.FC = () => {
   const {pedidos} = useOperacion();
 
   const [tipo, setTipo] = useState<string>('');
   const [pedidoId, setPedidoId] = useState('');
+  // Modal Carga Masiva
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handlePedidoIdChange = (event: { target: { value: React.SetStateAction<string>; }; }) => {
     setPedidoId(event.target.value);
@@ -22,10 +25,18 @@ const Page: React.FC = () => {
     setTipo(event.target.value);
   };
 
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <div className={styles.contenedor}>
       <Box display="flex" justifyContent="center" alignItems="center" gap={2} mb={2}>
-        {/* Input Número de Pedido con lupa */}
+        {/* Input Número de Pedido*/}
         <FormControl size="small" sx={{ flex: 1, minWidth: '170px' }}>
           <TextField
             id="numero-pedido-input"
@@ -60,7 +71,7 @@ const Page: React.FC = () => {
         <Button
           className={styles.button}
           variant="contained"
-          onClick={()=>{}}
+          onClick={handleOpenModal}
           startIcon= {<UploadFile/>}
         > Subir Archivo </Button>
       </Box>
@@ -93,6 +104,8 @@ const Page: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {isModalOpen && <ModalCargaMasiva onClose={handleCloseModal}/>}
     </div>
   );
 };

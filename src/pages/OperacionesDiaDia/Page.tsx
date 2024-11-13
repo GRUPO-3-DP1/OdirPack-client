@@ -10,9 +10,9 @@ const Page: React.FC = () => {
 
   return (
     <div className={styles.contenedor}>
-      <MapMarkersProvider>
+      {/*<MapMarkersProvider>
         <Mapa alwaysShowInfoPanel={true} operationType='diaadia'/>
-      </MapMarkersProvider>
+      </MapMarkersProvider*/}
     </div>
   );
 };

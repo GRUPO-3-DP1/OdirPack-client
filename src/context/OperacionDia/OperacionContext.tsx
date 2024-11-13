@@ -7,7 +7,6 @@ import usePedidos from '../../store/hooks/usePedidos';
 export const OperacionContext = createContext<OperacionContextProps | undefined>(undefined);
 
 export const OperacionProvider: React.FC<{ children: React.ReactNode; }> = ({ children }) => {
-  const [userId, setUserId] = useState<string>('');
   const {fetchPedidos, pedidos} = usePedidos();
   const [planificando, setPlanificando] = useState<boolean>(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
@@ -15,30 +14,10 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode; }> = ({ ch
   const speed = 100;
   const simulatedHoursToLog = 3;
   
-  // @ts-ignore
-  const [socketManager, setSocketManager] = useState<WebSocketManager | null>(null);
-    // @ts-ignore
-  const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]); // Arreglo para almacenar respuestas
-
   useEffect(() => {
-    const wsManager = new WebSocketManager((data) => {
-      if (data.userId) {
-        setUserId(data.userId);
-        console.log("El id del usuario:", userId);
-      } else {
-        const newResponse: ResponseAlgorithm = data;
-        console.log("Respuesta del algoritmo recibida:", newResponse);
-        setSolutions((prevResponses) => [...prevResponses, newResponse]);
-      }
-    });
-
-    wsManager.connect();
-    setSocketManager(wsManager);
+  
     fetchPedidos();
-
-    return () => {
-      wsManager.close();
-    };
+    
   }, []);
 
   const handleIniciarPlanificacion = async () => {
@@ -85,7 +64,7 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode; }> = ({ ch
   }, [planificando]);
 
   return (
-    <OperacionContext.Provider value={{ pedidos, planificando, setPlanificando, startTime }}>
+    <OperacionContext.Provider value={{ fetchPedidos,pedidos, planificando, setPlanificando, startTime }}>
       {children}
     </OperacionContext.Provider>
   );

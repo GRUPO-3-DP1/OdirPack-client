@@ -37,6 +37,7 @@ export type Vehicle = {
   fechaLibre: string | null;
   ruta: Route;
   position: VehiclePosition;
+  //averiado: boolean;
 };
 
 

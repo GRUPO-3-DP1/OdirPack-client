@@ -7,4 +7,5 @@ export type OperacionContextProps = {
   planificando: boolean;
   setPlanificando: Dispatch<SetStateAction<boolean>>;
   startTime: Date|null;
+  fetchPedidos: () => Promise<void>;
 };

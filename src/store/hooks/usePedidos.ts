@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getPedidos } from '../services/pedido';
+import { crearPedido, getPedidos } from '../services/pedido';
 import { Pedido } from '../types/Pedido';
 
 type PedidoHooksReturn = {
@@ -8,6 +8,7 @@ type PedidoHooksReturn = {
     error: any;
     fetchPedidos: () => Promise<void>;
     setPedidos: React.Dispatch<React.SetStateAction<Pedido[]>>;
+    createPedido: (pedidoData: { destinoId: string, cantidadTotal: number, clienteId: string }) => Promise<void>;
 };
 
 function usePedidos(): PedidoHooksReturn {
@@ -29,7 +30,22 @@ function usePedidos(): PedidoHooksReturn {
         }
     }
 
-    return { pedidos, loading, error, fetchPedidos, setPedidos };
+    // Función para crear un pedido
+    const createPedido = async (pedidoData: { destinoId: string, cantidadTotal: number, clienteId: string }) => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            await crearPedido(pedidoData);
+
+        } catch (err) {
+            setError("Error al crear el pedido: " + (err as Error).message);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return { pedidos, loading, error, fetchPedidos, setPedidos, createPedido};
 }
 
 export default usePedidos;
