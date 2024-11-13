@@ -154,7 +154,7 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
   }, [selectedOficina]);
 
   return (
-    <APIProvider apiKey="AIzaSyAf4vRvjVvt-AuStWjrfbA-tJNYouHBpb4"> {/* Reemplaza con tu API Key */}
+    <APIProvider apiKey="AIzaSyAf4vRvjVvt-AuStWjrfbA-tJNYouHBpb4">
       <Map
         className={styles.mapa}
         defaultCenter={{ lat: -11.566435, lng: -75.044072 }}

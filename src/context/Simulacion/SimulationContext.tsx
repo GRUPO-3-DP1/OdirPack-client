@@ -1,10 +1,10 @@
 // SimulationContext.tsx
 import React, { createContext, useReducer, useEffect, useState, useRef } from 'react';
 import oficinas from '../../data/oficinas';
-import { SimulationAction, SimulationState, Vehicle } from './simulationTypes';
+import { SimulationAction, SimulationState, Vehicle, Oficina, Pedido, HoraStock } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
 import WebSocketManager from '../../store/webSocketManager';
-import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
+import { ResponseAlgorithm, OficinaAlgorithmResponse, PedidoAlgorithmResponse } from '../../store/types/ResponseAlgorithm';
 
 export const SimulationContext = createContext<{
   state: SimulationState;
@@ -12,6 +12,7 @@ export const SimulationContext = createContext<{
   vehicles: Vehicle[];
   userId: string;
   solutions: ResponseAlgorithm[];
+  offices: Oficina[];
 } | null>(null);
 
 const locationCoordinates: Record<string, { lat: number; lng: number }> = oficinas.reduce((acc, oficina) => {
@@ -41,7 +42,11 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
     case 'SET_VEHICLES':
       return { ...state, vehicles: action.payload };
     case 'UPDATE_SIMULATION_DATA':
-      return { ...state, ...action.payload }; // Acción para actualizar datos de simulación
+      return { ...state, ...action.payload };
+    case 'SET_OFFICES':
+      return { ...state, offices: action.payload };
+    case 'SET_UNPLANNED_ORDERS':
+      return { ...state, unplannedOrders: action.payload };
     default:
       return state;
   }
@@ -56,18 +61,20 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
     startTime: new Date('2024-10-21T00:00:00Z'),
     currentTime: new Date('2024-10-21T00:00:00Z'),
     endTime: new Date('2024-10-28T00:00:00Z'),
-    trucksInMotion: 0,        // Inicialmente 0
-    trucksInMaintenance: 0,   // Inicialmente 0
-    totalTrucks: 0,           // Se actualizará según los vehículos recibidos
-    totalOffices: oficinas.length,  // Total de oficinas basado en tus datos
-    occupiedOffices: 0,       // Inicialmente 0
-    ordersDelivered: 0,       // Inicialmente 0
-    ordersPending: 0,         // Inicialmente 0
+    trucksInMotion: 0,
+    trucksInMaintenance: 0,
+    totalTrucks: 0,
+    totalOffices: oficinas.length,
+    occupiedOffices: 0,
+    ordersDelivered: 0,
+    ordersPending: 0,
+    offices: [],
+    unplannedOrders: [],
   });
 
   const [userId, setUserId] = useState<string>('');
-  const socketManagerRef = useRef<WebSocketManager | null>(null); // Usamos useRef en lugar de useState
-  const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]); // Arreglo para almacenar respuestas
+  const socketManagerRef = useRef<WebSocketManager | null>(null);
+  const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]);
 
   useEffect(() => {
     socketManagerRef.current = new WebSocketManager((data) => {
@@ -82,7 +89,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
 
     socketManagerRef.current.connect();
 
-    // Cleanup para cerrar el WebSocket al desmontar
     return () => {
       if (socketManagerRef.current) {
         socketManagerRef.current.close();
@@ -97,17 +103,22 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
     if (indexActualProcess < solutions.length) {
       const newResponse = solutions[indexActualProcess];
 
-      // Convertir la solución a cadena para comparar
       const newSolutionString = JSON.stringify(newResponse.solucion);
 
       console.log('Solución a procesar:', newResponse);
 
       if (newSolutionString !== lastProcessedSolution) {
-        setLastProcessedSolution(newSolutionString); // Actualizar la solución procesada
+        setLastProcessedSolution(newSolutionString);
 
         const newVehicles = convertSolutionToVehicles(newResponse);
 
-        // Si es la primera respuesta y vehicles está vacío
+        // Procesar oficinas
+        const newOffices = convertOffices(newResponse.oficinas);
+
+        // Procesar pedidos no planificados
+        const newUnplannedOrders = newResponse.pedidosNoPlanificados || [];
+
+        // Actualizar vehículos
         if (!state.vehicles || state.vehicles.length === 0) {
           dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
           console.log('Primera respuesta:', newVehicles);
@@ -117,6 +128,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
             type: 'UPDATE_SIMULATION_DATA',
             payload: {
               totalTrucks: newVehicles.length,
+              occupiedOffices: calculateOccupiedOffices(newOffices),
             },
           });
         } else {
@@ -127,7 +139,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
             const matchingNewVehicle = newVehicles.find((v) => v.idVehiculo === existingVehicle.idVehiculo);
 
             if (matchingNewVehicle) {
-              // Determina la posición
               const newPosition =
                 existingVehicle.position.lat === 0
                   ? {
@@ -168,9 +179,16 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
             type: 'UPDATE_SIMULATION_DATA',
             payload: {
               totalTrucks: updatedVehicles.length,
+              occupiedOffices: calculateOccupiedOffices(newOffices),
             },
           });
         }
+
+        // Actualizar oficinas en el estado
+        dispatch({ type: 'SET_OFFICES', payload: newOffices });
+
+        // Actualizar pedidos no planificados en el estado
+        dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: newUnplannedOrders });
       } else {
         console.log('Es la misma solución');
       }
@@ -205,6 +223,20 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
         const destinationCode = firstTramo ? firstTramo.destino.codigo : '';
         const locationCoordinate = locationCoordinates[destinationCode] || { lat: 0, lng: 0 };
 
+        // Crear un mapa de destino a fecha de llegada
+        const tramoDestinoFechaMap: Record<string, string> = {};
+        for (let i = 0; i < vehicleItem.ruta.tramos.length; i++) {
+          const tramo = vehicleItem.ruta.tramos[i];
+          const fechaLlegada = vehicleItem.ruta.fechasLlegada[i];
+          tramoDestinoFechaMap[tramo.destino.codigo] = fechaLlegada;
+        }
+
+        // Asignar fechaLlegada a cada pedido
+        const pedidos = vehicleItem.ruta.pedidos.map((pedido) => ({
+          ...pedido,
+          fechaLlegada: tramoDestinoFechaMap[pedido.ubigeoDestino] || null,
+        }));
+
         return {
           idVehiculo: vehicleItem.idVehiculo,
           capacidadCarga: vehicleItem.capacidadCarga,
@@ -220,13 +252,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
                 descripcion: tramo.destino.descripcion,
               },
             })),
-            pedidos: vehicleItem.ruta.pedidos.map((pedido) => ({
-              idPedido: pedido.idPedido,
-              ubigeoDestino: pedido.ubigeoDestino,
-              fechaRegistro: pedido.fechaRegistro,
-              cantidad: pedido.cantidad,
-              idCliente: pedido.idCliente,
-            })),
+            pedidos: pedidos,
             fechaInicio: vehicleItem.ruta.fechaInicio,
             fechasSalida: vehicleItem.ruta.fechasSalida,
             fechasLlegada: vehicleItem.ruta.fechasLlegada,
@@ -245,6 +271,27 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
     return convertedVehicles;
   };
 
+  // Función para convertir oficinas
+  const convertOffices = (oficinasData: OficinaAlgorithmResponse[]): Oficina[] => {
+    return oficinasData.map((oficinaData) => {
+      return {
+        ubigeo: oficinaData.ubigeo,
+        horasStock: oficinaData.horas_stock,
+      };
+    });
+  };
+
+  // Función para calcular oficinas ocupadas
+  const calculateOccupiedOffices = (offices: Oficina[]): number => {
+    let occupied = 0;
+    offices.forEach((office) => {
+      if (office.horasStock.some((horaStock) => horaStock.stock > 0)) {
+        occupied += 1;
+      }
+    });
+    return occupied;
+  };
+
   // Función para calcular camiones en movimiento
   const calculateTrucksInMotion = (vehicles: Vehicle[]): number => {
     return vehicles.filter((vehicle) => vehicle.position.currentSegmentIndex !== -1).length;
@@ -256,12 +303,14 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
 
     vehicles.forEach((vehicle) => {
       const { ruta } = vehicle;
-      for (let i = 0; i < ruta.fechasLlegada.length; i++) {
-        const arrivalTime = new Date(ruta.fechasLlegada[i]);
-        if (arrivalTime <= currentTime) {
-          deliveredOrders += 1;
+      ruta.pedidos.forEach((pedido) => {
+        if (pedido.fechaLlegada) {
+          const arrivalTime = new Date(pedido.fechaLlegada);
+          if (arrivalTime <= currentTime) {
+            deliveredOrders += 1;
+          }
         }
-      }
+      });
     });
 
     return deliveredOrders;
@@ -275,12 +324,14 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
     vehicles.forEach((vehicle) => {
       totalOrders += vehicle.ruta.pedidos.length;
       const { ruta } = vehicle;
-      for (let i = 0; i < ruta.fechasLlegada.length; i++) {
-        const arrivalTime = new Date(ruta.fechasLlegada[i]);
-        if (arrivalTime <= currentTime) {
-          deliveredOrders += 1;
+      ruta.pedidos.forEach((pedido) => {
+        if (pedido.fechaLlegada) {
+          const arrivalTime = new Date(pedido.fechaLlegada);
+          if (arrivalTime <= currentTime) {
+            deliveredOrders += 1;
+          }
         }
-      }
+      });
     });
 
     return totalOrders - deliveredOrders;
@@ -382,7 +433,9 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
   }, [state.isPlaying, state.currentTime, state.speed, state.endTime, state.vehicles, dispatch]);
 
   return (
-    <SimulationContext.Provider value={{ state, dispatch, vehicles: state.vehicles, userId, solutions }}>
+    <SimulationContext.Provider
+      value={{ state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices }}
+    >
       {children}
     </SimulationContext.Provider>
   );

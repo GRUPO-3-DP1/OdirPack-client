@@ -14,6 +14,7 @@ type Order = {
   fechaRegistro: string;
   cantidad: number;
   idCliente: string;
+  fechaLlegada: string | null;
 };
 
 type Route = {
@@ -55,7 +56,32 @@ export type SimulationState = {
   occupiedOffices: number;       // Oficinas ocupadas
   ordersDelivered: number;       // Pedidos entregados
   ordersPending: number;         // Pedidos pendientes
+  offices: Oficina[];             // Añadir oficinas
+  unplannedOrders: Order[];      // Añadir pedidos no planificados
 };
+
+
+export type HoraStock = {
+  hora: string;
+  stock: number;
+};
+
+export type Oficina = {
+  ubigeo: string;
+  horasStock: HoraStock[];
+};
+
+// export type Pedido = {
+//   idPedido: string;
+//   ubigeoOrigen: string | null;
+//   ubigeoDestino: string;
+//   fechaRegistro: string;
+//   fechaLlegada: string | null;
+//   fechaPlazoMaximo: string;
+//   cantidad: number;
+//   idCliente: string;
+//   estado: string;
+// };
 
 export type SimulationAction =
   | { type: 'START_SIMULATION'; payload: { startTime: Date; endTime: Date; }; }
@@ -64,5 +90,7 @@ export type SimulationAction =
   | { type: 'UPDATE_VEHICLE_POSITION'; payload: Vehicle[]; }
   | { type: 'SET_CURRENT_TIME'; payload: Date; }
   | { type: 'SET_VEHICLES'; payload: Vehicle[]; }
-  | { type: 'UPDATE_SIMULATION_DATA'; payload: Partial<SimulationState>; }; //Nuevo recien creado
-
+  | { type: 'UPDATE_SIMULATION_DATA'; payload: Partial<SimulationState>; }
+  | { type: 'SET_OFFICES'; payload: Oficina[] }                
+  | { type: 'SET_UNPLANNED_ORDERS'; payload: Order[] };   
+  
