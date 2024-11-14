@@ -28,9 +28,7 @@ const routes: Route[] = [
     name: 'Operaciones día a día',
     icon: <CellTowerOutlined />,
     element: (
-      <SimulationProvider>
-        <Operaciones />
-      </SimulationProvider>
+      <Operaciones />
     )
   },
   {

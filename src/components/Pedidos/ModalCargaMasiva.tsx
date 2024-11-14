@@ -10,7 +10,9 @@ interface ModalCargaMasivaProps {
 }
 
 const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
+  // @ts-ignore
   const [fileContent, setFileContent] = useState<string[]>([]);
+  
   const [parsedData, setParsedData] = useState<{ destinoId: string, cantidadTotal: number, clienteId: string }[]>([]);
   const [fileLoaded, setFileLoaded] = useState<boolean>(false); // Estado para saber si el archivo fue cargado
 
@@ -60,6 +62,7 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
       }
       alert('Todos los pedidos han sido subidos exitosamente');
       setFileLoaded(false); // Reiniciar estado
+      onClose();
     } catch (error) {
       console.error('Error al subir los pedidos:', error);
       alert('Hubo un error al subir los pedidos');

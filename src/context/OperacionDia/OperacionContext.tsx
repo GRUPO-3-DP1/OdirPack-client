@@ -1,7 +1,5 @@
 import { createContext, useEffect, useState } from "react";
 import { OperacionContextProps } from "./OperacionTypes";
-import WebSocketManager from "../../store/webSocketManager";
-import { ResponseAlgorithm } from "../../store/types/ResponseAlgorithm";
 import usePedidos from '../../store/hooks/usePedidos';
 
 export const OperacionContext = createContext<OperacionContextProps | undefined>(undefined);
@@ -13,12 +11,6 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode; }> = ({ ch
   const [intervalId, setIntervalId] = useState<number | null>(null);
   const speed = 100;
   const simulatedHoursToLog = 3;
-  
-  useEffect(() => {
-  
-    fetchPedidos();
-    
-  }, []);
 
   const handleIniciarPlanificacion = async () => {
     try {
@@ -35,6 +27,7 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode; }> = ({ ch
 
             // Verificar si han pasado 3 horas simuladas
             if (accumulatedSimulatedTime >= simulatedHoursToLog * 60 * 60 * 1000) {
+              
               console.log("Han pasado 3 horas simuladas desde el inicio");
               accumulatedSimulatedTime = 0;
             }

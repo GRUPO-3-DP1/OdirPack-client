@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './page.module.css';
 import { useOperacion } from '../../context/OperacionDia/useOperacion';
 import {
@@ -10,12 +10,11 @@ import { Add, UploadFile } from '@mui/icons-material';
 import ModalCargaMasiva from '../../components/Pedidos/ModalCargaMasiva';
 
 const Page: React.FC = () => {
-  const {pedidos} = useOperacion();
+  const {fetchPedidos,pedidos} = useOperacion();
 
   const [tipo, setTipo] = useState<string>('');
   const [pedidoId, setPedidoId] = useState('');
-  // Modal Carga Masiva
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal Carga Masiva
 
   const handlePedidoIdChange = (event: { target: { value: React.SetStateAction<string>; }; }) => {
     setPedidoId(event.target.value);
@@ -31,7 +30,12 @@ const Page: React.FC = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    fetchPedidos();
   };
+
+  useEffect(() => {
+    fetchPedidos();
+  }, []);
 
   return (
     <div className={styles.contenedor}>

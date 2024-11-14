@@ -23,6 +23,7 @@ function usePedidos(): PedidoHooksReturn {
         try {
             const data = await getPedidos();
             setPedidos(data); 
+            console.log("Se cargaron datos de BD");
         } catch (err) {
             setError("Error en usePedidos: " + (err as Error).message);
         } finally {
