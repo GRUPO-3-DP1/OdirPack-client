@@ -506,7 +506,9 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
       state.vehicles, 
       state.offices,
       state.processedOrderIds,
-      dispatch]);
+      dispatch,
+      state,
+    ]);
 
   return (
     <SimulationContext.Provider

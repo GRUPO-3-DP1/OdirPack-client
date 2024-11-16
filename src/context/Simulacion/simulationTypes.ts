@@ -11,6 +11,7 @@ type RouteSegment = {
 export type Order = {
   idPedido: string;
   ubigeoDestino: string;
+  ubigeoOrigen: string | null; //nuevo
   fechaRegistro: string;
   cantidad: number;
   idCliente: string;
