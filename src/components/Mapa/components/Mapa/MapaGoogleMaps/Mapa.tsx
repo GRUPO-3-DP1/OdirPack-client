@@ -119,7 +119,7 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
             })
           )
         }
-
+        {/* Oficinas */}
         {
           visibility.oficinas &&
           oficinas.map((oficina, index) => (
@@ -133,9 +133,10 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
             />
           ))
         }
-
+        {/* Camiones */}
         {
           visibility.camiones &&
+          state.isPlaying &&
           state.vehicles.map((vehicle) => (
             <CamionMarker
               key={vehicle.idVehiculo}
