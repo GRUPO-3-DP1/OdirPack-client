@@ -10,7 +10,7 @@ import PanelLeyenda from './Panels/PanelLeyenda/PanelLeyenda';
 import PanelInformacion from './Panels/PanelInformacion/PanelInformacion';
 
 import OficinaMarker from './Markers/OficinaMarker/OficinaMarker';
-import { Oficina } from '../../../../../context/Simulacion/simulationTypes'; 
+import { Oficina } from '../../../../../context/Simulacion/simulationTypes';
 
 import CamionMarker from './Markers/CamionMarker/CamionMarker';
 import { Vehicle as Camion } from '../../../../../context/Simulacion/simulationTypes';
@@ -58,7 +58,9 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
 
   return (
     //KEY = AIzaSyAf4vRvjVvt-AuStWjrfbA-tJNYouHBpb4
-    <APIProvider apiKey="AIzaSyAf4vRvjVvt-AuStWjrfbA-tJNYouHBpb4">
+    //KEY = AIzaSyBwA7pyze0XndTMMLOhspsQdFq8Xj52_eY
+    //KEY = AIzaSyCIm_MVTHuuOneXJhD16L4NZ2TOWdew07o
+    <APIProvider apiKey="AIzaSyBwA7pyze0XndTMMLOhspsQdFq8Xj52_eY">
       <Map
         className={styles.mapa}
         defaultCenter={{ lat: -11.566435, lng: -75.044072 }}

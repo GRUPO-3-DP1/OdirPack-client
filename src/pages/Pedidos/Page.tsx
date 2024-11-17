@@ -1,31 +1,30 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styles from './page.module.css';
-import { useOperacion } from '../../context/OperacionDia/useOperacion';
-import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, FormControl, InputLabel, Select, MenuItem,
-  SelectChangeEvent,
-  TextField
-} from '@mui/material';
-import { Add, UploadFile } from '@mui/icons-material';
+// import { useOperacion } from '../../context/OperacionDia/useOperacion';
+// import {
+//   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, FormControl, InputLabel, Select, MenuItem,
+//   SelectChangeEvent,
+//   TextField
+// } from '@mui/material';
+// import { Add, UploadFile } from '@mui/icons-material';
 
 const Page: React.FC = () => {
-  const {pedidos} = useOperacion();
+  // const {pedidos} = useOperacion();
 
-  const [tipo, setTipo] = useState<string>('');
-  const [pedidoId, setPedidoId] = useState('');
+  // const [tipo, setTipo] = useState<string>('');
+  // const [pedidoId, setPedidoId] = useState('');
 
-  const handlePedidoIdChange = (event: { target: { value: React.SetStateAction<string>; }; }) => {
-    setPedidoId(event.target.value);
-  };
+  // const handlePedidoIdChange = (event: { target: { value: React.SetStateAction<string>; }; }) => {
+  //   setPedidoId(event.target.value);
+  // };
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setTipo(event.target.value);
-  };
+  // const handleChange = (event: SelectChangeEvent) => {
+  //   setTipo(event.target.value);
+  // };
 
   return (
     <div className={styles.contenedor}>
-      <Box display="flex" justifyContent="center" alignItems="center" gap={2} mb={2}>
-        {/* Input Número de Pedido con lupa */}
+      {/* <Box display="flex" justifyContent="center" alignItems="center" gap={2} mb={2}>
         <FormControl size="small" sx={{ flex: 1, minWidth: '170px' }}>
           <TextField
             id="numero-pedido-input"
@@ -49,14 +48,12 @@ const Page: React.FC = () => {
             <MenuItem value="entregado">Delivered</MenuItem>
           </Select>
         </FormControl>
-        {/* Botón Nuevo Pedido */}
         <Button
           className={styles.button}
           variant="contained"
           onClick={()=>{}}
           startIcon= {<Add/>}
         > Nuevo Pedido </Button>
-        {/* Botón Subir Archivo */}
         <Button
           className={styles.button}
           variant="contained"
@@ -92,22 +89,22 @@ const Page: React.FC = () => {
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
+      </TableContainer> */}
     </div>
   );
 };
 
 export default Page;
 
-const formatDate = (isoDate: string) => {
-  const date = new Date(isoDate);
-  return date.toLocaleString('es-PE', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false // 24-hour format
-  });
-};
+// const formatDate = (isoDate: string) => {
+//   const date = new Date(isoDate);
+//   return date.toLocaleString('es-PE', {
+//     year: 'numeric',
+//     month: '2-digit',
+//     day: '2-digit',
+//     hour: '2-digit',
+//     minute: '2-digit',
+//     second: '2-digit',
+//     hour12: false // 24-hour format
+//   });
+// };
