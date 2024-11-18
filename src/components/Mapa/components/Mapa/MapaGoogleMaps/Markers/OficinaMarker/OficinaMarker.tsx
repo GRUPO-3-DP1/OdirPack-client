@@ -1,9 +1,9 @@
 // OficinaMarker.tsx
 import React from 'react';
 import { AdvancedMarker, AdvancedMarkerProps } from '@vis.gl/react-google-maps';
-import { Store } from '@mui/icons-material';
+import { Home, Store } from '@mui/icons-material';
 import styles from './OficinaMarker.module.css';
-import { Oficina } from '../../../../../../../context/Simulacion/simulationTypes';
+import { Oficina } from '../../../../../../../data/oficinas';
 
 interface OficinaMarkerProps extends Omit<AdvancedMarkerProps, 'position'> {
   oficina: Oficina;
@@ -13,11 +13,13 @@ interface OficinaMarkerProps extends Omit<AdvancedMarkerProps, 'position'> {
 
 const OficinaMarker: React.FC<OficinaMarkerProps> = ({ oficina, ocupacion = 'baja', onClick, ...markerProps }) => {
 
-  const color = {
+  const espacio = {
     baja: '#34A853',
     media: '#FBBC05',
     alta: '#EA4335',
   }[ocupacion];
+
+  const color: string = oficina.isAlmacen ? 'black' : espacio;
 
   return (
     <AdvancedMarker
@@ -26,13 +28,20 @@ const OficinaMarker: React.FC<OficinaMarkerProps> = ({ oficina, ocupacion = 'baj
       {...markerProps}
     >
       <div className={styles.iconWrapper} style={
-        { border: '2px solid' + color }
+        { border: '2px solid ' + color }
       }>
-        <Store
-          className={styles.storeIcon}
-          style={{ color: color }}
-          fontSize='small'
-        />
+        {oficina.isAlmacen ?
+          <Home
+            style={{ color: color }}
+            fontSize='small'
+          />
+          :
+          <Store
+            style={{ color: color }}
+            fontSize='small'
+          />
+        }
+
       </div>
     </AdvancedMarker>
   );
