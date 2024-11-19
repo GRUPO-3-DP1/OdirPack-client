@@ -4,7 +4,7 @@ import oficinas from '../../data/oficinas';
 import { SimulationAction, SimulationState, Vehicle, Oficina, Order } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
 import WebSocketManager from '../../store/webSocketManager';
-import { ResponseAlgorithm, OficinaAlgorithmResponse } from '../../store/types/ResponseAlgorithm';
+import { PedidoAlgorithmResponse, ResponseAlgorithm, OficinaAlgorithmResponse } from '../../store/types/ResponseAlgorithm';
 
 export const SimulationContext = createContext<{
   state: SimulationState;
@@ -19,6 +19,39 @@ const locationCoordinates: Record<string, { lat: number; lng: number }> = oficin
   acc[oficina.ubigeo] = { lat: oficina.latitud, lng: oficina.longitud };
   return acc;
 }, {} as Record<string, { lat: number; lng: number }>);
+
+function convertUnplannedPedidosToOrders(pedidos: PedidoAlgorithmResponse[]): Order[] {
+  return pedidos.map((pedido) => ({
+    idPedido: pedido.idPedido,
+    ubigeoDestino: pedido.ubigeoDestino,
+    ubigeoOrigen: pedido.ubigeoOrigen,
+    fechaRegistro: pedido.fechaRegistro,
+    cantidad: pedido.cantidad,
+    idCliente: pedido.idCliente,
+    fechaLlegada: null,      // No tienen fecha de llegada aún
+    fechaRecogida: null,     // No tienen fecha de recogida aún
+  }));
+}
+
+function convertPedidosToOrders(
+  pedidos: PedidoAlgorithmResponse[],
+  tramoDestinoFechaMap: Record<string, string>,
+  tramoOrigenFechaMap: Record<string, string>,
+  rutaFechaInicio: string
+): Order[] {
+  return pedidos.map((pedido) => ({
+    idPedido: pedido.idPedido,
+    ubigeoDestino: pedido.ubigeoDestino,
+    ubigeoOrigen: pedido.ubigeoOrigen,
+    fechaRegistro: pedido.fechaRegistro,
+    cantidad: pedido.cantidad,
+    idCliente: pedido.idCliente,
+    fechaLlegada: tramoDestinoFechaMap[pedido.ubigeoDestino] || null,
+    fechaRecogida: pedido.ubigeoOrigen
+      ? tramoOrigenFechaMap[pedido.ubigeoOrigen] || rutaFechaInicio
+      : rutaFechaInicio,
+  }));
+}
 
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
   switch (action.type) {
@@ -70,7 +103,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
     occupiedOffices: 0,
     ordersDelivered: 0,
     ordersPending: 0,
-    offices: [],
+    offices: oficinas,
     unplannedOrders: [],
     processedOrderIds: [],
   });
@@ -118,8 +151,25 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
         // Procesar oficinas
         const newOffices = convertOffices(newResponse.oficinas);
 
+        // Fusionar oficinas
+        const mergedOffices = state.offices.map((office) => {
+          const updatedOffice = newOffices.find((o) => o.ubigeo === office.ubigeo);
+          if (updatedOffice) {
+            return {
+              ...office,
+              ...updatedOffice,
+            };
+          }
+          return office;
+        });
+
+        dispatch({ type: 'SET_OFFICES', payload: mergedOffices });
+
         // Procesar pedidos no planificados
-        const newUnplannedOrders = newResponse.pedidosNoPlanificados || [];
+        const newUnplannedOrders = newResponse.pedidosNoPlanificados || [];    
+        
+        // Convertir pedidos no planificados a Order[]
+        const unplannedOrders: Order[] = convertUnplannedPedidosToOrders(newUnplannedOrders);
 
         // Actualizar vehículos
         if (!state.vehicles || state.vehicles.length === 0) {
@@ -191,7 +241,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
         dispatch({ type: 'SET_OFFICES', payload: newOffices });
 
         // Actualizar pedidos no planificados en el estado
-        dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: newUnplannedOrders });
+        dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: unplannedOrders });
       } else {
         console.log('Es la misma solución');
       }
@@ -199,7 +249,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
       // Actualizar el índice para procesar la siguiente respuesta
       setIndexActualProcess(indexActualProcess + 1);
     }
-  }, [indexActualProcess, solutions, lastProcessedSolution, state.vehicles, dispatch]);
+  }, [indexActualProcess, solutions, lastProcessedSolution, state.vehicles, dispatch, state.offices]);
 
   // Función para convertir una solución a vehículos
   const convertSolutionToVehicles = (solution: ResponseAlgorithm): Vehicle[] => {
@@ -234,11 +284,22 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
           tramoDestinoFechaMap[tramo.destino.codigo] = fechaLlegada;
         }
 
+        // Crear un mapa de origen a fecha de salida
+        const tramoOrigenFechaMap: Record<string, string> = {};
+        for (let i = 0; i < vehicleItem.ruta.tramos.length; i++) {
+          const tramo = vehicleItem.ruta.tramos[i];
+          const fechaSalida = vehicleItem.ruta.fechasSalida[i];
+          tramoOrigenFechaMap[tramo.origen.codigo] = fechaSalida;
+        }
+
+
         // Asignar fechaLlegada a cada pedido
-        const pedidos = vehicleItem.ruta.pedidos.map((pedido) => ({
-          ...pedido,
-          fechaLlegada: tramoDestinoFechaMap[pedido.ubigeoDestino] || null,
-        }));
+        const pedidos: Order[] = convertPedidosToOrders(
+          vehicleItem.ruta.pedidos,
+          tramoDestinoFechaMap,
+          tramoOrigenFechaMap,
+          vehicleItem.ruta.fechaInicio
+        );
 
         return {
           idVehiculo: vehicleItem.idVehiculo,
@@ -459,8 +520,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
 
       // Procesar salidas de pedidos
       const updatedOffices = state.offices.map((office) => {
-        //const updatedOffice = { ...office, currentOrders: [...office.currentOrders] };
-
+        
         const updatedOffice = { ...office, currentOrders: [...(office.currentOrders ?? [])] };
 
         // Agregar pedidos que llegan

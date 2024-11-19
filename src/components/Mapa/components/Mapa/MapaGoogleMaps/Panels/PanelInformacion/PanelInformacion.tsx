@@ -28,6 +28,7 @@ dayjs.extend(duration);
 
 import { Oficina } from '../../../../../../../context/Simulacion/simulationTypes';
 import { Vehicle as Camion } from '../../../../../../../context/Simulacion/simulationTypes';
+import oficinas from '../../../../../../../data/oficinas';
 
 interface PanelInformacionProps {
   show: boolean;
@@ -76,11 +77,35 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   const elapsedDuration = dayjs.duration(elapsedTime);
   const formattedElapsedTime = formatElapsedTime(elapsedDuration);
 
-  const currentCamionLoad = Array.isArray(selectedCamion?.ruta?.pedidos ?? [])
-  ? (selectedCamion?.ruta?.pedidos ?? []).reduce((total, pedido) => total + pedido.cantidad, 0)
-  : 0;
+  // Crear un mapeo de código de destino a índice de segmento
+  const destinoToSegmentIndex: { [ubigeoDestino: string]: number } = {};
+  selectedCamion?.ruta?.tramos?.forEach((tramo, index) => {
+    destinoToSegmentIndex[tramo.destino.codigo] = index;
+  });
 
-
+  const currentTramoLoad = (() => {
+    if (selectedCamion && selectedCamion.ruta && selectedCamion.ruta.pedidos) {
+      const pedidos = selectedCamion.ruta.pedidos;
+      const currentTime = state.currentTime;
+  
+      const pedidosEnCamion = pedidos.filter((pedido) => {
+        const fechaRecogida = pedido.fechaRecogida ? new Date(pedido.fechaRecogida) : null;
+        const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+  
+        if (fechaRecogida && fechaLlegada) {
+          return fechaRecogida <= currentTime && fechaLlegada > currentTime;
+        } else {
+          return false;
+        }
+      });
+  
+      const totalCantidad = pedidosEnCamion.reduce((total, pedido) => total + (pedido.cantidad || 0), 0);
+  
+      return totalCantidad;
+    }
+    return 0;
+  })();
+  
   function formatElapsedTime(elapsedDuration: Duration): string {
     const totalSeconds = elapsedDuration.asSeconds();
     const days = Math.floor(totalSeconds / (24 * 3600));
@@ -111,23 +136,48 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     if (origenRegion === 'SIERRA' && destinoRegion === 'SELVA') return 55;
     if (origenRegion === 'SIERRA' && destinoRegion === 'COSTA') return 50;
     if (origenRegion === 'SELVA' && destinoRegion === 'SELVA') return 65;
-    if (origenRegion === 'SELVA' && destinoRegion === 'SIERRA') return 65;
+    if (origenRegion === 'SELVA' && destinoRegion === 'SIERRA') return 55;
     if (origenRegion === 'SELVA' && destinoRegion === 'COSTA') return 65;
     // Puedes agregar más condiciones según sea necesario
     return 55; // Valor por defecto si no se encuentra una coincidencia
   };
 
   const getMaxSpeedForCamion = (camion: Camion) => {
-    if (camion.ruta.pedidos.length > 0) {
-      const pedido = camion.ruta.pedidos[0]; // Suponiendo que tomamos el primer pedido
-      const origen = state.offices.find((office) => office.ubigeo === pedido.ubigeoOrigen);
-      const destino = state.offices.find((office) => office.ubigeo === pedido.ubigeoDestino);
+    const currentSegmentIndex = camion.position.currentSegmentIndex;
+  
+    if (
+      camion.ruta.tramos &&
+      camion.ruta.tramos.length > 0 &&
+      currentSegmentIndex >= 0 &&
+      currentSegmentIndex < camion.ruta.tramos.length
+    ) {
+      const tramo = camion.ruta.tramos[currentSegmentIndex];
+      const origen = oficinas.find((office) => office.ubigeo === tramo.origen.codigo);
+      const destino = oficinas.find((office) => office.ubigeo === tramo.destino.codigo);
+  
       if (origen && destino) {
         return getMaxSpeed(origen.regionNatural, destino.regionNatural);
+      } else {
+        console.warn('Origen or Destino not found for current segment index');
       }
     }
-    return '55';
+  
+    // Si no estamos en un tramo válido, usamos el primer tramo como referencia
+    if (camion.ruta.tramos && camion.ruta.tramos.length > 0) {
+      const tramo = camion.ruta.tramos[0];
+      const origen = oficinas.find((office) => office.ubigeo === tramo.origen.codigo);
+      const destino = oficinas.find((office) => office.ubigeo === tramo.destino.codigo);
+  
+      if (origen && destino) {
+        return getMaxSpeed(origen.regionNatural, destino.regionNatural);
+      } else {
+        console.warn('Origen or Destino not found for first tramo');
+      }
+    }
+  
+    return '55'; // Valor por defecto si no se encuentra información suficiente 
   };
+  
 
   return (
     <MapControl position={ControlPosition.TOP_RIGHT}>
@@ -160,7 +210,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                   <Typography variant="body2" color="textSecondary">
                     <b>Carga:</b>{' '}
                     <Typography component="span" variant="body2" color="textPrimary">
-                      {currentCamionLoad}/{selectedCamion.capacidadCarga}
+                      {currentTramoLoad}/{selectedCamion.capacidadCarga}
                     </Typography>
                   </Typography>
                 </Box>
@@ -322,7 +372,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 <Box display="flex" flexDirection="column" alignItems="center">
                   <Business color="primary" sx={{ mb: 0.5 }} />
                   <Typography variant="body2" color="textSecondary">
-                    <b>Carga:</b>{' '}
+                    <b>Stock:</b>{' '}
                     <Typography component="span" variant="body2" color="textPrimary">
                       {currentLoad !== 'N/A' ? `${currentLoad}/${maxCapacity}` : 'N/A'}
                     </Typography>
