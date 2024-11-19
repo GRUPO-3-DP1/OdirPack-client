@@ -6,6 +6,7 @@ import {
   ExpandMore,
   AccessTimeFilled,
   Business,
+  LocalShipping,
 } from '@mui/icons-material';
 import {
   Accordion,
@@ -18,7 +19,6 @@ import {
   Select,
   MenuItem,
   Button,
-  CircularProgress, // Importamos CircularProgress para el indicador de carga
 } from '@mui/material';
 import dayjs from 'dayjs';
 import duration, { Duration } from 'dayjs/plugin/duration';
@@ -29,30 +29,25 @@ import { Averia } from '../../../../../../../store/types/Averia'; // Importa el 
 
 dayjs.extend(duration);
 
-import { Oficina } from '../../Markers/OficinaMarker/OficinaMarker';
+import { Oficina } from '../../../../../../../context/Simulacion/simulationTypes';
 import { Vehicle as Camion } from '../../../../../../../context/Simulacion/simulationTypes';
-import { OficinaData } from '../../../../../../../store/services/oficinas'; // Importamos OficinaData
 
 interface PanelInformacionProps {
   show: boolean;
   selectedOficina: Oficina | null;
   selectedCamion: Camion | null;
   operationType: 'semanal' | 'colapso' | 'diaadia';
-  oficinaData: OficinaData | null; // Añadimos oficinaData
-  loadingOficinaData: boolean;     // Añadimos loadingOficinaData
 }
 
 const PanelInformacion: React.FC<PanelInformacionProps> = ({
   show,
   selectedOficina,
-  oficinaData,
-  loadingOficinaData,
   selectedCamion,
   operationType,
 }) => {
   const { state } = useSimulation();
   const [tipoAveria, setTipoAveria] = useState<string>('');
-  const { registerAveria, loading, error } = useAveria();
+  //const { registerAveria, loading, error } = useAveria();
 
 
   if (!show) {
@@ -63,8 +58,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     trucksInMotion,
     trucksInMaintenance,
     totalTrucks,
-    totalOffices,
-    occupiedOffices,
     ordersDelivered,
     ordersPending,
     startTime,
@@ -72,15 +65,25 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     endTime,
   } = state;
 
+  const officeData = state.offices.find((office) => office.ubigeo === selectedOficina?.ubigeo);
+  // Calcula la carga actual
+  const currentLoad = officeData ? (officeData.currentOrders?.length ?? 'N/A') : 'N/A';
+  const maxCapacity = 60;
+
   const totalTime = endTime.getTime() - startTime.getTime();
   const elapsedTime = currentTime.getTime() - startTime.getTime();
   const progressPercentage = Math.floor((elapsedTime / totalTime) * 100);
 
   const fleetSaturation = `${trucksInMotion + trucksInMaintenance} / ${totalTrucks}`;
-  const officeSaturation = `${occupiedOffices} / ${totalOffices}`;
+  //const officeSaturation = `${occupiedOffices} / ${totalOffices}`;
 
   const elapsedDuration = dayjs.duration(elapsedTime);
   const formattedElapsedTime = formatElapsedTime(elapsedDuration);
+
+  const currentCamionLoad = Array.isArray(selectedCamion?.ruta?.pedidos ?? [])
+  ? (selectedCamion?.ruta?.pedidos ?? []).reduce((total, pedido) => total + pedido.cantidad, 0)
+  : 0;
+
 
   function formatElapsedTime(elapsedDuration: Duration): string {
     const totalSeconds = elapsedDuration.asSeconds();
@@ -97,24 +100,37 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     return formatted.trim();
   }
 
-  const handleRegisterAveria = async () => {
-    if (!selectedCamion) return;
+  const getTipoCamion = (capacidadCarga: number) => {
+    if (capacidadCarga === 10) return 'C';
+    if (capacidadCarga === 20) return 'B';
+    return 'A';
+  };
 
-    const averiaData: Averia = {
-      tipo: tipoAveria,
-      fechaRegistro: new Date().toISOString(),  // Puedes ajustar el formato si es necesario
-      tramoId: 1, // Reemplaza con el tramoId correspondiente
-      vehiculoId: selectedCamion.idVehiculo,
-      fechaReparacion: null, // O asigna una fecha si ya está disponible
-      cargaReplanificada: true
-    };
+  //{getMaxSpeedForCamion(selectedCamion)} Km/h
+  const getMaxSpeed = (origenRegion: string, destinoRegion: string): number => {
+    if (origenRegion === 'COSTA' && destinoRegion === 'COSTA') return 70;
+    if (origenRegion === 'COSTA' && destinoRegion === 'SIERRA') return 50;
+    if (origenRegion === 'COSTA' && destinoRegion === 'SELVA') return 65;
+    if (origenRegion === 'SIERRA' && destinoRegion === 'SIERRA') return 60;
+    if (origenRegion === 'SIERRA' && destinoRegion === 'SELVA') return 55;
+    if (origenRegion === 'SIERRA' && destinoRegion === 'COSTA') return 50;
+    if (origenRegion === 'SELVA' && destinoRegion === 'SELVA') return 65;
+    if (origenRegion === 'SELVA' && destinoRegion === 'SIERRA') return 65;
+    if (origenRegion === 'SELVA' && destinoRegion === 'COSTA') return 65;
+    // Puedes agregar más condiciones según sea necesario
+    return 55; // Valor por defecto si no se encuentra una coincidencia
+  };
 
-    try {
-      await registerAveria(averiaData);
-      console.log(`Avería registrada para el camión ${selectedCamion.idVehiculo}: ${tipoAveria}`);
-    } catch (err) {
-      console.error("Error al registrar la avería:", err);
+  const getMaxSpeedForCamion = (camion: Camion) => {
+    if (camion.ruta.pedidos.length > 0) {
+      const pedido = camion.ruta.pedidos[0]; // Suponiendo que tomamos el primer pedido
+      const origen = state.offices.find((office) => office.ubigeo === pedido.ubigeoOrigen);
+      const destino = state.offices.find((office) => office.ubigeo === pedido.ubigeoDestino);
+      if (origen && destino) {
+        return getMaxSpeed(origen.regionNatural, destino.regionNatural);
+      }
     }
+    return '55';
   };
 
   return (
@@ -134,15 +150,24 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <div>
                   <Typography variant="subtitle1" color="textPrimary">
-                    <b>Información del Camión</b>
+                    <b>Información del camión</b>
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    <b>Código del Camión:</b>{' '}
+                    <b>Código:</b>{' '}
                     <Typography component="span" variant="body2" color="textPrimary">
                       {selectedCamion.idVehiculo}
                     </Typography>
                   </Typography>
                 </div>
+                <Box display="flex" flexDirection="column" alignItems="center">
+                  <LocalShipping color="primary" fontSize="medium" sx={{ mb: 0.5 }} />
+                  <Typography variant="body2" color="textSecondary">
+                    <b>Carga:</b>{' '}
+                    <Typography component="span" variant="body2" color="textPrimary">
+                      {currentCamionLoad}/{selectedCamion.capacidadCarga}
+                    </Typography>
+                  </Typography>
+                </Box>
               </Box>
             </Box>
             <Accordion defaultExpanded disableGutters>
@@ -205,36 +230,28 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                   >
                     <Box display="flex">
                       <Typography variant="body2" color="textSecondary">
-                        Código:
+                        Tipo camión:
                       </Typography>
                       <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                        CMN-{selectedCamion.idVehiculo}
-                      </Typography>
-                    </Box>
-                    <Box display="flex">
-                      <Typography variant="body2" color="textSecondary">
-                        Tipo Camión:
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                        {selectedCamion.idVehiculo}
+                        {getTipoCamion(selectedCamion.capacidadCarga)}
                       </Typography>
                     </Box>
                   </Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center">
                     <Box display="flex">
                       <Typography variant="body2" color="textSecondary">
-                        Velocidad Máxima:
+                        Velocidad máxima:
                       </Typography>
                       <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                        {selectedCamion.idVehiculo}
+                        {getMaxSpeedForCamion(selectedCamion)} Km/h
                       </Typography>
                     </Box>
                     <Box display="flex">
                       <Typography variant="body2" color="textSecondary">
-                        Capacidedad Carga:
+                        Capacidad de carga:
                       </Typography>
                       <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                        {selectedCamion.idVehiculo}
+                        {selectedCamion.capacidadCarga}
                       </Typography>
                     </Box>
                   </Box>
@@ -248,13 +265,13 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 id="panel-averias-header"
                 sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
               >
-                <Typography variant="subtitle2" color="textPrimary">
-                  <b>Registrar Avería</b>
+                <Typography variant="subtitle2" color="textPrimary" sx={{ textTransform: "none" }}>
+                  <b>Registrar avería</b>
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
                 <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-                  <InputLabel id="tipo-averia-label">Tipo de Avería</InputLabel>
+                  <InputLabel id="tipo-averia-label">Tipo de avería</InputLabel>
                   <Select
                     labelId="tipo-averia-label"
                     id="tipo-averia-select"
@@ -270,10 +287,14 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 <Button
                   variant="contained"
                   color="primary"
-                  disabled={!tipoAveria || loading}
-                  onClick={handleRegisterAveria}
+                  disabled={!tipoAveria}                  
+                  onClick={() => {
+                    console.log(`Avería registrada para el camión ${selectedCamion.idVehiculo}: ${tipoAveria}`);
+                    // LOGICA DE AVERIAS
+                  }}
+                  style={{ textTransform: 'none' }} 
                 >
-                  {loading ? <CircularProgress size={24} /> : 'Registrar Avería'}
+                  Registrar
                 </Button>
 
               </AccordionDetails>
@@ -302,18 +323,15 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                     </Typography>
                   </Typography>
                 </div>
+
                 <Box display="flex" flexDirection="column" alignItems="center">
                   <Business color="primary" sx={{ mb: 0.5 }} />
-                  {loadingOficinaData ? (
-                    <CircularProgress size={20} />
-                  ) : (
-                    <Typography variant="body2" color="textSecondary">
-                      <b>Carga:</b>{' '}
-                      <Typography component="span" variant="body2" color="textPrimary">
-                        {oficinaData ? `${oficinaData.cargaPorcentaje}%` : 'N/A'}
-                      </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    <b>Carga:</b>{' '}
+                    <Typography component="span" variant="body2" color="textPrimary">
+                      {currentLoad !== 'N/A' ? `${currentLoad}/${maxCapacity}` : 'N/A'}
                     </Typography>
-                  )}
+                  </Typography>
                 </Box>
               </Box>
             </Box>

@@ -1,4 +1,4 @@
-type Oficina = {
+export type Oficina = {
   ubigeo: string;
   departamento: string;
   provincia: string;
@@ -6,6 +6,7 @@ type Oficina = {
   longitud: number;
   regionNatural: string;
   almacen: number;
+  isAlmacen?: boolean;
 };
 
 const oficinas: Oficina[] = [
@@ -16,7 +17,7 @@ const oficinas: Oficina[] = [
   { ubigeo: '030601', departamento: 'APURIMAC', provincia: 'CHINCHEROS', latitud: -13.51802722, longitud: -73.72280447, regionNatural: 'SIERRA', almacen: 94 },
   { ubigeo: '030501', departamento: 'APURIMAC', provincia: 'COTABAMBAS', latitud: -13.94619465, longitud: -72.1744466, regionNatural: 'SIERRA', almacen: 76 },
   { ubigeo: '030701', departamento: 'APURIMAC', provincia: 'GRAU', latitud: -14.10538044, longitud: -72.70764095, regionNatural: 'SIERRA', almacen: 94 },
-  { ubigeo: '040101', departamento: 'AREQUIPA', provincia: 'AREQUIPA', latitud: -16.39881421, longitud: -71.537019649, regionNatural: 'COSTA', almacen: 177 },
+  { ubigeo: '040101', departamento: 'AREQUIPA', provincia: 'AREQUIPA', latitud: -16.39881421, longitud: -71.537019649, regionNatural: 'COSTA', almacen: 177, isAlmacen: true },
   { ubigeo: '040201', departamento: 'AREQUIPA', provincia: 'CAMANA', latitud: -16.62491755, longitud: -72.71161298, regionNatural: 'COSTA', almacen: 58 },
   { ubigeo: '040301', departamento: 'AREQUIPA', provincia: 'CARAVELI', latitud: -15.77213819, longitud: -73.36540868, regionNatural: 'COSTA', almacen: 237 },
   { ubigeo: '040401', departamento: 'AREQUIPA', provincia: 'CASTILLA', latitud: -16.07660363, longitud: -72.49208649, regionNatural: 'COSTA', almacen: 158 },
@@ -135,7 +136,7 @@ const oficinas: Oficina[] = [
   { ubigeo: '150601', departamento: 'LIMA', provincia: 'HUARAL', latitud: -11.495407273, longitud: -77.207186976, regionNatural: 'COSTA', almacen: 67 },
   { ubigeo: '150701', departamento: 'LIMA', provincia: 'HUAROCHIRI', latitud: -11.84476441, longitud: -76.38606378, regionNatural: 'COSTA', almacen: 151 },
   { ubigeo: '150801', departamento: 'LIMA', provincia: 'HUAURA', latitud: -11.10855265, longitud: -77.61040152, regionNatural: 'COSTA', almacen: 19 },
-  { ubigeo: '150101', departamento: 'LIMA', provincia: 'LIMA', latitud: -12.04591952, longitud: -77.03049615, regionNatural: 'COSTA', almacen: 100 },
+  { ubigeo: '150101', departamento: 'LIMA', provincia: 'LIMA', latitud: -12.04591952, longitud: -77.03049615, regionNatural: 'COSTA', almacen: 100, isAlmacen: true },
   { ubigeo: '150901', departamento: 'LIMA', provincia: 'OYON', latitud: -10.66810336, longitud: -76.77306206, regionNatural: 'COSTA', almacen: 232 },
   { ubigeo: '151001', departamento: 'LIMA', provincia: 'YAUYOS', latitud: -12.45973429, longitud: -75.91868825, regionNatural: 'COSTA', almacen: 222 },
   { ubigeo: '190201', departamento: 'PASCO', provincia: 'DANIEL ALCIDES CARRION', latitud: -10.49133323, longitud: -76.51662556, regionNatural: 'SIERRA', almacen: 106 },
@@ -171,7 +172,7 @@ const oficinas: Oficina[] = [
   { ubigeo: '130801', departamento: 'LA LIBERTAD', provincia: 'PATAZ', latitud: -8.27593502, longitud: -77.29632102, regionNatural: 'COSTA', almacen: 148 },
   { ubigeo: '130901', departamento: 'LA LIBERTAD', provincia: 'SANCHEZ CARRION', latitud: -7.815552087, longitud: -78.048623458, regionNatural: 'COSTA', almacen: 256 },
   { ubigeo: '131001', departamento: 'LA LIBERTAD', provincia: 'SANTIAGO DE CHUCO', latitud: -8.14536716, longitud: -78.17327133, regionNatural: 'COSTA', almacen: 147 },
-  { ubigeo: '130101', departamento: 'LA LIBERTAD', provincia: 'TRUJILLO', latitud: -8.11176389, longitud: -79.02868652, regionNatural: 'COSTA', almacen: 54 },
+  { ubigeo: '130101', departamento: 'LA LIBERTAD', provincia: 'TRUJILLO', latitud: -8.11176389, longitud: -79.02868652, regionNatural: 'COSTA', almacen: 54, isAlmacen: true },
   { ubigeo: '131201', departamento: 'LA LIBERTAD', provincia: 'VIRU', latitud: -8.41427715, longitud: -78.75222202, regionNatural: 'COSTA', almacen: 204 },
   { ubigeo: '140101', departamento: 'LAMBAYEQUE', provincia: 'CHICLAYO', latitud: -6.77150465, longitud: -79.83866166, regionNatural: 'COSTA', almacen: 62 },
   { ubigeo: '140201', departamento: 'LAMBAYEQUE', provincia: 'FERREÑAFE', latitud: -6.63922698, longitud: -79.78803991, regionNatural: 'COSTA', almacen: 40 },

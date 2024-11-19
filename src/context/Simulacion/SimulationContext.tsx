@@ -1,10 +1,10 @@
 // SimulationContext.tsx
 import React, { createContext, useReducer, useEffect, useState, useRef } from 'react';
 import oficinas from '../../data/oficinas';
-import { SimulationAction, SimulationState, Vehicle, Oficina, Pedido, HoraStock } from './simulationTypes';
+import { SimulationAction, SimulationState, Vehicle, Oficina, Order } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
 import WebSocketManager from '../../store/webSocketManager';
-import { ResponseAlgorithm, OficinaAlgorithmResponse, PedidoAlgorithmResponse } from '../../store/types/ResponseAlgorithm';
+import { ResponseAlgorithm, OficinaAlgorithmResponse } from '../../store/types/ResponseAlgorithm';
 
 export const SimulationContext = createContext<{
   state: SimulationState;
@@ -47,6 +47,8 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, offices: action.payload };
     case 'SET_UNPLANNED_ORDERS':
       return { ...state, unplannedOrders: action.payload };
+    case 'SET_PROCESSED_ORDER_IDS':
+      return { ...state, processedOrderIds: action.payload };
     default:
       return state;
   }
@@ -70,6 +72,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
     ordersPending: 0,
     offices: [],
     unplannedOrders: [],
+    processedOrderIds: [],
   });
 
   const [userId, setUserId] = useState<string>('');
@@ -274,9 +277,14 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
   // Función para convertir oficinas
   const convertOffices = (oficinasData: OficinaAlgorithmResponse[]): Oficina[] => {
     return oficinasData.map((oficinaData) => {
+      const matchingOficina = oficinas.find((o) => o.ubigeo === oficinaData.ubigeo);
+      if (!matchingOficina) {
+        throw new Error(`No se encontró una oficina con ubigeo ${oficinaData.ubigeo}`);
+      }
       return {
-        ubigeo: oficinaData.ubigeo,
+        ...matchingOficina,
         horasStock: oficinaData.horas_stock,
+        currentOrders: [],
       };
     });
   };
@@ -285,7 +293,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
   const calculateOccupiedOffices = (offices: Oficina[]): number => {
     let occupied = 0;
     offices.forEach((office) => {
-      if (office.horasStock.some((horaStock) => horaStock.stock > 0)) {
+      if ((office.horasStock ?? []).some((horaStock) => horaStock.stock > 0)) {
         occupied += 1;
       }
     });
@@ -418,6 +426,67 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
 
       dispatch({ type: 'UPDATE_VEHICLE_POSITION', payload: updatedVehicles });
 
+      // Procesar llegadas de pedidos
+      const arrivedOrders: {
+        order: Order;
+        arrivalTime: Date;
+        ubigeoDestino: string;
+      }[] = [];
+
+      state.vehicles.forEach((vehicle) => {
+        vehicle.ruta.pedidos.forEach((pedido) => {
+          if (pedido.fechaLlegada) {
+            const arrivalTime = new Date(pedido.fechaLlegada);
+            if (arrivalTime > state.currentTime && arrivalTime <= newTime) {
+              if (!state.processedOrderIds.includes(pedido.idPedido)) {
+                // Pedido llega a la oficina
+                arrivedOrders.push({
+                  order: pedido,
+                  arrivalTime: arrivalTime,
+                  ubigeoDestino: pedido.ubigeoDestino,
+                });
+              }
+            }
+          }
+        });
+      });
+
+      // Actualizar processedOrderIds
+      const newProcessedOrderIds = [...state.processedOrderIds];
+      arrivedOrders.forEach((arrivedOrder) => {
+        newProcessedOrderIds.push(arrivedOrder.order.idPedido);
+      });
+
+      // Procesar salidas de pedidos
+      const updatedOffices = state.offices.map((office) => {
+        //const updatedOffice = { ...office, currentOrders: [...office.currentOrders] };
+
+        const updatedOffice = { ...office, currentOrders: [...(office.currentOrders ?? [])] };
+
+        // Agregar pedidos que llegan
+        arrivedOrders.forEach((arrivedOrder) => {
+          if (arrivedOrder.ubigeoDestino === office.ubigeo) {
+            updatedOffice.currentOrders.push({
+              order: arrivedOrder.order,
+              arrivalTime: arrivedOrder.arrivalTime,
+            });
+          }
+        });
+
+        // Remover pedidos que han estado más de 4 horas
+        updatedOffice.currentOrders = updatedOffice.currentOrders.filter((currentOrder) => {
+          const timeInOffice = newTime.getTime() - currentOrder.arrivalTime.getTime();
+          const fourHoursInMs = 4 * 60 * 60 * 1000;
+          return timeInOffice < fourHoursInMs;
+        });
+
+        return updatedOffice;
+      });
+
+      // Actualizar oficinas y processedOrderIds en el estado
+      dispatch({ type: 'SET_OFFICES', payload: updatedOffices });
+      dispatch({ type: 'SET_PROCESSED_ORDER_IDS', payload: newProcessedOrderIds });
+
       // Actualizar datos de simulación
       dispatch({
         type: 'UPDATE_SIMULATION_DATA',
@@ -430,7 +499,16 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
     }, 1000 / state.speed);
 
     return () => clearInterval(updateInterval);
-  }, [state.isPlaying, state.currentTime, state.speed, state.endTime, state.vehicles, dispatch]);
+  }, [state.isPlaying,
+      state.currentTime,
+      state.speed,
+      state.endTime,
+      state.vehicles, 
+      state.offices,
+      state.processedOrderIds,
+      dispatch,
+      state,
+    ]);
 
   return (
     <SimulationContext.Provider
