@@ -15,10 +15,10 @@ export const SimulationContext = createContext<{
   offices: Oficina[];
 } | null>(null);
 
-const locationCoordinates: Record<string, { lat: number; lng: number }> = oficinas.reduce((acc, oficina) => {
+const locationCoordinates: Record<string, { lat: number; lng: number; }> = oficinas.reduce((acc, oficina) => {
   acc[oficina.ubigeo] = { lat: oficina.latitud, lng: oficina.longitud };
   return acc;
-}, {} as Record<string, { lat: number; lng: number }>);
+}, {} as Record<string, { lat: number; lng: number; }>);
 
 function convertUnplannedPedidosToOrders(pedidos: PedidoAlgorithmResponse[]): Order[] {
   return pedidos.map((pedido) => ({
@@ -87,7 +87,7 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
   }
 }
 
-export function SimulationProvider({ children }: { children: React.ReactNode }) {
+export function SimulationProvider({ children }: { children: React.ReactNode; }) {
   const [state, dispatch] = useReducer(simulationReducer, {
     isPlaying: false,
     vehicles: [],
@@ -166,8 +166,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
         dispatch({ type: 'SET_OFFICES', payload: mergedOffices });
 
         // Procesar pedidos no planificados
-        const newUnplannedOrders = newResponse.pedidosNoPlanificados || [];    
-        
+        const newUnplannedOrders = newResponse.pedidosNoPlanificados || [];
+
         // Convertir pedidos no planificados a Order[]
         const unplannedOrders: Order[] = convertUnplannedPedidosToOrders(newUnplannedOrders);
 
@@ -195,11 +195,11 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
               const newPosition =
                 existingVehicle.position.lat === 0
                   ? {
-                      lat: matchingNewVehicle.position.lat,
-                      lng: matchingNewVehicle.position.lng,
-                      progress: 0,
-                      currentSegmentIndex: -1,
-                    }
+                    lat: matchingNewVehicle.position.lat,
+                    lng: matchingNewVehicle.position.lng,
+                    progress: 0,
+                    currentSegmentIndex: -1,
+                  }
                   : existingVehicle.position;
               const newFechaInicio =
                 existingVehicle.ruta.fechaInicio === null ? matchingNewVehicle.ruta.fechaInicio : existingVehicle.ruta.fechaInicio;
@@ -253,6 +253,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
 
   // Función para convertir una solución a vehículos
   const convertSolutionToVehicles = (solution: ResponseAlgorithm): Vehicle[] => {
+
     const convertedVehicles: Vehicle[] = [];
 
     if (!solution || !Array.isArray(solution.solucion) || solution.solucion.length === 0) {
@@ -520,7 +521,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
 
       // Procesar salidas de pedidos
       const updatedOffices = state.offices.map((office) => {
-        
+
         const updatedOffice = { ...office, currentOrders: [...(office.currentOrders ?? [])] };
 
         // Agregar pedidos que llegan
@@ -560,15 +561,15 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
 
     return () => clearInterval(updateInterval);
   }, [state.isPlaying,
-      state.currentTime,
-      state.speed,
-      state.endTime,
-      state.vehicles, 
-      state.offices,
-      state.processedOrderIds,
-      dispatch,
-      state,
-    ]);
+  state.currentTime,
+  state.speed,
+  state.endTime,
+  state.vehicles,
+  state.offices,
+  state.processedOrderIds,
+    dispatch,
+    state,
+  ]);
 
   return (
     <SimulationContext.Provider

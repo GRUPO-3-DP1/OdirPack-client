@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AdvancedMarker, AdvancedMarkerProps } from '@vis.gl/react-google-maps';
 import { LocalShipping } from '@mui/icons-material';
 import styles from './CamionMarker.module.css';
@@ -10,9 +10,12 @@ type CamionMarkerProps = Omit<AdvancedMarkerProps, 'position'> & {
 
 const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ...markerProps }) => {
   // Log para ver qué camión está siendo renderizado
-  if (camion.position.currentSegmentIndex !== -1) {
-    console.log('Renderizando camión:', camion.idVehiculo, 'Posición:', camion.position);
-  }
+  useEffect(() => {
+    if (camion.position.currentSegmentIndex !== -1) {
+      console.log('Renderizando camión:', camion.idVehiculo, 'Posición:', camion.position);
+    }
+  });
+
   return (
     <>
       {
