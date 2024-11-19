@@ -23,6 +23,9 @@ import {
 import dayjs from 'dayjs';
 import duration, { Duration } from 'dayjs/plugin/duration';
 import styles from './PanelInformacion.module.css';
+import useAveria from '../../../../../../../store/hooks/useAveria'; // Asegúrate de que la ruta sea correcta
+import { Averia } from '../../../../../../../store/types/Averia'; // Importa el tipo Averia
+
 
 dayjs.extend(duration);
 
@@ -49,6 +52,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
 }) => {
   const { state } = useSimulation();
   const [tipoAveria, setTipoAveria] = useState<string>('');
+  const { registerAveria, loading, error } = useAveria();
 
 
   if (!show) {
@@ -92,6 +96,26 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
 
     return formatted.trim();
   }
+
+  const handleRegisterAveria = async () => {
+    if (!selectedCamion) return;
+
+    const averiaData: Averia = {
+      tipo: tipoAveria,
+      fechaRegistro: new Date().toISOString(),  // Puedes ajustar el formato si es necesario
+      tramoId: 1, // Reemplaza con el tramoId correspondiente
+      vehiculoId: selectedCamion.idVehiculo,
+      fechaReparacion: null, // O asigna una fecha si ya está disponible
+      cargaReplanificada: true
+    };
+
+    try {
+      await registerAveria(averiaData);
+      console.log(`Avería registrada para el camión ${selectedCamion.idVehiculo}: ${tipoAveria}`);
+    } catch (err) {
+      console.error("Error al registrar la avería:", err);
+    }
+  };
 
   return (
     <MapControl position={ControlPosition.TOP_RIGHT}>
@@ -238,22 +262,20 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                     label="Tipo de Avería"
                     onChange={(e) => setTipoAveria(e.target.value as string)}
                   >
-                    <MenuItem value="tipo1">Tipo 1 - Dos horas detenido</MenuItem>
-                    <MenuItem value="tipo2">Tipo 2 - No disponible en 1 turno</MenuItem>
-                    <MenuItem value="tipo3">Tipo 3 - Mantenimiento correctivo</MenuItem>
+                    <MenuItem value="tipo1">Tipo 1: Avería moderada</MenuItem>
+                    <MenuItem value="tipo2">Tipo 2: Avería fuerte</MenuItem>
+                    <MenuItem value="tipo3">Tipo 3: Avería Siniestra</MenuItem>
                   </Select>
                 </FormControl>
                 <Button
                   variant="contained"
                   color="primary"
-                  disabled={!tipoAveria}
-                  onClick={() => {
-                    console.log(`Avería registrada para el camión ${selectedCamion.idVehiculo}: ${tipoAveria}`);
-                    // Aquí puedes manejar la lógica para registrar la avería, por ejemplo, hacer una solicitud al servidor
-                  }}
+                  disabled={!tipoAveria || loading}
+                  onClick={handleRegisterAveria}
                 >
-                  Registrar Avería
+                  {loading ? <CircularProgress size={24} /> : 'Registrar Avería'}
                 </Button>
+
               </AccordionDetails>
             </Accordion>
           </>
@@ -414,8 +436,8 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                       {operationType === 'semanal'
                         ? 'Semanal'
                         : operationType === 'colapso'
-                        ? 'Hasta el colapso'
-                        : 'Día a día'}
+                          ? 'Hasta el colapso'
+                          : 'Día a día'}
                     </Typography>
                   </Typography>
                 </div>
