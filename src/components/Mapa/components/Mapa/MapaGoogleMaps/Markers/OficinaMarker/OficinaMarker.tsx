@@ -3,7 +3,7 @@ import React from 'react';
 import { AdvancedMarker, AdvancedMarkerProps } from '@vis.gl/react-google-maps';
 import { Home, Store } from '@mui/icons-material';
 import styles from './OficinaMarker.module.css';
-import { Oficina } from '../../../../../../../data/oficinas';
+import { Oficina } from '../../../../../../../context/Simulacion/simulationTypes';
 
 interface OficinaMarkerProps extends Omit<AdvancedMarkerProps, 'position'> {
   oficina: Oficina;

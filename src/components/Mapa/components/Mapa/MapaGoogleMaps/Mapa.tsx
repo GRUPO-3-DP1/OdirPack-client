@@ -12,8 +12,8 @@ import PanelInformacion from './Panels/PanelInformacion/PanelInformacion';
 import OficinaMarker from './Markers/OficinaMarker/OficinaMarker';
 
 import CamionMarker from './Markers/CamionMarker/CamionMarker';
-import { Oficina, Vehicle as Camion } from '../../../../../context/Simulacion/simulationTypes';
-import oficinas from '../../../../../data/oficinas';
+import { Oficina, Order, Vehicle as Camion } from '../../../../../context/Simulacion/simulationTypes';
+import oficinas from '../../../../../data/oficinas.ts';
 import PanelResultados from './Panels/PanelResultados/PanelResultados';
 import { useMapMarker } from '../../../../../context/MapMarker/useMapMarker';
 import Ruta from '../../Ruta/Ruta';
@@ -131,12 +131,11 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
             const maxCapacity = 60;
 
             // Calcular la carga actual de la oficina
-            const currentLoad = oficina.currentOrders
-              ? oficina.currentOrders.reduce(
-                  (total, currentOrder) => total + (currentOrder.order.cantidad || 0),
-                  0
-                )
-              : 0;
+            const currentLoad = oficina.currentOrders?.reduce(
+              (total: number, currentOrder: { order: Order; arrivalTime: Date }) =>
+                total + (currentOrder.order.cantidad || 0),
+              0
+            ) || 0;
 
             // Calcular el porcentaje de ocupación
             const occupancyRate = currentLoad / maxCapacity;
