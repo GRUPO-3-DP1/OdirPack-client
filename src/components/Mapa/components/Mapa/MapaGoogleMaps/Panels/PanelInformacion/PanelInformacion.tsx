@@ -65,9 +65,9 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   const officeData = state.offices.find((office) => office.ubigeo === selectedOficina?.ubigeo);
   // Calcula la carga actual
   const currentLoad =
-  officeData && officeData.currentOrders
-    ? officeData.currentOrders.reduce((total, currentOrder) => total + (currentOrder.order.cantidad || 0), 0)
-    : 'Ilimitado';
+    officeData && officeData.currentOrders
+      ? officeData.currentOrders.reduce((total, currentOrder) => total + (currentOrder.order.cantidad || 0), 0)
+      : 'Ilimitado';
 
   const maxCapacity = 60;
 
@@ -82,7 +82,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   const formattedElapsedTime = formatElapsedTime(elapsedDuration);
 
   // Crear un mapeo de código de destino a índice de segmento
-  const destinoToSegmentIndex: { [ubigeoDestino: string]: number } = {};
+  const destinoToSegmentIndex: { [ubigeoDestino: string]: number; } = {};
   selectedCamion?.ruta?.tramos?.forEach((tramo, index) => {
     destinoToSegmentIndex[tramo.destino.codigo] = index;
   });
@@ -91,25 +91,25 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     if (selectedCamion && selectedCamion.ruta && selectedCamion.ruta.pedidos) {
       const pedidos = selectedCamion.ruta.pedidos;
       const currentTime = state.currentTime;
-  
+
       const pedidosEnCamion = pedidos.filter((pedido) => {
         const fechaRecogida = pedido.fechaRecogida ? new Date(pedido.fechaRecogida) : null;
         const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
-  
+
         if (fechaRecogida && fechaLlegada) {
           return fechaRecogida <= currentTime && fechaLlegada > currentTime;
         } else {
           return false;
         }
       });
-  
+
       const totalCantidad = pedidosEnCamion.reduce((total, pedido) => total + (pedido.cantidad || 0), 0);
-  
+
       return totalCantidad;
     }
     return 0;
   })();
-  
+
   function formatElapsedTime(elapsedDuration: Duration): string {
     const totalSeconds = elapsedDuration.asSeconds();
     const days = Math.floor(totalSeconds / (24 * 3600));
@@ -148,7 +148,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
 
   const getMaxSpeedForCamion = (camion: Camion) => {
     const currentSegmentIndex = camion.position.currentSegmentIndex;
-  
+
     if (
       camion.ruta.tramos &&
       camion.ruta.tramos.length > 0 &&
@@ -158,30 +158,30 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
       const tramo = camion.ruta.tramos[currentSegmentIndex];
       const origen = oficinas.find((office) => office.ubigeo === tramo.origen.codigo);
       const destino = oficinas.find((office) => office.ubigeo === tramo.destino.codigo);
-  
+
       if (origen && destino) {
         return getMaxSpeed(origen.regionNatural, destino.regionNatural);
       } else {
         console.warn('Origen or Destino not found for current segment index');
       }
     }
-  
+
     // Si no estamos en un tramo válido, usamos el primer tramo como referencia
     if (camion.ruta.tramos && camion.ruta.tramos.length > 0) {
       const tramo = camion.ruta.tramos[0];
       const origen = oficinas.find((office) => office.ubigeo === tramo.origen.codigo);
       const destino = oficinas.find((office) => office.ubigeo === tramo.destino.codigo);
-  
+
       if (origen && destino) {
         return getMaxSpeed(origen.regionNatural, destino.regionNatural);
       } else {
         console.warn('Origen or Destino not found for first tramo');
       }
     }
-  
+
     return '55'; // Valor por defecto si no se encuentra información suficiente 
   };
-  
+
 
   return (
     <MapControl position={ControlPosition.TOP_RIGHT}>
@@ -337,12 +337,12 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 <Button
                   variant="contained"
                   color="primary"
-                  disabled={!tipoAveria}                  
+                  disabled={!tipoAveria}
                   onClick={() => {
                     console.log(`Avería registrada para el camión ${selectedCamion.idVehiculo}: ${tipoAveria}`);
                     // LOGICA DE AVERIAS
                   }}
-                  style={{ textTransform: 'none' }} 
+                  style={{ textTransform: 'none' }}
                 >
                   Registrar
                 </Button>
@@ -503,8 +503,8 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                       {operationType === 'semanal'
                         ? 'Semanal'
                         : operationType === 'colapso'
-                        ? 'Hasta el colapso'
-                        : 'Día a día'}
+                          ? 'Hasta el colapso'
+                          : 'Día a día'}
                     </Typography>
                   </Typography>
                 </div>

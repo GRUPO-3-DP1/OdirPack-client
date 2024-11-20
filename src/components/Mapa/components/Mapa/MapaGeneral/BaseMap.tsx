@@ -1,12 +1,17 @@
 import React from 'react';
-import MapaGoogleMaps from '../MapaGoogleMaps/Mapa';
 import { MapMarkersProvider } from '../../../../../context/MapMarker/MapMarkerContext';
+import MapaSimulacion from '../../../../../pages/Simulaciones/components/MapaSimulacion';
+import MapaOperacion from '../../../../../pages/OperacionesDiaDia/components/MapaOperacion';
 
-const BaseMap: React.FC = () => {
+interface MapaProps {
+  operationType: 'semanal' | 'colapso' | 'diaadia';
+}
+
+const BaseMap: React.FC<MapaProps> = ({ operationType }) => {
   return (
     <>
       <MapMarkersProvider>
-        <MapaGoogleMaps />
+        {operationType === 'diaadia' ? <MapaOperacion /> : <MapaSimulacion />}
       </MapMarkersProvider>
     </>
   );
