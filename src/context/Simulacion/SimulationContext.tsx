@@ -87,6 +87,11 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
   }
 }
 
+const initialOffices = oficinas.map((office) => ({
+  ...office,
+  currentOrders: [],
+}));
+
 export function SimulationProvider({ children }: { children: React.ReactNode; }) {
   const [state, dispatch] = useReducer(simulationReducer, {
     isPlaying: false,
@@ -103,7 +108,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     occupiedOffices: 0,
     ordersDelivered: 0,
     ordersPending: 0,
-    offices: oficinas,
+    offices: initialOffices,
     unplannedOrders: [],
     processedOrderIds: [],
   });
@@ -407,11 +412,13 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     return totalOrders - deliveredOrders;
   };
 
+  const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
+
   useEffect(() => {
     if (!state.isPlaying) return;
 
     const updateInterval = setInterval(() => {
-      const newTime = new Date(state.currentTime.getTime() + 1000 * state.speed);
+      const newTime = new Date(state.currentTime.getTime() + timeIncrement * state.speed);
 
       if (newTime >= state.endTime) {
         dispatch({ type: 'STOP_SIMULATION' });
@@ -499,7 +506,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         vehicle.ruta.pedidos.forEach((pedido) => {
           if (pedido.fechaLlegada) {
             const arrivalTime = new Date(pedido.fechaLlegada);
-            if (arrivalTime > state.currentTime && arrivalTime <= newTime) {
+            if (arrivalTime <= newTime && !state.processedOrderIds.includes(pedido.idPedido)) {
               if (!state.processedOrderIds.includes(pedido.idPedido)) {
                 // Pedido llega a la oficina
                 arrivedOrders.push({
@@ -538,7 +545,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         updatedOffice.currentOrders = updatedOffice.currentOrders.filter((currentOrder) => {
           const timeInOffice = newTime.getTime() - currentOrder.arrivalTime.getTime();
           const fourHoursInMs = 4 * 60 * 60 * 1000;
-          return timeInOffice < fourHoursInMs;
+          return timeInOffice <= fourHoursInMs;
         });
 
         return updatedOffice;
@@ -557,7 +564,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           ordersPending: calculateOrdersPending(updatedVehicles, newTime),
         },
       });
-    }, 1000 / state.speed);
+    }, timeIncrement / state.speed);
 
     return () => clearInterval(updateInterval);
   }, [state.isPlaying,
