@@ -4,7 +4,7 @@ import oficinas from '../../data/oficinas';
 import { SimulationAction, SimulationState, Vehicle, Oficina, Order } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
 import WebSocketManager from '../../store/webSocketManager';
-import { ResponseAlgorithm, OficinaAlgorithmResponse } from '../../store/types/ResponseAlgorithm';
+import { PedidoAlgorithmResponse, ResponseAlgorithm, OficinaAlgorithmResponse } from '../../store/types/ResponseAlgorithm';
 
 export const SimulationContext = createContext<{
   state: SimulationState;
@@ -15,10 +15,43 @@ export const SimulationContext = createContext<{
   offices: Oficina[];
 } | null>(null);
 
-const locationCoordinates: Record<string, { lat: number; lng: number }> = oficinas.reduce((acc, oficina) => {
+const locationCoordinates: Record<string, { lat: number; lng: number; }> = oficinas.reduce((acc, oficina) => {
   acc[oficina.ubigeo] = { lat: oficina.latitud, lng: oficina.longitud };
   return acc;
-}, {} as Record<string, { lat: number; lng: number }>);
+}, {} as Record<string, { lat: number; lng: number; }>);
+
+function convertUnplannedPedidosToOrders(pedidos: PedidoAlgorithmResponse[]): Order[] {
+  return pedidos.map((pedido) => ({
+    idPedido: pedido.idPedido,
+    ubigeoDestino: pedido.ubigeoDestino,
+    ubigeoOrigen: pedido.ubigeoOrigen,
+    fechaRegistro: pedido.fechaRegistro,
+    cantidad: pedido.cantidad,
+    idCliente: pedido.idCliente,
+    fechaLlegada: null,      // No tienen fecha de llegada aún
+    fechaRecogida: null,     // No tienen fecha de recogida aún
+  }));
+}
+
+function convertPedidosToOrders(
+  pedidos: PedidoAlgorithmResponse[],
+  tramoDestinoFechaMap: Record<string, string>,
+  tramoOrigenFechaMap: Record<string, string>,
+  rutaFechaInicio: string
+): Order[] {
+  return pedidos.map((pedido) => ({
+    idPedido: pedido.idPedido,
+    ubigeoDestino: pedido.ubigeoDestino,
+    ubigeoOrigen: pedido.ubigeoOrigen,
+    fechaRegistro: pedido.fechaRegistro,
+    cantidad: pedido.cantidad,
+    idCliente: pedido.idCliente,
+    fechaLlegada: tramoDestinoFechaMap[pedido.ubigeoDestino] || null,
+    fechaRecogida: pedido.ubigeoOrigen
+      ? tramoOrigenFechaMap[pedido.ubigeoOrigen] || rutaFechaInicio
+      : rutaFechaInicio,
+  }));
+}
 
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
   switch (action.type) {
@@ -54,11 +87,16 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
   }
 }
 
-export function SimulationProvider({ children }: { children: React.ReactNode }) {
+const initialOffices = oficinas.map((office) => ({
+  ...office,
+  currentOrders: [],
+}));
+
+export function SimulationProvider({ children }: { children: React.ReactNode; }) {
   const [state, dispatch] = useReducer(simulationReducer, {
     isPlaying: false,
     vehicles: [],
-    speed: 200,
+    speed: 90,
     ends: false,
     startTime: new Date('2024-10-21T00:00:00Z'),
     currentTime: new Date('2024-10-21T00:00:00Z'),
@@ -70,7 +108,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
     occupiedOffices: 0,
     ordersDelivered: 0,
     ordersPending: 0,
-    offices: [],
+    offices: initialOffices,
     unplannedOrders: [],
     processedOrderIds: [],
   });
@@ -118,8 +156,25 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
         // Procesar oficinas
         const newOffices = convertOffices(newResponse.oficinas);
 
+        // Fusionar oficinas
+        const mergedOffices = state.offices.map((office) => {
+          const updatedOffice = newOffices.find((o) => o.ubigeo === office.ubigeo);
+          if (updatedOffice) {
+            return {
+              ...office,
+              ...updatedOffice,
+            };
+          }
+          return office;
+        });
+
+        dispatch({ type: 'SET_OFFICES', payload: mergedOffices });
+
         // Procesar pedidos no planificados
         const newUnplannedOrders = newResponse.pedidosNoPlanificados || [];
+
+        // Convertir pedidos no planificados a Order[]
+        const unplannedOrders: Order[] = convertUnplannedPedidosToOrders(newUnplannedOrders);
 
         // Actualizar vehículos
         if (!state.vehicles || state.vehicles.length === 0) {
@@ -145,11 +200,11 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
               const newPosition =
                 existingVehicle.position.lat === 0
                   ? {
-                      lat: matchingNewVehicle.position.lat,
-                      lng: matchingNewVehicle.position.lng,
-                      progress: 0,
-                      currentSegmentIndex: -1,
-                    }
+                    lat: matchingNewVehicle.position.lat,
+                    lng: matchingNewVehicle.position.lng,
+                    progress: 0,
+                    currentSegmentIndex: -1,
+                  }
                   : existingVehicle.position;
               const newFechaInicio =
                 existingVehicle.ruta.fechaInicio === null ? matchingNewVehicle.ruta.fechaInicio : existingVehicle.ruta.fechaInicio;
@@ -191,7 +246,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
         dispatch({ type: 'SET_OFFICES', payload: newOffices });
 
         // Actualizar pedidos no planificados en el estado
-        dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: newUnplannedOrders });
+        dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: unplannedOrders });
       } else {
         console.log('Es la misma solución');
       }
@@ -199,10 +254,11 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
       // Actualizar el índice para procesar la siguiente respuesta
       setIndexActualProcess(indexActualProcess + 1);
     }
-  }, [indexActualProcess, solutions, lastProcessedSolution, state.vehicles, dispatch]);
+  }, [indexActualProcess, solutions, lastProcessedSolution, state.vehicles, dispatch, state.offices]);
 
   // Función para convertir una solución a vehículos
   const convertSolutionToVehicles = (solution: ResponseAlgorithm): Vehicle[] => {
+
     const convertedVehicles: Vehicle[] = [];
 
     if (!solution || !Array.isArray(solution.solucion) || solution.solucion.length === 0) {
@@ -234,11 +290,22 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
           tramoDestinoFechaMap[tramo.destino.codigo] = fechaLlegada;
         }
 
+        // Crear un mapa de origen a fecha de salida
+        const tramoOrigenFechaMap: Record<string, string> = {};
+        for (let i = 0; i < vehicleItem.ruta.tramos.length; i++) {
+          const tramo = vehicleItem.ruta.tramos[i];
+          const fechaSalida = vehicleItem.ruta.fechasSalida[i];
+          tramoOrigenFechaMap[tramo.origen.codigo] = fechaSalida;
+        }
+
+
         // Asignar fechaLlegada a cada pedido
-        const pedidos = vehicleItem.ruta.pedidos.map((pedido) => ({
-          ...pedido,
-          fechaLlegada: tramoDestinoFechaMap[pedido.ubigeoDestino] || null,
-        }));
+        const pedidos: Order[] = convertPedidosToOrders(
+          vehicleItem.ruta.pedidos,
+          tramoDestinoFechaMap,
+          tramoOrigenFechaMap,
+          vehicleItem.ruta.fechaInicio
+        );
 
         return {
           idVehiculo: vehicleItem.idVehiculo,
@@ -345,11 +412,13 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
     return totalOrders - deliveredOrders;
   };
 
+  const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
+
   useEffect(() => {
     if (!state.isPlaying) return;
 
     const updateInterval = setInterval(() => {
-      const newTime = new Date(state.currentTime.getTime() + 1000 * state.speed);
+      const newTime = new Date(state.currentTime.getTime() + timeIncrement * state.speed);
 
       if (newTime >= state.endTime) {
         dispatch({ type: 'STOP_SIMULATION' });
@@ -437,7 +506,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
         vehicle.ruta.pedidos.forEach((pedido) => {
           if (pedido.fechaLlegada) {
             const arrivalTime = new Date(pedido.fechaLlegada);
-            if (arrivalTime > state.currentTime && arrivalTime <= newTime) {
+            if (arrivalTime <= newTime && !state.processedOrderIds.includes(pedido.idPedido)) {
               if (!state.processedOrderIds.includes(pedido.idPedido)) {
                 // Pedido llega a la oficina
                 arrivedOrders.push({
@@ -459,7 +528,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
 
       // Procesar salidas de pedidos
       const updatedOffices = state.offices.map((office) => {
-        //const updatedOffice = { ...office, currentOrders: [...office.currentOrders] };
 
         const updatedOffice = { ...office, currentOrders: [...(office.currentOrders ?? [])] };
 
@@ -477,7 +545,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
         updatedOffice.currentOrders = updatedOffice.currentOrders.filter((currentOrder) => {
           const timeInOffice = newTime.getTime() - currentOrder.arrivalTime.getTime();
           const fourHoursInMs = 4 * 60 * 60 * 1000;
-          return timeInOffice < fourHoursInMs;
+          return timeInOffice <= fourHoursInMs;
         });
 
         return updatedOffice;
@@ -496,19 +564,19 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
           ordersPending: calculateOrdersPending(updatedVehicles, newTime),
         },
       });
-    }, 1000 / state.speed);
+    }, timeIncrement / state.speed);
 
     return () => clearInterval(updateInterval);
   }, [state.isPlaying,
-      state.currentTime,
-      state.speed,
-      state.endTime,
-      state.vehicles, 
-      state.offices,
-      state.processedOrderIds,
-      dispatch,
-      state,
-    ]);
+  state.currentTime,
+  state.speed,
+  state.endTime,
+  state.vehicles,
+  state.offices,
+  state.processedOrderIds,
+    dispatch,
+    state,
+  ]);
 
   return (
     <SimulationContext.Provider

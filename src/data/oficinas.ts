@@ -1,13 +1,4 @@
-export type Oficina = {
-  ubigeo: string;
-  departamento: string;
-  provincia: string;
-  latitud: number;
-  longitud: number;
-  regionNatural: string;
-  almacen: number;
-  isAlmacen?: boolean;
-};
+import { Oficina } from '../context/Simulacion/simulationTypes';
 
 const oficinas: Oficina[] = [
   { ubigeo: '030101', departamento: 'APURIMAC', provincia: 'ABANCAY', latitud: -13.6373465, longitud: -72.87887764, regionNatural: 'SIERRA', almacen: 103 },

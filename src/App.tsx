@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard/Dashboard';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { ArchivosProvider } from './context/Archivos/ArchivosContext';
+import { APIProvider } from '@vis.gl/react-google-maps';
 
 const customTheme = createTheme({
   palette: {
@@ -39,13 +40,19 @@ const router = createBrowserRouter([
   }
 ]);
 
+//KEY = AIzaSyAf4vRvjVvt-AuStWjrfbA-tJNYouHBpb4
+//KEY = AIzaSyBwA7pyze0XndTMMLOhspsQdFq8Xj52_eY
+//KEY = AIzaSyCIm_MVTHuuOneXJhD16L4NZ2TOWdew07o
+
 const App: React.FC = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <ArchivosProvider>
         <ThemeProvider theme={customTheme}>
           <CssBaseline />
-          <RouterProvider router={router} />
+          <APIProvider apiKey="AIzaSyBwA7pyze0XndTMMLOhspsQdFq8Xj52_eY">
+            <RouterProvider router={router} />
+          </APIProvider>
         </ThemeProvider>
       </ArchivosProvider>
     </LocalizationProvider>

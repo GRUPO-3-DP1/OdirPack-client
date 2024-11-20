@@ -77,7 +77,6 @@ export type Oficina = {
   longitud: number;
   regionNatural: string;
   almacen: number;
-  isAlmacen?: boolean;
   horasStock?: HoraStock[];
   currentOrders?: {
     order: Order;
