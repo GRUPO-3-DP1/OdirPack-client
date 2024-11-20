@@ -10,10 +10,9 @@ import PanelLeyenda from './Panels/PanelLeyenda/PanelLeyenda';
 import PanelInformacion from './Panels/PanelInformacion/PanelInformacion';
 
 import OficinaMarker from './Markers/OficinaMarker/OficinaMarker';
-import { Oficina } from '../../../../../context/Simulacion/simulationTypes';
 
 import CamionMarker from './Markers/CamionMarker/CamionMarker';
-import { Vehicle as Camion } from '../../../../../context/Simulacion/simulationTypes';
+import { Oficina, Vehicle as Camion } from '../../../../../context/Simulacion/simulationTypes';
 import oficinas from '../../../../../data/oficinas';
 import PanelResultados from './Panels/PanelResultados/PanelResultados';
 import { useMapMarker } from '../../../../../context/MapMarker/useMapMarker';
@@ -56,6 +55,11 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
     setSelectedOficina(null); // Deselecciona cualquier oficina seleccionada
   };
 
+  const mergedOffices = oficinas.map((oficina) => {
+    const stateOffice = state.offices.find((o) => o.ubigeo === oficina.ubigeo);
+    return stateOffice ? { ...oficina, ...stateOffice } : oficina;
+  });
+  
   return (
     //KEY = AIzaSyAf4vRvjVvt-AuStWjrfbA-tJNYouHBpb4
     //KEY = AIzaSyBwA7pyze0XndTMMLOhspsQdFq8Xj52_eY
@@ -122,16 +126,45 @@ const Mapa: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType 
         {/* Oficinas */}
         {
           visibility.oficinas &&
-          oficinas.map((oficina, index) => (
-            <OficinaMarker
-              key={index}
-              oficina={oficina}
-              onClick={(e) => {
-                e.domEvent.stopPropagation(); // Evita que el evento se propague al mapa
-                handleOficinaClick(oficina);
-              }}
-            />
-          ))
+          mergedOffices.map((oficina, index) => {
+            // Definir la capacidad máxima
+            const maxCapacity = 60;
+
+            // Calcular la carga actual de la oficina
+            const currentLoad = oficina.currentOrders
+              ? oficina.currentOrders.reduce(
+                  (total, currentOrder) => total + (currentOrder.order.cantidad || 0),
+                  0
+                )
+              : 0;
+
+            // Calcular el porcentaje de ocupación
+            const occupancyRate = currentLoad / maxCapacity;
+
+            // Determinar el nivel de ocupación
+            let ocupacion: 'baja' | 'media' | 'alta' = 'baja';
+            if (oficina.isAlmacen) {
+              ocupacion = 'baja'; // O ajusta según corresponda para almacenes
+            } else if (occupancyRate >= 0.8) {
+              ocupacion = 'alta';
+            } else if (occupancyRate >= 0.5) {
+              ocupacion = 'media';
+            } else {
+              ocupacion = 'baja';
+            }
+
+            return (
+              <OficinaMarker
+                key={index}
+                oficina={oficina}
+                ocupacion={ocupacion}
+                onClick={(e) => {
+                  e.domEvent.stopPropagation(); // Evita que el evento se propague al mapa
+                  handleOficinaClick(oficina);
+                }}
+              />
+            );
+          })
         }
         {/* Camiones */}
         {
