@@ -27,7 +27,7 @@ const OficinasLayer: React.FC<OficinasLayerProps> = ({ onOficinaClick }) => {
         visibility.oficinas &&
         mergedOffices.map((oficina, index) => {
           // Definir la capacidad máxima
-          const maxCapacity = 60;
+          const maxCapacity = oficina.almacen;
 
           // Calcular la carga actual de la oficina
           const currentLoad = oficina.currentOrders?.reduce(

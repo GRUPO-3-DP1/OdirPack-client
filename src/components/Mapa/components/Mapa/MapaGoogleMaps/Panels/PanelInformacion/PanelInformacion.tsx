@@ -69,7 +69,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
       ? officeData.currentOrders.reduce((total, currentOrder) => total + (currentOrder.order.cantidad || 0), 0)
       : 'Ilimitado';
 
-  const maxCapacity = 60;
+  const maxCapacity = selectedOficina?.almacen || 0;
 
   const totalTime = endTime.getTime() - startTime.getTime();
   const elapsedTime = currentTime.getTime() - startTime.getTime();
