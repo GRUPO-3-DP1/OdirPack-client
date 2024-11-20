@@ -64,7 +64,11 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
 
   const officeData = state.offices.find((office) => office.ubigeo === selectedOficina?.ubigeo);
   // Calcula la carga actual
-  const currentLoad = officeData ? (officeData.currentOrders?.length ?? 'N/A') : 'N/A';
+  const currentLoad =
+  officeData && officeData.currentOrders
+    ? officeData.currentOrders.reduce((total, currentOrder) => total + (currentOrder.order.cantidad || 0), 0)
+    : 'Ilimitado';
+
   const maxCapacity = 60;
 
   const totalTime = endTime.getTime() - startTime.getTime();
@@ -374,7 +378,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                   <Typography variant="body2" color="textSecondary">
                     <b>Stock:</b>{' '}
                     <Typography component="span" variant="body2" color="textPrimary">
-                      {currentLoad !== 'N/A' ? `${currentLoad}/${maxCapacity}` : 'N/A'}
+                      {currentLoad !== 'Ilimitado' ? `${currentLoad}/${maxCapacity}` : 'Ilimitado'}
                     </Typography>
                   </Typography>
                 </Box>
