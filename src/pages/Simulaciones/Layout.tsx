@@ -26,8 +26,8 @@ import { Services as ServicesProperties } from '../../../config';
 
 const Layout: React.FC = () => {
   const [tipo, setTipo] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs());
-  const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs());
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-10-01'));
+  const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2024-10-01T00:00'));
 
   const handleChange = (event: SelectChangeEvent) => {
     setTipo(event.target.value);
