@@ -19,12 +19,13 @@ import { useSimulation } from '../../context/Simulacion/useSimulation';
 import dayjs, { Dayjs } from 'dayjs';
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
-import { dataPrueba } from '../../data/dataPrueba';
+//import { dataPrueba } from '../../data/dataPrueba';
+import { dataPrueba } from '../../data/nuevaDataPrueba';
 
 const CustomHeader: React.FC = () => {
   const [tipo, setTipo] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-10-21'));
-  const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2023-10-21T00:00'));
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-10-01'));
+  const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2024-10-01T00:00'));
 
   const handleChange = (event: SelectChangeEvent) => {
     setTipo(event.target.value);
