@@ -20,15 +20,16 @@ function usePedidos(): PedidoHooksReturn {
 
         try {
             const data = await getPedidos();
-            setPedidos(data); 
+            setPedidos(data);
         } catch (err) {
             setError("Error en usePedidos: " + (err as Error).message);
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     return { pedidos, loading, error, fetchPedidos };
 }
 
 export default usePedidos;
+
