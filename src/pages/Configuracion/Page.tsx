@@ -6,7 +6,10 @@ import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
 
 const Page: React.FC = () => {
     const [userId, setUserId] = useState<string>('');
+    
+    // @ts-ignore
     const [socketManager, setSocketManager] = useState<WebSocketManager | null>(null);
+
     const [responses, setResponses] = useState<ResponseAlgorithm[]>([]); // Arreglo para almacenar respuestas
 
     useEffect(() => {

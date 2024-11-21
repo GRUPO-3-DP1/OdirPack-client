@@ -2,7 +2,6 @@ import React from 'react';
 import styles from './page.module.css';
 import Mapa from '../../components/Mapa/Mapa';
 import { useSimulation} from '../../context/Simulacion/useSimulation';
-import PanelBase from '../../components/Panels/PanelBase/PanelBase';
 
 const Page: React.FC = () => {
   const {state} = useSimulation();

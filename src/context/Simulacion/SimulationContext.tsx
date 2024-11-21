@@ -1,5 +1,4 @@
 import React, { createContext, useReducer, useEffect, useState } from 'react';
-import initialVehicles from '../../data/prueba';
 import oficinas from '../../data/oficinas';
 import { SimulationAction, SimulationState, Vehicle } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
@@ -49,7 +48,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   const [state, dispatch] = useReducer(simulationReducer, {
     isPlaying: false,
     vehicles: [],
-    speed: 900,
+    speed: 120,
     ends:false,
     startTime: new Date("2024-10-21T00:00:00Z"),
     currentTime: new Date("2024-10-21T00:00:00Z"),
@@ -64,7 +63,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   });
 
   const [userId, setUserId] = useState<string>('');
+  
+  // @ts-ignore
   const [socketManager, setSocketManager] = useState<WebSocketManager | null>(null);
+
   const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]); // Arreglo para almacenar respuestas
 
   useEffect(() => {
