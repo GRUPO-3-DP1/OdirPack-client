@@ -19,7 +19,7 @@ export const leyendaItems: { icon: JSX.Element, text: string; name: MarkerTypes;
   },
   {
     icon: <BuildCircle sx={{ color: "red" }} fontSize='small' />,
-    text: "Camión Averiado",
+    text: "Camión averiado",
     name: "camionesAveriados"
   },
   {

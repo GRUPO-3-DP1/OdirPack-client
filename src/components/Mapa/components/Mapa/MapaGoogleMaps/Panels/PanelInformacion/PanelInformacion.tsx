@@ -21,7 +21,8 @@ import {
   Button,
 } from '@mui/material';
 import dayjs from 'dayjs';
-import duration, { Duration } from 'dayjs/plugin/duration';
+//import duration, { Duration } from 'dayjs/plugin/duration';
+import duration from 'dayjs/plugin/duration';
 import styles from './PanelInformacion.module.css';
 
 dayjs.extend(duration);
@@ -76,10 +77,9 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   const progressPercentage = Math.floor((elapsedTime / totalTime) * 100);
 
   const fleetSaturation = `${trucksInMotion + trucksInMaintenance} / ${totalTrucks}`;
-  //const officeSaturation = `${occupiedOffices} / ${totalOffices}`;
 
-  const elapsedDuration = dayjs.duration(elapsedTime);
-  const formattedElapsedTime = formatElapsedTime(elapsedDuration);
+  //const elapsedDuration = dayjs.duration(elapsedTime);
+  //const formattedElapsedTime = formatElapsedTime(elapsedDuration);
 
   // Crear un mapeo de código de destino a índice de segmento
   const destinoToSegmentIndex: { [ubigeoDestino: string]: number; } = {};
@@ -110,20 +110,20 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     return 0;
   })();
 
-  function formatElapsedTime(elapsedDuration: Duration): string {
-    const totalSeconds = elapsedDuration.asSeconds();
-    const days = Math.floor(totalSeconds / (24 * 3600));
-    const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
+  // function formatElapsedTime(elapsedDuration: Duration): string {
+  //   const totalSeconds = elapsedDuration.asSeconds();
+  //   const days = Math.floor(totalSeconds / (24 * 3600));
+  //   const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+  //   const minutes = Math.floor((totalSeconds % 3600) / 60);
 
-    let formatted = '';
-    if (days > 0) {
-      formatted += `${days}d `;
-    }
-    formatted += `${hours}h ${minutes}m`;
+  //   let formatted = '';
+  //   if (days > 0) {
+  //     formatted += `${days}d `;
+  //   }
+  //   formatted += `${hours}h ${minutes}m`;
 
-    return formatted.trim();
-  }
+  //   return formatted.trim();
+  // }
 
   const getTipoCamion = (capacidadCarga: number) => {
     if (capacidadCarga === 10) return 'C';
@@ -220,45 +220,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 </Box>
               </Box>
             </Box>
-            <Accordion defaultExpanded disableGutters>
-              <AccordionSummary
-                expandIcon={<ExpandMore />}
-                aria-controls="panel1-content"
-                id="panel1-header"
-                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
-              >
-                <Typography variant="subtitle2" color="textPrimary">
-                  <b>Detalles de simulación</b>
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-                <Box>
-                  <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    sx={{ mb: 1 }}
-                  >
-                    <Box>
-                      <Typography variant="body2" color="textSecondary">
-                        Fecha y hora
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary">
-                        {dayjs(currentTime).format('DD/MM/YYYY HH:mm:ss')}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" color="textSecondary">
-                        Tiempo transcurrido
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary">
-                        {formattedElapsedTime}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              </AccordionDetails>
-            </Accordion>
             <Accordion defaultExpanded disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
@@ -387,45 +348,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
             <Accordion defaultExpanded disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
-                aria-controls="panel1-content"
-                id="panel1-header"
-                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
-              >
-                <Typography variant="subtitle2" color="textPrimary">
-                  <b>Detalles de simulación</b>
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-                <Box>
-                  <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    sx={{ mb: 1 }}
-                  >
-                    <Box>
-                      <Typography variant="body2" color="textSecondary">
-                        Fecha y hora
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary">
-                        {dayjs(currentTime).format('DD/MM/YYYY HH:mm:ss')}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" color="textSecondary">
-                        Tiempo transcurrido
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary">
-                        {formattedElapsedTime}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              </AccordionDetails>
-            </Accordion>
-            <Accordion defaultExpanded disableGutters>
-              <AccordionSummary
-                expandIcon={<ExpandMore />}
                 aria-controls="panel2-content"
                 id="panel2-header"
                 sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
@@ -521,46 +443,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 )}
               </Box>
             </Box>
-            {/* Accordion para Detalles de simulación */}
-            <Accordion defaultExpanded disableGutters>
-              <AccordionSummary
-                expandIcon={<ExpandMore />}
-                aria-controls="panel1-content"
-                id="panel1-header"
-                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
-              >
-                <Typography variant="subtitle2" color="textPrimary">
-                  <b>Detalles de simulación</b>
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-                <Box>
-                  <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    sx={{ mb: 1 }}
-                  >
-                    <Box>
-                      <Typography variant="body2" color="textSecondary">
-                        Fecha y hora
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary">
-                        {dayjs(currentTime).format('DD/MM/YYYY HH:mm:ss')}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" color="textSecondary">
-                        Tiempo transcurrido
-                      </Typography>
-                      <Typography variant="body2" color="textPrimary">
-                        {formattedElapsedTime}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              </AccordionDetails>
-            </Accordion>
             {/* Accordion para Detalles de camiones */}
             <Accordion defaultExpanded disableGutters>
               <AccordionSummary
