@@ -65,6 +65,7 @@ const CustomHeader: React.FC = () => {
           value={selectedDate}
           onChange={(newValue) => setSelectedDate(newValue)}
           disabled={state.isPlaying}
+          format="DD/MM/YYYY" 
           slotProps={{
             textField: {
               size: 'small',
@@ -78,6 +79,8 @@ const CustomHeader: React.FC = () => {
           value={selectedTime}
           onChange={(newValue) => setSelectedTime(newValue)}
           disabled={state.isPlaying}
+          views={['hours', 'minutes']}
+          ampm 
           slotProps={{
             textField: {
               size: 'small',
