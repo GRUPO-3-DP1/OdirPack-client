@@ -16,7 +16,7 @@ export const ArchivosProvider: React.FC<{ children: React.ReactNode; }> = ({ chi
   useEffect(() => {
     const tramos = parseTramos(rutasString, oficinas);
     setRutas(createTramoMap(tramos));
-    console.log(tramos);
+    //console.log(tramos);
 
     return () => {
       console.log("Componente ArchivosProvider desmontado");

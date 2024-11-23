@@ -31,7 +31,7 @@ const CustomHeader: React.FC = () => {
     setTipo(event.target.value);
   };
 
-  const { state, dispatch, userId } = useSimulation();
+  const { state, dispatch, userId, stopSimulation } = useSimulation();
 
   const startSimulation = async () => {
     console.log("startSimulation");
@@ -57,9 +57,6 @@ const CustomHeader: React.FC = () => {
     }
   };
 
-  const stopSimulation = () => {
-    dispatch({ type: 'STOP_SIMULATION' });
-  };
   return (
     <Header isLoading={state.isPlaying}>
       <Box display="flex" alignItems="center" gap={2}>
