@@ -1,8 +1,7 @@
-import React, { createContext, useReducer, useEffect, useState, useRef } from 'react';
+import React, { createContext, useReducer, useEffect, useState } from 'react';
 import oficinas from '../../data/oficinas';
 import { SimulationAction, SimulationState, Vehicle, Oficina, Order } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
-import WebSocketManager from '../../store/webSocketManager';
 import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
 import { convertUnplannedPedidosToOrders } from '../../utils/convertUnplannedPedidosToOrders';
 import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles';
@@ -11,6 +10,8 @@ import { locationCoordinates } from '../../utils/locationCoordinates';
 import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
 import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
 import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
+import { useWebSocket } from '../../store/hooks/useWebSocket';
+import { Services } from '../../../config';
 
 export const SimulationContext = createContext<{
   state: SimulationState;
@@ -19,6 +20,7 @@ export const SimulationContext = createContext<{
   userId: string;
   solutions: ResponseAlgorithm[];
   offices: Oficina[];
+  stopSimulation: () => void;
 } | null>(null);
 
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
@@ -60,50 +62,50 @@ const initialOffices = oficinas.map((office) => ({
   currentOrders: [],
 }));
 
+const initialState = {
+  isPlaying: false,
+  vehicles: [],
+  speed: 90,
+  ends: false,
+  startTime: new Date('2024-10-21T00:00:00Z'),
+  currentTime: new Date('2024-10-21T00:00:00Z'),
+  endTime: new Date('2024-10-28T00:00:00Z'),
+  trucksInMotion: 0,
+  trucksInMaintenance: 0,
+  totalTrucks: 0,
+  totalOffices: oficinas.length,
+  occupiedOffices: 0,
+  ordersDelivered: 0,
+  ordersPending: 0,
+  offices: initialOffices,
+  unplannedOrders: [],
+  processedOrderIds: [],
+};
+
 export function SimulationProvider({ children }: { children: React.ReactNode; }) {
-  const [state, dispatch] = useReducer(simulationReducer, {
-    isPlaying: false,
-    vehicles: [],
-    speed: 90,
-    ends: false,
-    startTime: new Date('2024-10-21T00:00:00Z'),
-    currentTime: new Date('2024-10-21T00:00:00Z'),
-    endTime: new Date('2024-10-28T00:00:00Z'),
-    trucksInMotion: 0,
-    trucksInMaintenance: 0,
-    totalTrucks: 0,
-    totalOffices: oficinas.length,
-    occupiedOffices: 0,
-    ordersDelivered: 0,
-    ordersPending: 0,
-    offices: initialOffices,
-    unplannedOrders: [],
-    processedOrderIds: [],
-  });
+  const [state, dispatch] = useReducer(simulationReducer, initialState);
 
   const [userId, setUserId] = useState<string>('');
-  const socketManagerRef = useRef<WebSocketManager | null>(null);
   const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]);
 
-  useEffect(() => {
-    socketManagerRef.current = new WebSocketManager((data) => {
+  const { isConnected, closeWebSocket } = useWebSocket({
+    url: `${Services.WebUrl}/conexion-websocket`,
+    onMessage: (data) => {
       if (data.userId) {
         setUserId(data.userId);
       } else {
-        const newResponse: ResponseAlgorithm = data;
+        const newResponse = data;
         console.log('Respuesta del algoritmo recibida:', newResponse);
         setSolutions((prevResponses) => [...prevResponses, newResponse]);
       }
-    });
-
-    socketManagerRef.current.connect();
-
-    return () => {
-      if (socketManagerRef.current) {
-        socketManagerRef.current.close();
-      }
-    };
-  }, []);
+    },
+    onOpen: () => {
+      console.log('Conexión WebSocket establecida en SimulationProvider');
+    },
+    onClose: () => {
+      console.log('Conexión WebSocket cerrada en SimulationProvider');
+    },
+  });
 
   const [lastProcessedSolution, setLastProcessedSolution] = useState<string | null>(null);
   const [indexActualProcess, setIndexActualProcess] = useState(0);
@@ -402,9 +404,16 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     state,
   ]);
 
+  const stopSimulation = () => {
+    dispatch({ type: 'STOP_SIMULATION' });
+    if (isConnected) {
+      closeWebSocket();
+    }
+  };
+
   return (
     <SimulationContext.Provider
-      value={{ state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices }}
+      value={{ state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices, stopSimulation }}
     >
       {children}
     </SimulationContext.Provider>
