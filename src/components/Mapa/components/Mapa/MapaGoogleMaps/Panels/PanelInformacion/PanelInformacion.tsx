@@ -441,106 +441,39 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                     backgroundColor: '#f9f9f9',
                   }}
                 >
-                {/* Camiones programados */}
-                {scheduledVehicles.length > 0 && (
-                  <>
-                    {scheduledVehicles.map(({ vehicle, arrivalTime, deliveringOrders }: any) => (
-                      <Box
-                        key={vehicle.idVehiculo}
-                        sx={{
-                          backgroundColor: '#e3f2fd', // Azul claro para programado
-                          padding: '8px',
-                          borderRadius: '4px',
-                          marginBottom: '8px',
-                        }}
-                      >
-                        <Box display="flex" alignItems="center">
-                          <LocalShipping sx={{ color: '#2196f3', marginRight: '8px' }} /> {/* Ícono de camión en azul */}
-                          <Typography variant="subtitle1" color="textPrimary">
-                            <b>Camión {vehicle.idVehiculo}</b>
-                          </Typography>
-                        </Box>
-                        <Typography variant="body2" color="textSecondary">
-                          <b>Estado:</b> Programado
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          <b>Hora de llegada:</b>{' '}
-                          {dayjs(arrivalTime).format('DD/MM/YYYY, hh:mm A')}
-                        </Typography>
-                        {deliveringOrders.length > 0 ? (
-                          <>
-                            <Typography variant="body2" color="textSecondary">
-                              <b>Pedidos:</b>
-                            </Typography>
-                            <ul>
-                              {deliveringOrders.map((pedido: Order) => (
-                                <li key={pedido.idPedido}>
-                                  <Typography variant="body2" color="textPrimary">
-                                    Pedido {pedido.idPedido} - {pedido.cantidad} unidades
-                                  </Typography>
-                                </li>
-                              ))}
-                            </ul>
-                          </>
-                        ) : (
-                          <Typography variant="body2" color="textSecondary">
-                            <b>Pedidos:</b> Ninguno
-                          </Typography>
-                        )}
-                      </Box>
-                    ))}
-                  </>
-                )}
-
-                {/* Camiones en mantenimiento */}
-                {maintenanceVehicles.length > 0 && (
-                  <>
-                    {maintenanceVehicles.map((vehicle: Camion) => {
-                      const timeRemainingMs =
-                        vehicle.maintenance.startTime.getTime() +
-                        vehicle.maintenance.duration -
-                        state.currentTime.getTime();
-
-                      const timeRemainingDuration = dayjs.duration(timeRemainingMs);
-                      const hours = Math.floor(timeRemainingDuration.asHours());
-                      const minutes = timeRemainingDuration.minutes();
-
-                      const timeRemaining = `${hours}h ${minutes}m`;
-
-                      // Obtener pedidos entregados en esa oficina antes del inicio del mantenimiento
-                      const deliveredOrders = vehicle.ruta.pedidos.filter(
-                        (pedido) =>
-                          pedido.fechaLlegada &&
-                          new Date(pedido.fechaLlegada) <= vehicle.maintenance.startTime &&
-                          pedido.ubigeoDestino === selectedOficina.ubigeo
-                      );
-
-                      return (
+                  {/* Camiones programados */}
+                  {scheduledVehicles.length > 0 && (
+                    <>
+                      {scheduledVehicles.map(({ vehicle, arrivalTime, deliveringOrders }: any) => (
                         <Box
                           key={vehicle.idVehiculo}
                           sx={{
-                            backgroundColor: '#fff3e0', // Amarillo claro para mantenimiento
+                            backgroundColor: '#e3f2fd', // Azul claro para programado
                             padding: '8px',
                             borderRadius: '4px',
                             marginBottom: '8px',
                           }}
                         >
                           <Box display="flex" alignItems="center">
-                            <Build sx={{ color: '#ff9800', marginRight: '8px' }} /> {/* Ícono de mantenimiento en amarillo */}
+                            <LocalShipping sx={{ color: '#2196f3', marginRight: '8px' }} /> {/* Ícono de camión en azul */}
                             <Typography variant="subtitle1" color="textPrimary">
                               <b>Camión {vehicle.idVehiculo}</b>
                             </Typography>
                           </Box>
                           <Typography variant="body2" color="textSecondary">
-                            <b>Estado:</b> En mantenimiento ({timeRemaining} restantes)
+                            <b>Estado:</b> Programado
                           </Typography>
-                          {deliveredOrders.length > 0 ? (
+                          <Typography variant="body2" color="textSecondary">
+                            <b>Hora de llegada:</b>{' '}
+                            {dayjs(arrivalTime).format('DD/MM/YYYY, hh:mm A')}
+                          </Typography>
+                          {deliveringOrders.length > 0 ? (
                             <>
                               <Typography variant="body2" color="textSecondary">
-                                <b>Pedidos entregados:</b>
+                                <b>Pedidos:</b>
                               </Typography>
                               <ul>
-                                {deliveredOrders.map((pedido: Order) => (
+                                {deliveringOrders.map((pedido: Order) => (
                                   <li key={pedido.idPedido}>
                                     <Typography variant="body2" color="textPrimary">
                                       Pedido {pedido.idPedido} - {pedido.cantidad} unidades
@@ -551,22 +484,89 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                             </>
                           ) : (
                             <Typography variant="body2" color="textSecondary">
-                              <b>Pedidos entregados:</b> Ninguno
+                              <b>Pedidos:</b> Ninguno
                             </Typography>
                           )}
                         </Box>
-                      );
-                    })}
-                  </>
-                )}
+                      ))}
+                    </>
+                  )}
+
+                  {/* Camiones en mantenimiento */}
+                  {maintenanceVehicles.length > 0 && (
+                    <>
+                      {maintenanceVehicles.map((vehicle: Camion) => {
+                        const timeRemainingMs =
+                          vehicle.maintenance.startTime.getTime() +
+                          vehicle.maintenance.duration -
+                          state.currentTime.getTime();
+
+                        const timeRemainingDuration = dayjs.duration(timeRemainingMs);
+                        const hours = Math.floor(timeRemainingDuration.asHours());
+                        const minutes = timeRemainingDuration.minutes();
+
+                        const timeRemaining = `${hours}h ${minutes}m`;
+
+                        // Obtener pedidos entregados en esa oficina antes del inicio del mantenimiento
+                        const deliveredOrders = vehicle.ruta.pedidos.filter(
+                          (pedido) =>
+                            pedido.fechaLlegada &&
+                            new Date(pedido.fechaLlegada) <= vehicle.maintenance.startTime &&
+                            pedido.ubigeoDestino === selectedOficina.ubigeo
+                        );
+
+                        return (
+                          <Box
+                            key={vehicle.idVehiculo}
+                            sx={{
+                              backgroundColor: '#fff3e0', // Amarillo claro para mantenimiento
+                              padding: '8px',
+                              borderRadius: '4px',
+                              marginBottom: '8px',
+                            }}
+                          >
+                            <Box display="flex" alignItems="center">
+                              <Build sx={{ color: '#ff9800', marginRight: '8px' }} /> {/* Ícono de mantenimiento en amarillo */}
+                              <Typography variant="subtitle1" color="textPrimary">
+                                <b>Camión {vehicle.idVehiculo}</b>
+                              </Typography>
+                            </Box>
+                            <Typography variant="body2" color="textSecondary">
+                              <b>Estado:</b> En mantenimiento ({timeRemaining} restantes)
+                            </Typography>
+                            {deliveredOrders.length > 0 ? (
+                              <>
+                                <Typography variant="body2" color="textSecondary">
+                                  <b>Pedidos entregados:</b>
+                                </Typography>
+                                <ul>
+                                  {deliveredOrders.map((pedido: Order) => (
+                                    <li key={pedido.idPedido}>
+                                      <Typography variant="body2" color="textPrimary">
+                                        Pedido {pedido.idPedido} - {pedido.cantidad} unidades
+                                      </Typography>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </>
+                            ) : (
+                              <Typography variant="body2" color="textSecondary">
+                                <b>Pedidos entregados:</b> Ninguno
+                              </Typography>
+                            )}
+                          </Box>
+                        );
+                      })}
+                    </>
+                  )}
 
 
-                {/* Si no hay camiones programados ni en mantenimiento */}
-                {scheduledVehicles.length === 0 && maintenanceVehicles.length === 0 && (
-                  <Typography variant="body2" color="textSecondary">
-                    No hay camiones programados o en mantenimiento
-                  </Typography>
-                )}
+                  {/* Si no hay camiones programados ni en mantenimiento */}
+                  {scheduledVehicles.length === 0 && maintenanceVehicles.length === 0 && (
+                    <Typography variant="body2" color="textSecondary">
+                      No hay camiones programados o en mantenimiento
+                    </Typography>
+                  )}
                 </Box>
               </AccordionDetails>
             </Accordion>
