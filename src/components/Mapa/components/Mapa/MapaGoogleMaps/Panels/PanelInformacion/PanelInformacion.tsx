@@ -431,7 +431,16 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-                
+                <Box
+                  sx={{
+                    maxHeight: '300px', // Limitar la altura del contenedor
+                    overflowY: 'auto', // Habilitar scroll vertical
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: '#f9f9f9',
+                  }}
+                >
                 {/* Camiones programados */}
                 {scheduledVehicles.length > 0 && (
                   <>
@@ -558,7 +567,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                     No hay camiones programados o en mantenimiento
                   </Typography>
                 )}
-                
+                </Box>
               </AccordionDetails>
             </Accordion>
 
