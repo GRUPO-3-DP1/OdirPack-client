@@ -76,7 +76,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   const elapsedTime = currentTime.getTime() - startTime.getTime();
   const progressPercentage = Math.floor((elapsedTime / totalTime) * 100);
 
-  const fleetSaturation = `${trucksInMotion + trucksInMaintenance} / ${totalTrucks}`;
+  const fleetSaturation = `${totalTrucks}`;
 
   //Para ver los pedidos de las oficinas
   const scheduledVehicles = state.vehicles.flatMap((vehicle) => {
@@ -646,7 +646,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                   </Box>
                 </Box>
                 <Typography variant="body2" color="textSecondary" gutterBottom>
-                  Saturación de flota:{' '}
+                  Flota total:{' '}
                   <Typography component="span" variant="body2" color="textPrimary">
                     {fleetSaturation}
                   </Typography>
