@@ -95,7 +95,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         setUserId(data.userId);
       } else {
         const newResponse = data;
-        console.log('Respuesta del algoritmo recibida:', newResponse);
+        //console.log('Respuesta del algoritmo recibida:', newResponse);
         setSolutions((prevResponses) => [...prevResponses, newResponse]);
       }
     },
@@ -116,7 +116,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
       const newSolutionString = JSON.stringify(newResponse.solucion);
 
-      console.log('Solución a procesar:', newResponse);
+      //console.log('Solución a procesar:', newResponse);
 
       if (newSolutionString !== lastProcessedSolution) {
         setLastProcessedSolution(newSolutionString);
@@ -178,7 +178,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                   : existingVehicle.position;
               const newFechaInicio =
                 existingVehicle.ruta.fechaInicio === null ? matchingNewVehicle.ruta.fechaInicio : existingVehicle.ruta.fechaInicio;
-              console.log('Encontró match', existingVehicle.idVehiculo);
+              //console.log('Encontró match', existingVehicle.idVehiculo);
 
               return {
                 ...existingVehicle,
@@ -200,7 +200,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
           // Actualizar el estado con la lista combinada de vehículos
           dispatch({ type: 'SET_VEHICLES', payload: [...updatedVehicles] });
-          console.log('Vehículos actualizados:', updatedVehicles);
+          //console.log('Vehículos actualizados:', updatedVehicles);
 
           // Actualizar datos de simulación
           dispatch({

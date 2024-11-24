@@ -22,6 +22,7 @@ import { Services as ServicesProperties } from '../../../config';
 //import { dataPrueba } from '../../data/dataPrueba';
 import { dataPrueba } from '../../data/nuevaDataPrueba';
 
+
 const CustomHeader: React.FC = () => {
   const [tipo, setTipo] = useState("");
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-10-01'));
