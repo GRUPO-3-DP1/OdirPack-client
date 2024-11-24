@@ -1,10 +1,17 @@
-// SimulationContext.tsx
-import React, { createContext, useReducer, useEffect, useState, useRef } from 'react';
+import React, { createContext, useReducer, useEffect, useState } from 'react';
 import oficinas from '../../data/oficinas';
 import { SimulationAction, SimulationState, Vehicle, Oficina, Order } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
-import WebSocketManager from '../../store/webSocketManager';
-import { PedidoAlgorithmResponse, ResponseAlgorithm, OficinaAlgorithmResponse } from '../../store/types/ResponseAlgorithm';
+import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
+import { convertUnplannedPedidosToOrders } from '../../utils/convertUnplannedPedidosToOrders';
+import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles';
+import { convertOffices } from '../../utils/convertOffices';
+import { locationCoordinates } from '../../utils/locationCoordinates';
+import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
+import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
+import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
+import { useWebSocket } from '../../store/hooks/useWebSocket';
+import { Services } from '../../../config';
 
 export const SimulationContext = createContext<{
   state: SimulationState;
@@ -13,45 +20,8 @@ export const SimulationContext = createContext<{
   userId: string;
   solutions: ResponseAlgorithm[];
   offices: Oficina[];
+  stopSimulation: () => void;
 } | null>(null);
-
-const locationCoordinates: Record<string, { lat: number; lng: number; }> = oficinas.reduce((acc, oficina) => {
-  acc[oficina.ubigeo] = { lat: oficina.latitud, lng: oficina.longitud };
-  return acc;
-}, {} as Record<string, { lat: number; lng: number; }>);
-
-function convertUnplannedPedidosToOrders(pedidos: PedidoAlgorithmResponse[]): Order[] {
-  return pedidos.map((pedido) => ({
-    idPedido: pedido.idPedido,
-    ubigeoDestino: pedido.ubigeoDestino,
-    ubigeoOrigen: pedido.ubigeoOrigen,
-    fechaRegistro: pedido.fechaRegistro,
-    cantidad: pedido.cantidad,
-    idCliente: pedido.idCliente,
-    fechaLlegada: null,      // No tienen fecha de llegada aún
-    fechaRecogida: null,     // No tienen fecha de recogida aún
-  }));
-}
-
-function convertPedidosToOrders(
-  pedidos: PedidoAlgorithmResponse[],
-  tramoDestinoFechaMap: Record<string, string>,
-  tramoOrigenFechaMap: Record<string, string>,
-  rutaFechaInicio: string
-): Order[] {
-  return pedidos.map((pedido) => ({
-    idPedido: pedido.idPedido,
-    ubigeoDestino: pedido.ubigeoDestino,
-    ubigeoOrigen: pedido.ubigeoOrigen,
-    fechaRegistro: pedido.fechaRegistro,
-    cantidad: pedido.cantidad,
-    idCliente: pedido.idCliente,
-    fechaLlegada: tramoDestinoFechaMap[pedido.ubigeoDestino] || null,
-    fechaRecogida: pedido.ubigeoOrigen
-      ? tramoOrigenFechaMap[pedido.ubigeoOrigen] || rutaFechaInicio
-      : rutaFechaInicio,
-  }));
-}
 
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
   switch (action.type) {
@@ -92,50 +62,50 @@ const initialOffices = oficinas.map((office) => ({
   currentOrders: [],
 }));
 
+const initialState = {
+  isPlaying: false,
+  vehicles: [],
+  speed: 90,
+  ends: false,
+  startTime: new Date('2024-10-21T00:00:00Z'),
+  currentTime: new Date('2024-10-21T00:00:00Z'),
+  endTime: new Date('2024-10-28T00:00:00Z'),
+  trucksInMotion: 0,
+  trucksInMaintenance: 0,
+  totalTrucks: 0,
+  totalOffices: oficinas.length,
+  occupiedOffices: 0,
+  ordersDelivered: 0,
+  ordersPending: 0,
+  offices: initialOffices,
+  unplannedOrders: [],
+  processedOrderIds: [],
+};
+
 export function SimulationProvider({ children }: { children: React.ReactNode; }) {
-  const [state, dispatch] = useReducer(simulationReducer, {
-    isPlaying: false,
-    vehicles: [],
-    speed: 90,
-    ends: false,
-    startTime: new Date('2024-10-21T00:00:00Z'),
-    currentTime: new Date('2024-10-21T00:00:00Z'),
-    endTime: new Date('2024-10-28T00:00:00Z'),
-    trucksInMotion: 0,
-    trucksInMaintenance: 0,
-    totalTrucks: 0,
-    totalOffices: oficinas.length,
-    occupiedOffices: 0,
-    ordersDelivered: 0,
-    ordersPending: 0,
-    offices: initialOffices,
-    unplannedOrders: [],
-    processedOrderIds: [],
-  });
+  const [state, dispatch] = useReducer(simulationReducer, initialState);
 
   const [userId, setUserId] = useState<string>('');
-  const socketManagerRef = useRef<WebSocketManager | null>(null);
   const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]);
 
-  useEffect(() => {
-    socketManagerRef.current = new WebSocketManager((data) => {
+  const { isConnected, closeWebSocket } = useWebSocket({
+    url: `${Services.WebUrl}/conexion-websocket`,
+    onMessage: (data) => {
       if (data.userId) {
         setUserId(data.userId);
       } else {
-        const newResponse: ResponseAlgorithm = data;
-        console.log('Respuesta del algoritmo recibida:', newResponse);
+        const newResponse = data;
+        //console.log('Respuesta del algoritmo recibida:', newResponse);
         setSolutions((prevResponses) => [...prevResponses, newResponse]);
       }
-    });
-
-    socketManagerRef.current.connect();
-
-    return () => {
-      if (socketManagerRef.current) {
-        socketManagerRef.current.close();
-      }
-    };
-  }, []);
+    },
+    onOpen: () => {
+      //console.log('Conexión WebSocket establecida en SimulationProvider');
+    },
+    onClose: () => {
+      //console.log('Conexión WebSocket cerrada en SimulationProvider');
+    },
+  });
 
   const [lastProcessedSolution, setLastProcessedSolution] = useState<string | null>(null);
   const [indexActualProcess, setIndexActualProcess] = useState(0);
@@ -146,7 +116,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
       const newSolutionString = JSON.stringify(newResponse.solucion);
 
-      console.log('Solución a procesar:', newResponse);
+      //console.log('Solución a procesar:', newResponse);
 
       if (newSolutionString !== lastProcessedSolution) {
         setLastProcessedSolution(newSolutionString);
@@ -179,7 +149,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         // Actualizar vehículos
         if (!state.vehicles || state.vehicles.length === 0) {
           dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
-          console.log('Primera respuesta:', newVehicles);
+          //console.log('Primera respuesta:', newVehicles);
 
           // Actualizar datos de simulación
           dispatch({
@@ -190,7 +160,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
             },
           });
         } else {
-          console.log('Procesando');
+          //console.log('Procesando');
 
           // Fusionar vehículos existentes con los de la nueva solución
           const updatedVehicles = state.vehicles.map((existingVehicle) => {
@@ -208,7 +178,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                   : existingVehicle.position;
               const newFechaInicio =
                 existingVehicle.ruta.fechaInicio === null ? matchingNewVehicle.ruta.fechaInicio : existingVehicle.ruta.fechaInicio;
-              console.log('Encontró match', existingVehicle.idVehiculo);
+              //console.log('Encontró match', existingVehicle.idVehiculo);
 
               return {
                 ...existingVehicle,
@@ -230,7 +200,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
           // Actualizar el estado con la lista combinada de vehículos
           dispatch({ type: 'SET_VEHICLES', payload: [...updatedVehicles] });
-          console.log('Vehículos actualizados:', updatedVehicles);
+          //console.log('Vehículos actualizados:', updatedVehicles);
 
           // Actualizar datos de simulación
           dispatch({
@@ -248,7 +218,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         // Actualizar pedidos no planificados en el estado
         dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: unplannedOrders });
       } else {
-        console.log('Es la misma solución');
+        //console.log('Es la misma solución');
       }
 
       // Actualizar el índice para procesar la siguiente respuesta
@@ -256,105 +226,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     }
   }, [indexActualProcess, solutions, lastProcessedSolution, state.vehicles, dispatch, state.offices]);
 
-  // Función para convertir una solución a vehículos
-  const convertSolutionToVehicles = (solution: ResponseAlgorithm): Vehicle[] => {
-
-    const convertedVehicles: Vehicle[] = [];
-
-    if (!solution || !Array.isArray(solution.solucion) || solution.solucion.length === 0) {
-      return convertedVehicles;
-    }
-
-    const vehicles = solution.solucion.flatMap((item) => {
-      if (!item.rutasVehiculos) {
-        return [];
-      }
-
-      return Object.values(item.rutasVehiculos).flatMap((vehicleItem) => {
-        if (!vehicleItem) {
-          return [];
-        }
-        if (!vehicleItem.ruta) {
-          return [];
-        }
-
-        const firstTramo = vehicleItem.ruta.tramos[0];
-        const destinationCode = firstTramo ? firstTramo.destino.codigo : '';
-        const locationCoordinate = locationCoordinates[destinationCode] || { lat: 0, lng: 0 };
-
-        // Crear un mapa de destino a fecha de llegada
-        const tramoDestinoFechaMap: Record<string, string> = {};
-        for (let i = 0; i < vehicleItem.ruta.tramos.length; i++) {
-          const tramo = vehicleItem.ruta.tramos[i];
-          const fechaLlegada = vehicleItem.ruta.fechasLlegada[i];
-          tramoDestinoFechaMap[tramo.destino.codigo] = fechaLlegada;
-        }
-
-        // Crear un mapa de origen a fecha de salida
-        const tramoOrigenFechaMap: Record<string, string> = {};
-        for (let i = 0; i < vehicleItem.ruta.tramos.length; i++) {
-          const tramo = vehicleItem.ruta.tramos[i];
-          const fechaSalida = vehicleItem.ruta.fechasSalida[i];
-          tramoOrigenFechaMap[tramo.origen.codigo] = fechaSalida;
-        }
 
 
-        // Asignar fechaLlegada a cada pedido
-        const pedidos: Order[] = convertPedidosToOrders(
-          vehicleItem.ruta.pedidos,
-          tramoDestinoFechaMap,
-          tramoOrigenFechaMap,
-          vehicleItem.ruta.fechaInicio
-        );
-
-        return {
-          idVehiculo: vehicleItem.idVehiculo,
-          capacidadCarga: vehicleItem.capacidadCarga,
-          fechaLibre: vehicleItem.fechaLibre || null,
-          ruta: {
-            tramos: vehicleItem.ruta.tramos.map((tramo) => ({
-              origen: {
-                codigo: tramo.origen.codigo,
-                descripcion: tramo.origen.descripcion,
-              },
-              destino: {
-                codigo: tramo.destino.codigo,
-                descripcion: tramo.destino.descripcion,
-              },
-            })),
-            pedidos: pedidos,
-            fechaInicio: vehicleItem.ruta.fechaInicio,
-            fechasSalida: vehicleItem.ruta.fechasSalida,
-            fechasLlegada: vehicleItem.ruta.fechasLlegada,
-          },
-          position: {
-            lat: locationCoordinate.lat,
-            lng: locationCoordinate.lng,
-            progress: 0,
-            currentSegmentIndex: -1,
-          },
-        };
-      });
-    });
-
-    convertedVehicles.push(...vehicles);
-    return convertedVehicles;
-  };
-
-  // Función para convertir oficinas
-  const convertOffices = (oficinasData: OficinaAlgorithmResponse[]): Oficina[] => {
-    return oficinasData.map((oficinaData) => {
-      const matchingOficina = oficinas.find((o) => o.ubigeo === oficinaData.ubigeo);
-      if (!matchingOficina) {
-        throw new Error(`No se encontró una oficina con ubigeo ${oficinaData.ubigeo}`);
-      }
-      return {
-        ...matchingOficina,
-        horasStock: oficinaData.horas_stock,
-        currentOrders: [],
-      };
-    });
-  };
 
   // Función para calcular oficinas ocupadas
   const calculateOccupiedOffices = (offices: Oficina[]): number => {
@@ -365,51 +238,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       }
     });
     return occupied;
-  };
-
-  // Función para calcular camiones en movimiento
-  const calculateTrucksInMotion = (vehicles: Vehicle[]): number => {
-    return vehicles.filter((vehicle) => vehicle.position.currentSegmentIndex !== -1).length;
-  };
-
-  // Función para calcular pedidos entregados
-  const calculateOrdersDelivered = (vehicles: Vehicle[], currentTime: Date): number => {
-    let deliveredOrders = 0;
-
-    vehicles.forEach((vehicle) => {
-      const { ruta } = vehicle;
-      ruta.pedidos.forEach((pedido) => {
-        if (pedido.fechaLlegada) {
-          const arrivalTime = new Date(pedido.fechaLlegada);
-          if (arrivalTime <= currentTime) {
-            deliveredOrders += 1;
-          }
-        }
-      });
-    });
-
-    return deliveredOrders;
-  };
-
-  // Función para calcular pedidos pendientes
-  const calculateOrdersPending = (vehicles: Vehicle[], currentTime: Date): number => {
-    let totalOrders = 0;
-    let deliveredOrders = 0;
-
-    vehicles.forEach((vehicle) => {
-      totalOrders += vehicle.ruta.pedidos.length;
-      const { ruta } = vehicle;
-      ruta.pedidos.forEach((pedido) => {
-        if (pedido.fechaLlegada) {
-          const arrivalTime = new Date(pedido.fechaLlegada);
-          if (arrivalTime <= currentTime) {
-            deliveredOrders += 1;
-          }
-        }
-      });
-    });
-
-    return totalOrders - deliveredOrders;
   };
 
   const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
@@ -424,7 +252,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         dispatch({ type: 'STOP_SIMULATION' });
         clearInterval(updateInterval);
         state.ends = true;
-        console.log('Ya pasó la fecha límite');
+        //console.log('Ya pasó la fecha límite');
         return;
       }
 
@@ -434,6 +262,55 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         const { ruta } = vehicle;
         const startTime = new Date(ruta.fechaInicio);
         const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
+
+        // Verificar si el vehículo está en mantenimiento
+        if (vehicle.maintenance && vehicle.maintenance.inMaintenance) {
+          const maintenanceEndTime = new Date(
+            vehicle.maintenance.startTime.getTime() + vehicle.maintenance.duration
+          );
+          if (newTime >= maintenanceEndTime) {
+            // Finaliza el mantenimiento
+            vehicle = {
+              ...vehicle,
+              maintenance: undefined, // Eliminar el objeto maintenance
+            };
+            // Continuar para actualizar la posición
+          } else {
+            // Mantener el vehículo en mantenimiento
+            return vehicle;
+          }
+        }
+
+        // Detectar si el vehículo ha llegado a una oficina
+        const arrivalTimes = ruta.fechasLlegada.map((fecha) => new Date(fecha));
+        for (let i = 0; i < arrivalTimes.length; i++) {
+          const arrivalTime = arrivalTimes[i];
+          const departureTime = new Date(ruta.fechasSalida[i + 1] || ruta.fechasLlegada[i]);
+
+          if (newTime >= arrivalTime && newTime < departureTime) {
+            // El vehículo ha llegado a una oficina y está en mantenimiento
+            const maintenanceStartTime = arrivalTime;
+            const maintenanceDuration = 4 * 60 * 60 * 1000; // 4 horas en milisegundos
+            const maintenanceEndTime = new Date(maintenanceStartTime.getTime() + maintenanceDuration);
+
+            // Si el tiempo actual está dentro del periodo de mantenimiento
+            if (newTime >= maintenanceStartTime && newTime < maintenanceEndTime) {
+              return {
+                ...vehicle,
+                maintenance: {
+                  inMaintenance: true,
+                  startTime: maintenanceStartTime,
+                  duration: maintenanceDuration,
+                  officeUbigeo: ruta.tramos[i].destino.codigo,
+                },
+                position: {
+                  ...vehicle.position,
+                  currentSegmentIndex: -1,
+                },
+              };
+            }
+          }
+        }
 
         // Si la simulación aún no llega al tiempo de inicio del vehículo o ya terminó, devolver la posición actual
         if (newTime < startTime || newTime > endTime) {
@@ -567,20 +444,28 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     }, timeIncrement / state.speed);
 
     return () => clearInterval(updateInterval);
-  }, [state.isPlaying,
-  state.currentTime,
-  state.speed,
-  state.endTime,
-  state.vehicles,
-  state.offices,
-  state.processedOrderIds,
+  }, [
+    state.isPlaying,
+    state.currentTime,
+    state.speed,
+    state.endTime,
+    state.vehicles,
+    state.offices,
+    state.processedOrderIds,
     dispatch,
     state,
   ]);
 
+  const stopSimulation = () => {
+    dispatch({ type: 'STOP_SIMULATION' });
+    if (isConnected) {
+      closeWebSocket();
+    }
+  };
+
   return (
     <SimulationContext.Provider
-      value={{ state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices }}
+      value={{ state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices, stopSimulation }}
     >
       {children}
     </SimulationContext.Provider>

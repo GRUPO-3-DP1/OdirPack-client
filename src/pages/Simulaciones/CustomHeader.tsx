@@ -19,18 +19,20 @@ import { useSimulation } from '../../context/Simulacion/useSimulation';
 import dayjs, { Dayjs } from 'dayjs';
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
-import { dataPrueba } from '../../data/dataPrueba';
+//import { dataPrueba } from '../../data/dataPrueba';
+import { dataPrueba } from '../../data/nuevaDataPrueba';
+
 
 const CustomHeader: React.FC = () => {
   const [tipo, setTipo] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-10-21'));
-  const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2023-10-21T00:00'));
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-10-01'));
+  const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2024-10-01T00:00'));
 
   const handleChange = (event: SelectChangeEvent) => {
     setTipo(event.target.value);
   };
 
-  const { state, dispatch, userId } = useSimulation();
+  const { state, dispatch, userId, stopSimulation } = useSimulation();
 
   const startSimulation = async () => {
     console.log("startSimulation");
@@ -56,9 +58,6 @@ const CustomHeader: React.FC = () => {
     }
   };
 
-  const stopSimulation = () => {
-    dispatch({ type: 'STOP_SIMULATION' });
-  };
   return (
     <Header isLoading={state.isPlaying}>
       <Box display="flex" alignItems="center" gap={2}>
@@ -67,6 +66,7 @@ const CustomHeader: React.FC = () => {
           value={selectedDate}
           onChange={(newValue) => setSelectedDate(newValue)}
           disabled={state.isPlaying}
+          format="DD/MM/YYYY" 
           slotProps={{
             textField: {
               size: 'small',
@@ -80,6 +80,8 @@ const CustomHeader: React.FC = () => {
           value={selectedTime}
           onChange={(newValue) => setSelectedTime(newValue)}
           disabled={state.isPlaying}
+          views={['hours', 'minutes']}
+          ampm 
           slotProps={{
             textField: {
               size: 'small',

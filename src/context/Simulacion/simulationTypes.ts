@@ -40,7 +40,14 @@ export type Vehicle = {
   fechaLibre: string | null;
   ruta: Route;
   position: VehiclePosition;
+  maintenance?: {
+    inMaintenance: boolean;
+    startTime: Date;
+    duration: number; // Duración del mantenimiento en milisegundos
+    officeUbigeo: string; // Ubigeo de la oficina donde está en mantenimiento
+  };
 };
+
 
 
 export type SimulationState = {
