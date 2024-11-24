@@ -505,8 +505,8 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                     <>
                       {maintenanceVehicles.map((vehicle: Camion) => {
                         const timeRemainingMs =
-                          vehicle.maintenance.startTime.getTime() +
-                          vehicle.maintenance.duration -
+                          vehicle.maintenance!.startTime.getTime() +
+                          vehicle.maintenance!.duration -
                           state.currentTime.getTime();
 
                         const timeRemainingDuration = dayjs.duration(timeRemainingMs);
@@ -519,7 +519,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                         const deliveredOrders = vehicle.ruta.pedidos.filter(
                           (pedido) =>
                             pedido.fechaLlegada &&
-                            new Date(pedido.fechaLlegada) <= vehicle.maintenance.startTime &&
+                            new Date(pedido.fechaLlegada) <= vehicle.maintenance!.startTime &&
                             pedido.ubigeoDestino === selectedOficina.ubigeo
                         );
 
