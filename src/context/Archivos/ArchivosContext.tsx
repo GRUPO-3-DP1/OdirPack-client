@@ -19,7 +19,7 @@ export const ArchivosProvider: React.FC<{ children: React.ReactNode; }> = ({ chi
     //console.log(tramos);
 
     return () => {
-      console.log("Componente ArchivosProvider desmontado");
+      //console.log("Componente ArchivosProvider desmontado");
     };
   }, []);
 

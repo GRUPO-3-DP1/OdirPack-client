@@ -29,7 +29,14 @@ dayjs.extend(duration);
 
 import { Oficina } from '../../../../../../../context/Simulacion/simulationTypes';
 import { Vehicle as Camion } from '../../../../../../../context/Simulacion/simulationTypes';
+import { Order } from '../../../../../../../context/Simulacion/simulationTypes';
 import oficinas from '../../../../../../../data/oficinas';
+
+type ScheduledVehicle = {
+  vehicle: Camion;
+  arrivalTime: Date;
+  deliveringOrders: Order[];
+};
 
 interface PanelInformacionProps {
   show: boolean;
@@ -79,7 +86,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   const fleetSaturation = `${totalTrucks}`;
 
   //Para ver los pedidos de las oficinas
-  const scheduledVehicles = state.vehicles.flatMap((vehicle) => {
+  const scheduledVehicles: ScheduledVehicle[] = state.vehicles.flatMap((vehicle) => {
     if (!vehicle.ruta || !vehicle.ruta.tramos || !vehicle.ruta.fechasLlegada) return [];
     return vehicle.ruta.tramos.map((tramo, index) => {
       if (
@@ -101,13 +108,14 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
       }
       return null;
     }).filter(Boolean);
-  }).filter(Boolean);
+  }).filter(Boolean) as ScheduledVehicle[];
   
 
   // Obtener camiones en mantenimiento en la oficina seleccionada
   const maintenanceVehicles = state.vehicles.filter(
-    (vehicle) =>
-      vehicle?.maintenance?.inMaintenance &&
+    (vehicle): vehicle is Camion & { maintenance: NonNullable<Camion['maintenance']> } =>
+      vehicle.maintenance !== undefined &&
+      vehicle.maintenance.inMaintenance &&
       vehicle.maintenance.officeUbigeo === selectedOficina?.ubigeo
   );
 
@@ -316,7 +324,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                   color="primary"
                   disabled={!tipoAveria}
                   onClick={() => {
-                    console.log(`Avería registrada para el camión ${selectedCamion.idVehiculo}: ${tipoAveria}`);
+                    //console.log(`Avería registrada para el camión ${selectedCamion.idVehiculo}: ${tipoAveria}`);
                     // LOGICA DE AVERIAS
                   }}
                   style={{ textTransform: 'none' }}
@@ -444,7 +452,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                   {/* Camiones programados */}
                   {scheduledVehicles.length > 0 && (
                     <>
-                      {scheduledVehicles.map(({ vehicle, arrivalTime, deliveringOrders }: any) => (
+                      {scheduledVehicles.map(({ vehicle, arrivalTime, deliveringOrders }) => (
                         <Box
                           key={vehicle.idVehiculo}
                           sx={{
@@ -476,7 +484,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                                 {deliveringOrders.map((pedido: Order) => (
                                   <li key={pedido.idPedido}>
                                     <Typography variant="body2" color="textPrimary">
-                                      Pedido {pedido.idPedido} - {pedido.cantidad} unidades
+                                      {pedido.idPedido} ({pedido.cantidad} unidades)
                                     </Typography>
                                   </li>
                                 ))}
@@ -543,7 +551,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                                   {deliveredOrders.map((pedido: Order) => (
                                     <li key={pedido.idPedido}>
                                       <Typography variant="body2" color="textPrimary">
-                                        Pedido {pedido.idPedido} - {pedido.cantidad} unidades
+                                        {pedido.idPedido} ({pedido.cantidad} unidades)
                                       </Typography>
                                     </li>
                                   ))}
