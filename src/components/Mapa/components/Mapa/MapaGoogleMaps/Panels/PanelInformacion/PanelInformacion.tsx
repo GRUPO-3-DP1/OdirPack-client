@@ -8,6 +8,8 @@ import {
   Business,
   LocalShipping,
   Build,
+  CheckCircle,
+  PendingActions,
 } from '@mui/icons-material';
 import {
   Accordion,
@@ -118,6 +120,18 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
       vehicle.maintenance.inMaintenance &&
       vehicle.maintenance.officeUbigeo === selectedOficina?.ubigeo
   );
+
+  // Obtener los pedidos del camión seleccionado
+  const pedidosDelCamion = selectedCamion?.ruta?.pedidos.map((pedido) => {
+    const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+    const estado = fechaLlegada && fechaLlegada <= state.currentTime ? 'Entregado' : 'Pendiente';
+
+    return {
+      ...pedido,
+      estado,
+    };
+  });
+
 
 
   // Crear un mapeo de código de destino a índice de segmento
@@ -293,6 +307,88 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 </Box>
               </AccordionDetails>
             </Accordion>
+            
+            {/*Pedidos del camion*/}
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="lista-pedidos-content"
+                id="lista-pedidos-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>Lista de pedidos</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                <Box
+                  sx={{
+                    maxHeight: '300px', // Limitar la altura del contenedor
+                    overflowY: 'auto', // Habilitar scroll vertical
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: '#f9f9f9',
+                  }}
+                >
+                  {pedidosDelCamion && pedidosDelCamion.length > 0 ? (
+                    pedidosDelCamion.map((pedido) => {
+                      const isEntregado = pedido.estado === 'Entregado';
+                      const cardColor = isEntregado ? '#e8f5e9' : '#fffde7'; // Verde claro para entregado, amarillo claro para pendiente
+                      const iconColor = isEntregado ? '#66bb6a' : '#ffeb3b'; // Verde para entregado, amarillo para pendiente
+                      const IconComponent = isEntregado ? CheckCircle : PendingActions;
+
+                      // Obtener la oficina de destino para mostrar el departamento y provincia
+                      const destinoOficina = oficinas.find((office) => office.ubigeo === pedido.ubigeoDestino);
+
+                      return (
+                        <Box
+                          key={pedido.idPedido}
+                          sx={{
+                            backgroundColor: cardColor,
+                            padding: '8px',
+                            borderRadius: '4px',
+                            marginBottom: '8px',
+                          }}
+                        >
+                          <Box display="flex" alignItems="center">
+                            <IconComponent sx={{ color: iconColor, marginRight: '8px' }} />
+                            <Typography variant="subtitle1" color="textPrimary">
+                              <b>{pedido.idPedido}</b>
+                            </Typography>
+                          </Box>
+                          <Typography variant="body2" color="textSecondary">
+                            <b>Estado:</b> {pedido.estado}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            <b>Cantidad:</b> {pedido.cantidad} unidades
+                          </Typography>
+                          {destinoOficina && (
+                            <Typography variant="body2" color="textSecondary">
+                              <b>Destino:</b> {destinoOficina.departamento}, {destinoOficina.provincia}
+                            </Typography>
+                          )}
+                          {isEntregado ? (
+                            <Typography variant="body2" color="textSecondary">
+                              <b>Hora de entrega:</b> {dayjs(pedido.fechaLlegada).format('DD/MM/YYYY, hh:mm A')}
+                            </Typography>
+                          ) : (
+                            <Typography variant="body2" color="textSecondary">
+                              <b>Plazo máximo:</b> {dayjs(pedido.fechaLlegada).format('DD/MM/YYYY, hh:mm A')}
+                            </Typography>
+                          )}
+                        </Box>
+                      );
+                    })
+                  ) : (
+                    <Typography variant="body2" color="textSecondary">
+                      El camión no tiene pedidos asignados.
+                    </Typography>
+                  )}
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+            
             <Accordion defaultExpanded disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
@@ -567,7 +663,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                       })}
                     </>
                   )}
-
 
                   {/* Si no hay camiones programados ni en mantenimiento */}
                   {scheduledVehicles.length === 0 && maintenanceVehicles.length === 0 && (

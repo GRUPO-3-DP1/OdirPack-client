@@ -48,8 +48,6 @@ export type Vehicle = {
   };
 };
 
-
-
 export type SimulationState = {
   isPlaying: boolean;
   vehicles: Vehicle[];
