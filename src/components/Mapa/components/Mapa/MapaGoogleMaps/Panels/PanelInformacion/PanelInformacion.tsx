@@ -725,7 +725,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
               >
                 <Typography variant="subtitle2" color="textPrimary">
-                  <b>Detalles de camiones</b>
+                  <b>Detalles de camiones (Flota: {fleetSaturation})</b>
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
@@ -748,12 +748,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                     </Typography>
                   </Box>
                 </Box>
-                <Typography variant="body2" color="textSecondary" gutterBottom>
-                  Flota total:{' '}
-                  <Typography component="span" variant="body2" color="textPrimary">
-                    {fleetSaturation}
-                  </Typography>
-                </Typography>
               </AccordionDetails>
             </Accordion>
             {/* Accordion para Detalles de pedidos */}
@@ -765,7 +759,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
               >
                 <Typography variant="subtitle2" color="textPrimary">
-                  <b>Detalles de pedidos</b>
+                  <b>Detalles de pedidos (Total: {ordersDelivered + ordersPending})</b>
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
