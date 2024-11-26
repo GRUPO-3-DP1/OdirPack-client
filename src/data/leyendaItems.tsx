@@ -13,7 +13,7 @@ export const leyendaItems: { icon: JSX.Element, text: string; name: MarkerTypes;
     name: "almacenes"
   },
   {
-    icon: <Store sx={{ color: "blue" }} fontSize='small' />,
+    icon: <Store sx={{ color: "green" }} fontSize='small' />,
     text: "Oficina",
     name: "oficinas"
   },
@@ -23,7 +23,7 @@ export const leyendaItems: { icon: JSX.Element, text: string; name: MarkerTypes;
     name: "camionesAveriados"
   },
   {
-    icon: <ShowChart sx={{ color: "blue" }} fontSize='small' />,
+    icon: <ShowChart sx={{ color: "grey" }} fontSize='small' />,
     text: "Tramo",
     name: "tramos"
   },
