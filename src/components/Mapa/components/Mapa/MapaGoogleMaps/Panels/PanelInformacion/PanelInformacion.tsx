@@ -132,8 +132,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     };
   });
 
-
-
   // Crear un mapeo de código de destino a índice de segmento
   const destinoToSegmentIndex: { [ubigeoDestino: string]: number; } = {};
   selectedCamion?.ruta?.tramos?.forEach((tramo, index) => {
@@ -220,6 +218,37 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     return '55'; // Valor por defecto si no se encuentra información suficiente 
   };
 
+  // Calcular niveles de saturación de oficinas
+  const totalOffices = state.offices.length;
+  let countLowSaturation = 0;
+  let countMediumSaturation = 0;
+  let countHighSaturation = 0;
+
+  state.offices.forEach((oficina) => {
+    const maxCapacity = oficina.almacen || 0;
+
+    const currentLoad = oficina.currentOrders?.reduce(
+      (total: number, currentOrder: { order: Order; arrivalTime: Date; }) =>
+        total + (currentOrder.order.cantidad || 0),
+      0
+    ) || 0;
+
+    const occupancyRate = maxCapacity > 0 ? currentLoad / maxCapacity : 0;
+
+    // Determinar el nivel de saturación
+    if (oficina.isAlmacen) {
+      // Excluir almacenes del conteo o incluirlos según prefieras
+      return; // Excluir almacenes
+    }
+
+    if (occupancyRate > 0.8) {
+      countHighSaturation += 1;
+    } else if (occupancyRate > 0.5) {
+      countMediumSaturation += 1;
+    } else {
+      countLowSaturation += 1;
+    }
+  });
 
   return (
     <MapControl position={ControlPosition.TOP_RIGHT}>
@@ -716,40 +745,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 )}
               </Box>
             </Box>
-            {/* Accordion para Detalles de camiones */}
-            <Accordion defaultExpanded disableGutters>
-              <AccordionSummary
-                expandIcon={<ExpandMore />}
-                aria-controls="panel-camiones-content"
-                id="panel-camiones-header"
-                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
-              >
-                <Typography variant="subtitle2" color="textPrimary">
-                  <b>Detalles de camiones (Flota: {fleetSaturation})</b>
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-                {/* Contenido de Detalles de camiones */}
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box display="flex">
-                    <Typography variant="body2" color="textSecondary">
-                      En movimiento:
-                    </Typography>
-                    <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                      {trucksInMotion}
-                    </Typography>
-                  </Box>
-                  <Box display="flex">
-                    <Typography variant="body2" color="textSecondary">
-                      En mantenimiento:
-                    </Typography>
-                    <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                      {trucksInMaintenance}
-                    </Typography>
-                  </Box>
-                </Box>
-              </AccordionDetails>
-            </Accordion>
             {/* Accordion para Detalles de pedidos */}
             <Accordion defaultExpanded disableGutters>
               <AccordionSummary
@@ -759,7 +754,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
               >
                 <Typography variant="subtitle2" color="textPrimary">
-                  <b>Detalles de pedidos (Total: {ordersDelivered + ordersPending})</b>
+                  <b>📦 Detalles de pedidos (Total: {ordersDelivered + ordersPending})</b>
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
@@ -767,7 +762,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 <Box display="flex" justifyContent="space-between" alignItems="center">
                   <Box display="flex">
                     <Typography variant="body2" color="textSecondary">
-                      Entregados:
+                      ✅ Entregados:
                     </Typography>
                     <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
                       {ordersDelivered}
@@ -775,7 +770,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                   </Box>
                   <Box display="flex">
                     <Typography variant="body2" color="textSecondary">
-                      Pendientes:
+                      ⏳ Pendientes:
                     </Typography>
                     <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
                       {ordersPending}
@@ -784,6 +779,91 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 </Box>
               </AccordionDetails>
             </Accordion>
+            {/* Accordion para Detalles de camiones */}
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="panel-camiones-content"
+                id="panel-camiones-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>🚚 Detalles de camiones (Flota: {fleetSaturation})</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                {/* Contenido de Detalles de camiones */}
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Box display="flex">
+                    <Typography variant="body2" color="textSecondary">
+                      🔄 Movimiento:
+                    </Typography>
+                    <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                      {trucksInMotion}
+                    </Typography>
+                  </Box>
+                  <Box display="flex">
+                    <Typography variant="body2" color="textSecondary">
+                      🛠️ Mantenimiento:
+                    </Typography>
+                    <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                      {trucksInMaintenance}
+                    </Typography>
+                  </Box>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+            {/* Accordion para Detalles de oficinas */}
+            <Accordion defaultExpanded disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="panel-oficinas-content"
+                id="panel-oficinas-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>🏢 Detalles de oficinas (Sedes: {totalOffices})</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                <Box
+                  display="flex"
+                  flexWrap="wrap"
+                  alignItems="center"
+                  gap={2}
+                >
+                  {/* Línea 1 */}
+                  <Box display="flex" justifyContent="space-between" width="100%">
+                    <Box display="flex" alignItems="center">
+                      <Typography variant="body2" color="textSecondary">
+                        🟩 Saturación {'<'}50%:
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                        {countLowSaturation}
+                      </Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center">
+                      <Typography variant="body2" color="textSecondary">
+                        🟨 Saturación 50%-80%:
+                      </Typography>
+                      <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                        {countMediumSaturation}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  {/* Línea 2 */}
+                  <Box display="flex" alignItems="center" mt={1}>
+                    <Typography variant="body2" color="textSecondary">
+                      🟥 Saturación {'>'}80%:
+                    </Typography>
+                    <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+                      {countHighSaturation}
+                    </Typography>
+                  </Box>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+
           </>
         )}
       </div>
