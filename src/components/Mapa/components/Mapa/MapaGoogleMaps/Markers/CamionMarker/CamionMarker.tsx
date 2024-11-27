@@ -12,7 +12,7 @@ type CamionMarkerProps = Omit<AdvancedMarkerProps, 'position'> & {
   showRoute?: boolean;
 };
 
-const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ocupacion = 'baja', showRoute = true, ...markerProps }) => {
+const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ocupacion = 'alta', showRoute = true, ...markerProps }) => {
   if (camion.position.currentSegmentIndex == -1) return null;
 
   const espacio = {

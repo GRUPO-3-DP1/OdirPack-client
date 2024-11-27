@@ -13,12 +13,3 @@ export interface MapMarkersContextType {
   toggleVisibility: (markerType: MarkerTypes) => void;
   setVisibility: (markerType: MarkerTypes, isVisible: boolean) => void;
 }
-
-export const initialVisibilityState: VisibilityState = {
-  camiones: true,
-  almacenes: true,
-  oficinas: true,
-  camionesAveriados: true,
-  tramos: false,
-  tramosBloqueados: false,
-};
