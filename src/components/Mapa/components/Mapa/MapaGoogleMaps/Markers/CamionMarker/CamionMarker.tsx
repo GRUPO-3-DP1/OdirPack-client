@@ -1,35 +1,52 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { AdvancedMarker, AdvancedMarkerProps } from '@vis.gl/react-google-maps';
-import { LocalShipping } from '@mui/icons-material';
 import styles from './CamionMarker.module.css';
 import { Vehicle } from '../../../../../../../context/Simulacion/simulationTypes';
+import Ruta from '../../../../Ruta/Ruta';
+import CamionIcon from './CamionIcon/CamionIcon';
+import { calculateRotation } from '../../../../../../../utils/calculateRotation';
 
 type CamionMarkerProps = Omit<AdvancedMarkerProps, 'position'> & {
   camion: Vehicle;
+  ocupacion?: 'baja' | 'media' | 'alta';
+  showRoute?: boolean;
 };
 
-const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ...markerProps }) => {
-  // Log para ver qué camión está siendo renderizado
-  useEffect(() => {
-    if (camion.position.currentSegmentIndex !== -1) {
-      //console.log('Renderizando camión:', camion.idVehiculo, 'Posición:', camion.position);
-    }
-  });
+const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ocupacion = 'baja', showRoute = true, ...markerProps }) => {
+  if (camion.position.currentSegmentIndex == -1) return null;
+
+  const espacio = {
+    baja: '#34A853',
+    media: '#FBBC05',
+    alta: '#EA4335',
+  }[ocupacion];
+
+  const rotation =
+    camion.currentRoute?.origin && camion.currentRoute?.destination
+      ? calculateRotation(camion.currentRoute.origin, camion.currentRoute.destination)
+      : 0;
+
+  console.log(camion);
 
   return (
     <>
-      {
-        camion.position.currentSegmentIndex !== -1 &&
-        <AdvancedMarker
-          {...markerProps}
-          position={{ lat: camion.position.lat, lng: camion.position.lng }}
+      <AdvancedMarker
+        {...markerProps}
+        position={{ lat: camion.position.lat, lng: camion.position.lng }}
+      >
+        <div
+          className={styles.iconWrapper}
         >
-          <LocalShipping
-            className={styles.camion}
-            fontSize="small"
+          <CamionIcon
+            mainColor={espacio}
+            size='large'
+            style={{ transform: `rotate(${rotation}deg)` }}
           />
-        </AdvancedMarker>
-      }
+        </div>
+      </AdvancedMarker>
+      {showRoute && camion.currentRoute?.origin && camion.currentRoute?.destination && (
+        <Ruta inicio={camion.currentRoute.origin} fin={camion.currentRoute.destination} />
+      )}
     </>
   );
 };

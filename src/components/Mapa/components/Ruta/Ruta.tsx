@@ -21,9 +21,9 @@ const Ruta: React.FC<RutaProps> = ({ inicio, fin }) => {
     const path = new maps.Polyline({
       path: [inicio, fin],
       geodesic: false,
-      strokeColor: "#9b9b9b",
+      strokeColor: "#1414b8",
       strokeOpacity: 1.0,
-      strokeWeight: 0.2,
+      strokeWeight: 1.0,
     });
 
     path.setMap(map);

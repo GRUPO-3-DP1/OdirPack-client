@@ -1,9 +1,10 @@
-import { BuildCircle, Home, LocalShipping, ShowChart, Store } from "@mui/icons-material";
+import { BuildCircle, Home, ShowChart, Store } from "@mui/icons-material";
 import { MarkerTypes } from "../context/MapMarker/mapMarkerTypes";
+import CamionIcon from "../components/Mapa/components/Mapa/MapaGoogleMaps/Markers/CamionMarker/CamionIcon/CamionIcon";
 
 export const leyendaItems: { icon: JSX.Element, text: string; name: MarkerTypes; }[] = [
   {
-    icon: <LocalShipping sx={{ color: "blue" }} fontSize='small' />,
+    icon: <CamionIcon size="medium" />,
     text: "Camión",
     name: "camiones"
   },

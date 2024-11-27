@@ -353,6 +353,16 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                 progress,
                 currentSegmentIndex,
               },
+              currentRoute: {
+                origin: {
+                  lat: startCoords.lat,
+                  lng: startCoords.lng
+                },
+                destination: {
+                  lat: endCoords.lat,
+                  lng: endCoords.lng
+                }
+              },
             };
           }
         }
@@ -364,6 +374,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
             ...vehicle.position,
             currentSegmentIndex: -1,
           },
+          currentRoute: undefined,
         };
       });
 
