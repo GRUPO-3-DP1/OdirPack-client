@@ -15,7 +15,7 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import { PlayArrow, Stop } from '@mui/icons-material';
-import { useSimulation } from '../../context/Simulacion/useSimulation';
+import { useData } from '../../context/useData';
 import dayjs, { Dayjs } from 'dayjs';
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
@@ -32,7 +32,7 @@ const CustomHeader: React.FC = () => {
     setTipo(event.target.value);
   };
 
-  const { state, dispatch, userId, stopSimulation } = useSimulation();
+  const { state, dispatch, userId, stopSimulation } = useData();
 
   const startSimulation = async () => {
     console.log("startSimulation");

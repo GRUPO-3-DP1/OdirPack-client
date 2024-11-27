@@ -3,7 +3,7 @@ import oficinas from "../../../../../../../data/oficinas";
 import OficinaMarker from "../../Markers/OficinaMarker/OficinaMarker";
 import { useMapMarker } from "../../../../../../../context/MapMarker/useMapMarker";
 import { Oficina, Order } from "../../../../../../../context/Simulacion/simulationTypes";
-import { useSimulation } from "../../../../../../../context/Simulacion/useSimulation";
+import { useData } from '../../../../../../../context/useData';
 
 
 interface OficinasLayerProps {
@@ -11,7 +11,7 @@ interface OficinasLayerProps {
 }
 
 const OficinasLayer: React.FC<OficinasLayerProps> = ({ onOficinaClick }) => {
-  const { state } = useSimulation();
+  const { state } = useData();
   const { visibility } = useMapMarker();
 
   if (!visibility.oficinas) return null;

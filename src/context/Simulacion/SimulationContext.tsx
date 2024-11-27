@@ -226,9 +226,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     }
   }, [indexActualProcess, solutions, lastProcessedSolution, state.vehicles, dispatch, state.offices]);
 
-
-
-
   // Función para calcular oficinas ocupadas
   const calculateOccupiedOffices = (offices: Oficina[]): number => {
     let occupied = 0;

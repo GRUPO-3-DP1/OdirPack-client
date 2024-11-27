@@ -1,6 +1,6 @@
 // SimulationTimeDisplay.tsx
 import React, { useEffect, useState } from 'react';
-import { useSimulation } from '../../context/Simulacion/useSimulation';
+import { useData } from '../../context/useData';
 import dayjs from 'dayjs';
 import durationPlugin from 'dayjs/plugin/duration';
 import styles from './SimulationTimeDisplay.module.css';
@@ -12,7 +12,7 @@ interface SimulationTimeDisplayProps {
 }
 
 const SimulationTimeDisplay: React.FC<SimulationTimeDisplayProps> = ({ className }) => {
-  const { state } = useSimulation();
+  const { state } = useData();
 
   const [executionStartTime, setExecutionStartTime] = useState<Date | null>(null);
   const [executionElapsedTime, setExecutionElapsedTime] = useState<number>(0);

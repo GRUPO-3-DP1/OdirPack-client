@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 import { AddRoad } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useSimulation } from '../../../../../../../context/Simulacion/useSimulation';
+import { useData } from '../../../../../../../context/useData';
 import { PedidoAlgorithmResponse, ResponseAlgorithm, TramoAlgorithmResponse } from '../../../../../../../store/types/ResponseAlgorithm';
 
 type PanelResultadosProps = {
@@ -33,7 +33,7 @@ type RutaTableRow = {
 };
 
 const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true }) => {
-  const { solutions } = useSimulation();
+  const { solutions } = useData();
   const [pedidos, setPedidos] = useState<PedidoTableRow[]>([]);
   const [rutas, setRutas] = useState<RutaTableRow[]>([]);
   const [mostrarTramos, setMostrarTramos] = useState(false);

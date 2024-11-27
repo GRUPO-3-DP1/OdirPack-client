@@ -1,5 +1,5 @@
 import { useMapMarker } from '../../../../../../../context/MapMarker/useMapMarker';
-import { useSimulation } from '../../../../../../../context/Simulacion/useSimulation';
+import { useData } from '../../../../../../../context/useData';
 import CamionMarker from '../../Markers/CamionMarker/CamionMarker';
 import { Vehicle as Camion } from "../../../../../../../context/Simulacion/simulationTypes";
 
@@ -8,7 +8,7 @@ interface CamionesLayerProps {
 }
 
 const CamionesLayer: React.FC<CamionesLayerProps> = ({ onCamionClick }) => {
-  const { state } = useSimulation();
+  const { state } = useData();
   const { visibility } = useMapMarker();
 
   if (!visibility.camiones || !state.isPlaying) return null;

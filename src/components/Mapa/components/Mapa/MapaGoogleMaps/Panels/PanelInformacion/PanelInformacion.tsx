@@ -1,7 +1,7 @@
 // PanelInformacion.tsx
 import { ControlPosition, MapControl } from '@vis.gl/react-google-maps';
 import React, { useState } from 'react';
-import { useSimulation } from '../../../../../../../context/Simulacion/useSimulation';
+import { useData } from '../../../../../../../context/useData';
 import {
   ExpandMore,
   AccessTimeFilled,
@@ -53,7 +53,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   selectedCamion,
   operationType,
 }) => {
-  const { state } = useSimulation();
+  const { state } = useData();
   const [tipoAveria, setTipoAveria] = useState<string>('');
 
 
