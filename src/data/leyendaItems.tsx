@@ -24,7 +24,7 @@ export const leyendaItems: { icon: JSX.Element, text: string; name: MarkerTypes;
     name: "camionesAveriados"
   },
   {
-    icon: <ShowChart sx={{ color: "grey" }} fontSize='small' />,
+    icon: <ShowChart sx={{ color: "blue" }} fontSize='small' />,
     text: "Tramo",
     name: "tramos"
   },
