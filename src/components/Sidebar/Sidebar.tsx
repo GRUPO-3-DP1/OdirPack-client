@@ -36,7 +36,7 @@ const Sidebar: React.FC = () => {
       </div>
       <div className={styles.userSection}>
         <p className={styles.userName}>Grupo 3C</p>
-        <p className={styles.userRole}>Supervisor de Operaciones</p>
+        <p className={styles.userRole}>Supervisor de operaciones</p>
         <Button variant='outlined' size='small'>Cerrar Sesión</Button>
       </div>
     </aside>

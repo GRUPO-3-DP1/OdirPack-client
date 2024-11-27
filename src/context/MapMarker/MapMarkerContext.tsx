@@ -1,7 +1,16 @@
 import { createContext, useState } from "react";
-import { initialVisibilityState, MapMarkersContextType, MarkerTypes, VisibilityState } from "./mapMarkerTypes";
+import { MapMarkersContextType, MarkerTypes, VisibilityState } from "./mapMarkerTypes";
 
 export const MapMarkersContext = createContext<MapMarkersContextType | undefined>(undefined);
+
+const initialVisibilityState: VisibilityState = {
+  camiones: true,
+  almacenes: true,
+  oficinas: true,
+  camionesAveriados: true,
+  tramos: true,
+  tramosBloqueados: false,
+};
 
 export const MapMarkersProvider: React.FC<{ children: React.ReactNode; }> = ({ children }) => {
   const [visibility, setVisibilityState] = useState<VisibilityState>(initialVisibilityState);

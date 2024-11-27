@@ -1,12 +1,12 @@
 import React from "react";
-import { useSimulation } from "../../../../../../../context/Simulacion/useSimulation";
+import { useData } from '../../../../../../../context/useData';
 import { useArchivos } from "../../../../../../../context/Archivos/useArchivos";
 import { useMapMarker } from "../../../../../../../context/MapMarker/useMapMarker";
 import { getFechaBloqueo } from "../../../../../../../data/bloqueos";
 import Bloqueo from "../../../../Bloqueo/Bloqueo";
 
 const BloqueosLayer: React.FC = () => {
-  const { state } = useSimulation(); // Estado global de la simulación
+  const { state } = useData(); // Estado global de la simulación
   const { bloqueos } = useArchivos(); // Datos de bloqueos
   const { visibility } = useMapMarker(); // Visibilidad de la capa
   const currentYear = new Date().getFullYear(); // Año actual para cálculos

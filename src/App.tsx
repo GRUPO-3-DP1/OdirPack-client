@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './App.css';
 import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
@@ -45,6 +45,10 @@ const router = createBrowserRouter([
 //KEY = AIzaSyCIm_MVTHuuOneXJhD16L4NZ2TOWdew07o
 
 const App: React.FC = () => {
+  useEffect(() => {
+    // Ajustar el zoom al 90% al cargar la página
+    document.body.style.zoom = "90%";
+  }, []);
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <ArchivosProvider>

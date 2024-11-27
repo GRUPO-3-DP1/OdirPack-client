@@ -40,6 +40,16 @@ export type Vehicle = {
   fechaLibre: string | null;
   ruta: Route;
   position: VehiclePosition;
+  currentRoute?: {
+    origin: {
+      lat: number;
+      lng: number;
+    };
+    destination: {
+      lat: number;
+      lng: number;
+    };
+  };
   maintenance?: {
     inMaintenance: boolean;
     startTime: Date;
@@ -47,8 +57,6 @@ export type Vehicle = {
     officeUbigeo: string; // Ubigeo de la oficina donde está en mantenimiento
   };
 };
-
-
 
 export type SimulationState = {
   isPlaying: boolean;
