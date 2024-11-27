@@ -24,6 +24,7 @@ const CamionesLayer: React.FC<CamionesLayerProps> = ({ onCamionClick }) => {
             e.domEvent.stopPropagation();
             onCamionClick(vehicle);
           }}
+          showRoute={visibility.tramos}
         />
       ))}
     </>
