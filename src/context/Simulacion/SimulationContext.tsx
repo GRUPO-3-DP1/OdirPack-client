@@ -100,10 +100,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       }
     },
     onOpen: () => {
-      console.log('Conexión WebSocket establecida en SimulationProvider');
+      //console.log('Conexión WebSocket establecida en SimulationProvider');
     },
     onClose: () => {
-      console.log('Conexión WebSocket cerrada en SimulationProvider');
+      //console.log('Conexión WebSocket cerrada en SimulationProvider');
     },
   });
 
@@ -149,7 +149,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         // Actualizar vehículos
         if (!state.vehicles || state.vehicles.length === 0) {
           dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
-          console.log('Primera respuesta:', newVehicles);
+          //console.log('Primera respuesta:', newVehicles);
 
           // Actualizar datos de simulación
           dispatch({
@@ -160,7 +160,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
             },
           });
         } else {
-          console.log('Procesando');
+          //console.log('Procesando');
 
           // Fusionar vehículos existentes con los de la nueva solución
           const updatedVehicles = state.vehicles.map((existingVehicle) => {
@@ -218,7 +218,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         // Actualizar pedidos no planificados en el estado
         dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: unplannedOrders });
       } else {
-        console.log('Es la misma solución');
+        //console.log('Es la misma solución');
       }
 
       // Actualizar el índice para procesar la siguiente respuesta
@@ -249,7 +249,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         dispatch({ type: 'STOP_SIMULATION' });
         clearInterval(updateInterval);
         state.ends = true;
-        console.log('Ya pasó la fecha límite');
+        //console.log('Ya pasó la fecha límite');
         return;
       }
 
@@ -259,6 +259,55 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         const { ruta } = vehicle;
         const startTime = new Date(ruta.fechaInicio);
         const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
+
+        // Verificar si el vehículo está en mantenimiento
+        if (vehicle.maintenance && vehicle.maintenance.inMaintenance) {
+          const maintenanceEndTime = new Date(
+            vehicle.maintenance.startTime.getTime() + vehicle.maintenance.duration
+          );
+          if (newTime >= maintenanceEndTime) {
+            // Finaliza el mantenimiento
+            vehicle = {
+              ...vehicle,
+              maintenance: undefined, // Eliminar el objeto maintenance
+            };
+            // Continuar para actualizar la posición
+          } else {
+            // Mantener el vehículo en mantenimiento
+            return vehicle;
+          }
+        }
+
+        // Detectar si el vehículo ha llegado a una oficina
+        const arrivalTimes = ruta.fechasLlegada.map((fecha) => new Date(fecha));
+        for (let i = 0; i < arrivalTimes.length; i++) {
+          const arrivalTime = arrivalTimes[i];
+          const departureTime = new Date(ruta.fechasSalida[i + 1] || ruta.fechasLlegada[i]);
+
+          if (newTime >= arrivalTime && newTime < departureTime) {
+            // El vehículo ha llegado a una oficina y está en mantenimiento
+            const maintenanceStartTime = arrivalTime;
+            const maintenanceDuration = 4 * 60 * 60 * 1000; // 4 horas en milisegundos
+            const maintenanceEndTime = new Date(maintenanceStartTime.getTime() + maintenanceDuration);
+
+            // Si el tiempo actual está dentro del periodo de mantenimiento
+            if (newTime >= maintenanceStartTime && newTime < maintenanceEndTime) {
+              return {
+                ...vehicle,
+                maintenance: {
+                  inMaintenance: true,
+                  startTime: maintenanceStartTime,
+                  duration: maintenanceDuration,
+                  officeUbigeo: ruta.tramos[i].destino.codigo,
+                },
+                position: {
+                  ...vehicle.position,
+                  currentSegmentIndex: -1,
+                },
+              };
+            }
+          }
+        }
 
         // Si la simulación aún no llega al tiempo de inicio del vehículo o ya terminó, devolver la posición actual
         if (newTime < startTime || newTime > endTime) {
@@ -304,6 +353,16 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                 progress,
                 currentSegmentIndex,
               },
+              currentRoute: {
+                origin: {
+                  lat: startCoords.lat,
+                  lng: startCoords.lng
+                },
+                destination: {
+                  lat: endCoords.lat,
+                  lng: endCoords.lng
+                }
+              },
             };
           }
         }
@@ -315,6 +374,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
             ...vehicle.position,
             currentSegmentIndex: -1,
           },
+          currentRoute: undefined,
         };
       });
 

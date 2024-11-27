@@ -1,0 +1,21 @@
+/*SimulationTimeDisplay.module.css*/
+
+.simulationTimeDisplay {
+  display: flex;
+  flex-direction: column; /* Coloca las secciones principales en columnas */
+  align-items: flex-start; /* Alinea todo a la izquierda */
+  gap: 5px; /* Espaciado entre filas */
+}
+
+.simulationRow {
+  display: flex; /* Coloca los elementos en una fila */
+  gap: 15px; /* Espaciado entre "Tiempo de ejecución" y "Tiempo en simulación" */
+}
+
+.simulationTimeDisplay span {
+  display: flex;
+}
+
+.separator {
+  margin-left: 10px; /* Ajusta el espaciado entre títulos y valores si es necesario */
+}

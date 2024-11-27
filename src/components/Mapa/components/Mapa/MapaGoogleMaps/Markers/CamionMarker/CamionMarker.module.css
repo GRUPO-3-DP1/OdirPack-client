@@ -1,3 +1,15 @@
+.iconWrapper {
+  position: absolute;
+  width: 23px;
+  height: 23px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transform: translate(-50%, -50%);
+}
+
 .camion {
   color: red;
 }

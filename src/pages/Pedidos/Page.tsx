@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import usePedidos from '../../store/hooks/usePedidos';
 import styles from './page.module.css';
+import CamionIcon from '../../components/Mapa/components/Mapa/MapaGoogleMaps/Markers/CamionMarker/CamionIcon/CamionIcon';
+import { House } from '@mui/icons-material';
 
 const Page: React.FC = () => {
   const { pedidos, loading, error, fetchPedidos } = usePedidos();
@@ -39,6 +41,10 @@ const Page: React.FC = () => {
           ))}
         </tbody>
       </table>
+      <CamionIcon />
+      <House />
+      <House fontSize='small' />
+      <House fontSize='large' />
     </div>
   );
 };

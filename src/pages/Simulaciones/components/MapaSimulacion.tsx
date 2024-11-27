@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Vehicle as Camion } from '../../../context/Simulacion/simulationTypes';
-import { useSimulation } from '../../../context/Simulacion/useSimulation';
+import { useData } from '../../../context/useData';
 import PanelLeyenda from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelLeyenda/PanelLeyenda';
 import PanelInformacion from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelInformacion/PanelInformacion';
 import PanelResultados from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelResultados/PanelResultados';
@@ -16,7 +16,7 @@ interface MapaProps {
 }
 
 const MapaSimulacion: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType = 'semanal' }) => {
-  const { state } = useSimulation();
+  const { state } = useData();
 
   const [selectedOficina, setSelectedOficina] = useState<Oficina | null>(null);
   const [selectedCamion, setSelectedCamion] = useState<Camion | null>(null);

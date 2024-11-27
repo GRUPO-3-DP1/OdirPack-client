@@ -1,8 +1,9 @@
+// Header.tsx
 import React from 'react';
 import styles from './Header.module.css';
 import { useLocation } from 'react-router-dom';
 import routes from '../../routes/routes';
-import Fecha from '../utils/Fecha';
+import SimulationTimeDisplay from '../utils/SimulationTimeDisplay';
 import LoadingBar from '../Mapa/components/LoadingBar/LoadingBar';
 
 interface HeaderProps {
@@ -17,25 +18,29 @@ const Header: React.FC<HeaderProps> = ({ children, isLoading = false }) => {
 
   const title = currentRoute ? currentRoute.name : "Inicio";
 
+  const showSimulationTime = location.pathname === '/simulaciones';
+
   return (
     <div className={styles.mainHeader}>
       <header className={styles.header}>
-
-        <div className={styles.container}>
-          <h2 className={styles.title}>
-            {title}
-          </h2>
-          <Fecha className={styles.currentDate} />
+        {/* Contenedor Izquierdo: Título e Información de Simulación */}
+        <div className={styles.leftContainer}>
+          <h2 className={styles.title}>{title}</h2>
+          {showSimulationTime && (
+            <div className={styles.simulationInfo}>
+              <SimulationTimeDisplay className={styles.currentDate} />
+            </div>
+          )}
         </div>
 
-        <div className={styles.container}>
-          {children && <div className={styles.childrenContainer}>{children}</div>}
+        {/* Contenedor Derecho: Botones y Selectores */}
+        <div className={styles.rightContainer}>
+          <div className={styles.childrenContainer}>{children}</div>
         </div>
-
       </header>
       <LoadingBar disabled={!isLoading} />
-    </div >
+    </div>
   );
 };
 
-export default Header;;
+export default Header;

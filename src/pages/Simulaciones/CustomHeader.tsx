@@ -15,7 +15,7 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import { PlayArrow, Stop } from '@mui/icons-material';
-import { useSimulation } from '../../context/Simulacion/useSimulation';
+import { useData } from '../../context/useData';
 import dayjs, { Dayjs } from 'dayjs';
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
@@ -32,7 +32,7 @@ const CustomHeader: React.FC = () => {
     setTipo(event.target.value);
   };
 
-  const { state, dispatch, userId, stopSimulation } = useSimulation();
+  const { state, dispatch, userId, stopSimulation } = useData();
 
   const startSimulation = async () => {
     console.log("startSimulation");
@@ -66,6 +66,7 @@ const CustomHeader: React.FC = () => {
           value={selectedDate}
           onChange={(newValue) => setSelectedDate(newValue)}
           disabled={state.isPlaying}
+          format="DD/MM/YYYY" 
           slotProps={{
             textField: {
               size: 'small',
@@ -79,6 +80,8 @@ const CustomHeader: React.FC = () => {
           value={selectedTime}
           onChange={(newValue) => setSelectedTime(newValue)}
           disabled={state.isPlaying}
+          views={['hours', 'minutes']}
+          ampm 
           slotProps={{
             textField: {
               size: 'small',
