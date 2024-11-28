@@ -46,6 +46,15 @@ export type Vehicle = {
     duration: number; // Duración del mantenimiento en milisegundos
     officeUbigeo: string; // Ubigeo de la oficina donde está en mantenimiento
   };
+  averia?: {
+    isAveria: boolean;
+    tipo: string;
+    fechaRegistro: string;
+    ubiInicio: string;
+    ubiFin: string;
+    fechaReparacion: string | null;
+    cargaReplanificada: boolean;
+  }
 };
 
 export type SimulationState = {

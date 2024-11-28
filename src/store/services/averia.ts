@@ -4,14 +4,18 @@ import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
 import { Averia } from '../types/Averia';
 
-async function createAveria(averiaData: Averia): Promise<void> {
+async function createAveria(averiaData: Averia): Promise<any> {
     try {
-        await axios.post(`${ServicesProperties.BaseUrl}/averia/create`, averiaData, {
+        const response = await axios.post(`${ServicesProperties.BaseUrl}/averia/create`, averiaData, {
             headers: ServicesProperties.Headers
         });
-    } catch (error) {
-        console.error('Error creating averia:', error);
-        throw new Error('Error al registrar la avería');
+        return response;
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error) && error.response) {
+            return error.response;
+          } else {
+            throw new Error("Error en createAveria");
+          }
     }
 }
 

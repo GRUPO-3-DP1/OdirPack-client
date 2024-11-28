@@ -2,6 +2,8 @@
 import { ControlPosition, MapControl } from '@vis.gl/react-google-maps';
 import React, { useState } from 'react';
 import { useData } from '../../../../../../../context/useData';
+import { createAveria } from '../../../../../../../store/services/averia';
+
 import {
   ExpandMore,
   AccessTimeFilled,
@@ -26,8 +28,8 @@ import {
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import styles from './PanelInformacion.module.css';
-import useAveria from '../../../../../../../store/hooks/useAveria'; // Asegúrate de que la ruta sea correcta
-import { Averia } from '../../../../../../../store/types/Averia'; // Importa el tipo Averia
+//import useAveria from '../../../../../../../store/hooks/useAveria';
+//import { Averia } from '../../../../../../../store/types/Averia'; 
 
 
 dayjs.extend(duration);
@@ -56,7 +58,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   selectedCamion,
   operationType,
 }) => {
-  const { state } = useData();
+  const { state, dispatch } = useData();
   const [tipoAveria, setTipoAveria] = useState<string>('');
   //const { registerAveria, loading, error } = useAveria();
 
@@ -115,7 +117,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
       return null;
     }).filter(Boolean);
   }).filter(Boolean) as ScheduledVehicle[];
-  
+
 
   // Obtener camiones en mantenimiento en la oficina seleccionada
   const maintenanceVehicles = state.vehicles.filter(
@@ -340,7 +342,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 </Box>
               </AccordionDetails>
             </Accordion>
-            
+
             {/*Pedidos del camion*/}
             <Accordion defaultExpanded disableGutters>
               <AccordionSummary
@@ -421,7 +423,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 </Box>
               </AccordionDetails>
             </Accordion>
-            
+
             <Accordion defaultExpanded disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
@@ -443,18 +445,62 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                     label="Tipo de Avería"
                     onChange={(e) => setTipoAveria(e.target.value as string)}
                   >
-                    <MenuItem value="tipo1">Tipo 1: Avería moderada</MenuItem>
-                    <MenuItem value="tipo2">Tipo 2: Avería fuerte</MenuItem>
-                    <MenuItem value="tipo3">Tipo 3: Avería Siniestra</MenuItem>
+                    <MenuItem value="1">Tipo 1: Avería moderada</MenuItem>
+                    <MenuItem value="2">Tipo 2: Avería fuerte</MenuItem>
+                    <MenuItem value="3">Tipo 3: Avería Siniestra</MenuItem>
                   </Select>
                 </FormControl>
                 <Button
                   variant="contained"
                   color="primary"
                   disabled={!tipoAveria}
-                  onClick={() => {
-                    //console.log(`Avería registrada para el camión ${selectedCamion.idVehiculo}: ${tipoAveria}`);
-                    // LOGICA DE AVERIAS
+                  onClick={async () => {
+                    if (!selectedCamion || !selectedCamion.currentRoute) {
+                      console.error('No hay un camión seleccionado o no tiene una ruta activa.');
+                      return;
+                    }
+
+                    try {
+                      const fechaRegistro = new Date(); // Fecha actual para registro de la avería
+                      const horasAdicionales =
+                        tipoAveria === '1' ? 4 :
+                          tipoAveria === '2' ? 36 :
+                            tipoAveria === '3' ? 72 : 0;
+
+
+                      const fechaReparacion = new Date(fechaRegistro.getTime() + horasAdicionales * 60 * 60 * 1000).toISOString();
+
+                      const averiaData = {
+                        tipo: tipoAveria,
+                        fechaRegistro: fechaRegistro.toISOString(),
+                        ubiInicio: selectedCamion.ruta.tramos[selectedCamion.position.currentSegmentIndex].origen.codigo,
+                        ubiFin: selectedCamion.ruta.tramos[selectedCamion.position.currentSegmentIndex].destino.codigo,
+                        vehiculoId: selectedCamion.idVehiculo,
+                        fechaReparacion, //si es tipo1 -> 4 horas, tipo2 ->36 horas, tipo3 -> 72 horas
+                        cargaReplanificada: tipoAveria === '2' || tipoAveria === '3',
+                      };
+
+                      await createAveria(averiaData);
+                      console.log('Avería registrada con éxito:', averiaData);
+
+                      // Actualiza el estado del camión en el contexto
+                      const updatedVehicles = state.vehicles.map((vehicle) =>
+                        vehicle.idVehiculo === selectedCamion.idVehiculo
+                          ? {
+                            ...vehicle,
+                            averia: { ...averiaData, isAveria: true },
+                          }
+                          : vehicle
+                      );
+
+                      dispatch({ type: 'SET_VEHICLES', payload: updatedVehicles });
+
+                      console.log('Avería registrada y estado actualizado:', averiaData);
+
+                    } catch (error) {
+                      console.error('Error al registrar avería:', error);
+                      //alert('Error al registrar la avería.');
+                    }
                   }}
                   style={{ textTransform: 'none' }}
                 >

@@ -17,11 +17,18 @@ function useAveria(): AveriaHooksReturn {
     const registerAveria = async (averia: Averia) => {
         setLoading(true);
         setError(null);
-
         try {
-            await createAveria(averia);
-        } catch (err) {
-            setError("Error al registrar avería: " + (err as Error).message);
+            const response = await createAveria(averia);
+            if (response.status >= 400) {
+                throw new Error(`Error: ${response.status} ${response.statusText}`);
+              }
+              setLoading(false);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message);
+              } else {
+                setError("Error desconocido al registerAveria");
+              }
         } finally {
             setLoading(false);
         }
