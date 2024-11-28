@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styles from './modalCargaMasiva.module.css';
+import styles from './ModalCargaMasiva.module.css';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button
 } from '@mui/material';
