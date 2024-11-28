@@ -1,52 +1,130 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import usePedidos from '../../store/hooks/usePedidos';
 import styles from './page.module.css';
-import CamionIcon from '../../components/Mapa/components/Mapa/MapaGoogleMaps/Markers/CamionMarker/CamionIcon/CamionIcon';
-import { House } from '@mui/icons-material';
+import { Box, Button, FormControl, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
+import { Add, UploadFile } from '@mui/icons-material';
+import ModalCargaMasiva from './Componentes/ModalCargaMasiva';
 
 const Page: React.FC = () => {
-  const { pedidos, loading, error, fetchPedidos } = usePedidos();
+  const { pedidos, fetchPedidos } = usePedidos();
 
   useEffect(() => {
     fetchPedidos();
   }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const [tipo, setTipo] = useState<string>('');
+  const [pedidoId, setPedidoId] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal Carga Masiva
 
-  if (error) {
-    return <div>{error}</div>;
-  }
+  const handlePedidoIdChange = (event: { target: { value: React.SetStateAction<string>; }; }) => {
+    setPedidoId(event.target.value);
+  };
+
+  const handleChange = (event: SelectChangeEvent) => {
+    setTipo(event.target.value);
+  };
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    fetchPedidos();
+  };
+
+  useEffect(() => {
+    fetchPedidos();
+  }, []);
 
   return (
     <div className={styles.contenedor}>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Precio</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pedidos.map((pedido) => (
-            <tr key={pedido.pedidoId}>
-              <td>{pedido.pedidoId}</td>
-              <td>{pedido.origenId}</td>
-              <td>{pedido.destinoId}</td>
-              <td>{pedido.cantidadTotal}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <CamionIcon />
-      <House />
-      <House fontSize='small' />
-      <House fontSize='large' />
+      <Box display="flex" justifyContent="center" alignItems="center" gap={2} mb={2}>
+        {/* Input Número de Pedido*/}
+        <FormControl size="small" sx={{ flex: 1, minWidth: '170px' }}>
+          <TextField
+            id="numero-pedido-input"
+            label="Número De Pedido"
+            variant="outlined"
+            size="small"
+            value={pedidoId}
+            onChange={handlePedidoIdChange}
+          />
+        </FormControl>
+        <FormControl size="small" sx={{ flex: 1, minWidth: '170px' }}>
+          <InputLabel id="estado-label">Estado</InputLabel>
+          <Select
+            labelId="estado-label"
+            id="estado-select"
+            value={tipo}
+            label="Estado"
+            onChange={handleChange}
+          >
+            <MenuItem value="pendiente">Pending</MenuItem>
+            <MenuItem value="entregado">Delivered</MenuItem>
+          </Select>
+        </FormControl>
+        {/* Botón Nuevo Pedido */}
+        <Button
+          className={styles.button}
+          variant="contained"
+          onClick={()=>{}}
+          startIcon= {<Add/>}
+        > Nuevo Pedido </Button>
+        {/* Botón Subir Archivo */}
+        <Button
+          className={styles.button}
+          variant="contained"
+          onClick={handleOpenModal}
+          startIcon= {<UploadFile/>}
+        > Subir Archivo </Button>
+      </Box>
+
+      <TableContainer component={Paper} className={styles.tableContainer}>
+        <Table stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell>Número de Pedido</TableCell>
+              <TableCell>Cantidad De Paquetes</TableCell>
+              <TableCell>Origen</TableCell>
+              <TableCell>Destino</TableCell>
+              <TableCell>Fecha De Registro</TableCell>
+              <TableCell>Fecha Plazo Máximo</TableCell>
+              <TableCell>Estado</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {pedidos.map((pedido) => (
+              <TableRow key={pedido.pedidoId}>
+                <TableCell>{pedido.pedidoId}</TableCell>
+                <TableCell>{pedido.cantidadTotal}</TableCell>
+                <TableCell>{pedido.origenId}</TableCell>
+                <TableCell>{pedido.destinoId}</TableCell>
+                <TableCell>{formatDate(pedido.fechaRegistro)}</TableCell>
+                <TableCell>{formatDate(pedido.fechaPlazoMaximo)}</TableCell>
+                <TableCell>{pedido.estado}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {isModalOpen && <ModalCargaMasiva onClose={handleCloseModal}/>}
     </div>
   );
 };
 
 export default Page;
+
+const formatDate = (isoDate: string) => {
+  const date = new Date(isoDate);
+  return date.toLocaleString('es-PE', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false // 24-hour format
+  });
+};
