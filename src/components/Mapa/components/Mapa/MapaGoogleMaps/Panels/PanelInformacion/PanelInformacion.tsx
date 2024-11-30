@@ -26,9 +26,7 @@ import {
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import styles from './PanelInformacion.module.css';
-
 dayjs.extend(duration);
-
 import { Oficina } from '../../../../../../../context/Simulacion/simulationTypes';
 import { Vehicle as Camion } from '../../../../../../../context/Simulacion/simulationTypes';
 import { Order } from '../../../../../../../context/Simulacion/simulationTypes';
