@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import styles from './layout.module.css';
 import Header from '../../components/Header/Header';
 import {
   DatePicker,
@@ -14,7 +13,6 @@ import {
   Box,
   SelectChangeEvent,
   TextField, 
-  IconButton,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { PlayArrow, Stop } from '@mui/icons-material';
@@ -132,18 +130,23 @@ const CustomHeader: React.FC = () => {
             </Select>
           </FormControl>
           <Button
-            className={styles.button}
             variant="contained"
-            startIcon={state.isPlaying ? <Stop /> : <PlayArrow />}
             onClick={state.isPlaying ? stopSimulation : startSimulation}
-            disabled={!state.isPlaying && tipo !== 'semanal'}
             color={state.isPlaying ? 'error' : 'primary'}
+            sx={{
+              minWidth: '40px', // Tamaño mínimo para igualarlo al botón de búsqueda
+              height: '40px', // Igual altura que el botón de búsqueda
+              padding: 0, // Sin padding adicional
+              display: 'flex', // Para centrar el ícono
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
-            {state.isPlaying ? 'Cancelar' : 'Iniciar'}
-          </Button>          
+            {state.isPlaying ? <Stop /> : <PlayArrow />}
+          </Button>        
         </Box>
         {/* Contenedor para el buscador */}
-        <Box display="flex" alignItems="center" justifyContent="flex-start">
+        <Box display="flex" alignItems="center" justifyContent="flex-start" gap={2}>
           <TextField
             size="small"
             placeholder="Ingrese el código del Pedido, Camión u Oficina"
@@ -156,9 +159,21 @@ const CustomHeader: React.FC = () => {
               }
             }}
           />
-          <IconButton onClick={handleSearch} size="small">
+          <Button
+            variant="contained"
+            onClick={handleSearch}
+            color="primary"
+            sx={{
+              minWidth: '40px', // Establece el tamaño mínimo para que sea un cuadrado
+              height: '40px', // Asegura que sea un cuadrado
+              padding: 0, // Sin padding adicional
+              display: 'flex', // Para centrar el ícono
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <SearchIcon />
-          </IconButton>
+          </Button>
         </Box>
       </Box>
     </Header>

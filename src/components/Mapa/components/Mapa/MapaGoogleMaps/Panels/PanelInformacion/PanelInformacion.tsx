@@ -804,7 +804,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
               >
                 <Typography variant="subtitle2" color="textPrimary">
-                  <b>📦 Detalles de pedidos (Total: {ordersDelivered + ordersPending})</b>
+                  <b>Detalles de pedidos (Total: {ordersDelivered + ordersPending})</b>
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
@@ -838,7 +838,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
               >
                 <Typography variant="subtitle2" color="textPrimary">
-                  <b>🚚 Detalles de camiones (Flota: {fleetSaturation})</b>
+                  <b>Detalles de camiones (Flota: {fleetSaturation})</b>
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
@@ -872,7 +872,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
               >
                 <Typography variant="subtitle2" color="textPrimary">
-                  <b>🏢 Detalles de oficinas (Sedes: {totalOffices})</b>
+                  <b>Detalles de oficinas (Sedes: {totalOffices})</b>
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
