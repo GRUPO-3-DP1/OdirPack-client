@@ -13,13 +13,15 @@ import {
   Select,
   Box,
   SelectChangeEvent,
+  TextField, 
+  IconButton,
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import { PlayArrow, Stop } from '@mui/icons-material';
 import { useData } from '../../context/useData';
 import dayjs, { Dayjs } from 'dayjs';
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
-//import { dataPrueba } from '../../data/dataPrueba';
 import { dataPrueba } from '../../data/nuevaDataPrueba';
 
 
@@ -58,66 +60,106 @@ const CustomHeader: React.FC = () => {
     }
   };
 
+  const [searchCode, setSearchCode] = useState('');
+  
+  const handleSearch = () => {
+    if (!searchCode) return;
+    
+    // Identificar el tipo de código
+    const type = searchCode.toUpperCase().startsWith('PED-') ? 'pedido' :
+                searchCode.toUpperCase().startsWith('CAM-') ? 'camion' :
+                searchCode.toUpperCase().startsWith('OFC-') ? 'oficina' : 
+                'desconocido';
+                
+    console.log('Buscando:', { code: searchCode, type });
+    // Aquí implementarías la lógica para mostrar el popup con la información
+  };
+
   return (
     <Header isLoading={state.isPlaying}>
-      <Box display="flex" alignItems="center" gap={2}>
-        <DatePicker
-          label="Fecha"
-          value={selectedDate}
-          onChange={(newValue) => setSelectedDate(newValue)}
-          disabled={state.isPlaying}
-          format="DD/MM/YYYY" 
-          slotProps={{
-            textField: {
-              size: 'small',
-              sx: { width: '149px' },
-              disabled: state.isPlaying,
-            },
-          }}
-        />
-        <TimePicker
-          label="Hora"
-          value={selectedTime}
-          onChange={(newValue) => setSelectedTime(newValue)}
-          disabled={state.isPlaying}
-          views={['hours', 'minutes']}
-          ampm 
-          slotProps={{
-            textField: {
-              size: 'small',
-              sx: { width: '135px' },
-              disabled: state.isPlaying,
-            },
-          }}
-        />
-        <FormControl
-          size="small"
-          sx={{ width: '170px' }}
-          disabled={state.isPlaying}
-        >
-          <InputLabel id="tipo-label">Tipo</InputLabel>
-          <Select
-            labelId="tipo-label"
-            id="tipo-select"
-            value={tipo}
-            label="Tipo"
-            onChange={handleChange}
+      <Box
+        display="flex"
+        flexDirection="column"
+        gap={1} // Incrementa el espacio entre las filas
+        sx={{ paddingTop: '10px' }} // Agrega espacio superior
+      >
+        <Box display="flex" alignItems="center" gap={2}>
+          <DatePicker
+            label="Fecha"
+            value={selectedDate}
+            onChange={(newValue) => setSelectedDate(newValue)}
+            disabled={state.isPlaying}
+            format="DD/MM/YYYY" 
+            slotProps={{
+              textField: {
+                size: 'small',
+                sx: { width: '149px' },
+                disabled: state.isPlaying,
+              },
+            }}
+          />
+          <TimePicker
+            label="Hora"
+            value={selectedTime}
+            onChange={(newValue) => setSelectedTime(newValue)}
+            disabled={state.isPlaying}
+            views={['hours', 'minutes']}
+            ampm 
+            slotProps={{
+              textField: {
+                size: 'small',
+                sx: { width: '135px' },
+                disabled: state.isPlaying,
+              },
+            }}
+          />
+          <FormControl
+            size="small"
+            sx={{ width: '170px' }}
             disabled={state.isPlaying}
           >
-            <MenuItem value="semanal">Semanal</MenuItem>
-            <MenuItem value="colapso">Hasta el colapso</MenuItem>
-          </Select>
-        </FormControl>
-        <Button
-          className={styles.button}
-          variant="contained"
-          startIcon={state.isPlaying ? <Stop /> : <PlayArrow />}
-          onClick={state.isPlaying ? stopSimulation : startSimulation}
-          disabled={!state.isPlaying && tipo !== 'semanal'}
-          color={state.isPlaying ? 'error' : 'primary'}
-        >
-          {state.isPlaying ? 'Cancelar' : 'Iniciar'}
-        </Button>
+            <InputLabel id="tipo-label">Tipo</InputLabel>
+            <Select
+              labelId="tipo-label"
+              id="tipo-select"
+              value={tipo}
+              label="Tipo"
+              onChange={handleChange}
+              disabled={state.isPlaying}
+            >
+              <MenuItem value="semanal">Semanal</MenuItem>
+              <MenuItem value="colapso">Hasta el colapso</MenuItem>
+            </Select>
+          </FormControl>
+          <Button
+            className={styles.button}
+            variant="contained"
+            startIcon={state.isPlaying ? <Stop /> : <PlayArrow />}
+            onClick={state.isPlaying ? stopSimulation : startSimulation}
+            disabled={!state.isPlaying && tipo !== 'semanal'}
+            color={state.isPlaying ? 'error' : 'primary'}
+          >
+            {state.isPlaying ? 'Cancelar' : 'Iniciar'}
+          </Button>          
+        </Box>
+        {/* Contenedor para el buscador */}
+        <Box display="flex" alignItems="center" justifyContent="flex-start">
+          <TextField
+            size="small"
+            placeholder="Ingrese el código del Pedido, Camión u Oficina"
+            value={searchCode}
+            onChange={(e) => setSearchCode(e.target.value)}
+            sx={{ width: 486 }}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleSearch();
+              }
+            }}
+          />
+          <IconButton onClick={handleSearch} size="small">
+            <SearchIcon />
+          </IconButton>
+        </Box>
       </Box>
     </Header>
   );
