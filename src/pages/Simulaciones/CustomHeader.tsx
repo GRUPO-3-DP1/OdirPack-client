@@ -7,7 +7,6 @@ import {
 import {
   Button,
   FormControl,
-  InputLabel,
   MenuItem,
   Select,
   Box,
@@ -22,8 +21,10 @@ import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
 import { dataPrueba } from '../../data/nuevaDataPrueba';
 
-
 const CustomHeader: React.FC = () => {
+
+  // Estados existentes...
+  const [searchCode, setSearchCode] = useState<string>('');
   const [tipo, setTipo] = useState("");
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-10-01'));
   const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2024-10-01T00:00'));
@@ -58,20 +59,7 @@ const CustomHeader: React.FC = () => {
     }
   };
 
-  const [searchCode, setSearchCode] = useState('');
-  
-  const handleSearch = () => {
-    if (!searchCode) return;
-    
-    // Identificar el tipo de código
-    const type = searchCode.toUpperCase().startsWith('PED-') ? 'pedido' :
-                searchCode.toUpperCase().startsWith('CAM-') ? 'camion' :
-                searchCode.toUpperCase().startsWith('OFC-') ? 'oficina' : 
-                'desconocido';
-                
-    console.log('Buscando:', { code: searchCode, type });
-    // Aquí implementarías la lógica para mostrar el popup con la información
-  };
+  const getDynamicBackground = (value: any) => (value ? '#E6F0FB' : '#FAFAFA'); 
 
   return (
     <Header isLoading={state.isPlaying}>
@@ -83,7 +71,6 @@ const CustomHeader: React.FC = () => {
       >
         <Box display="flex" alignItems="center" gap={2}>
           <DatePicker
-            label="Fecha"
             value={selectedDate}
             onChange={(newValue) => setSelectedDate(newValue)}
             disabled={state.isPlaying}
@@ -91,13 +78,16 @@ const CustomHeader: React.FC = () => {
             slotProps={{
               textField: {
                 size: 'small',
-                sx: { width: '149px' },
+                placeholder: 'Fecha',
+                sx: { 
+                  width: '149px',
+                  backgroundColor: getDynamicBackground(selectedDate),  
+                },
                 disabled: state.isPlaying,
               },
             }}
           />
           <TimePicker
-            label="Hora"
             value={selectedTime}
             onChange={(newValue) => setSelectedTime(newValue)}
             disabled={state.isPlaying}
@@ -106,27 +96,58 @@ const CustomHeader: React.FC = () => {
             slotProps={{
               textField: {
                 size: 'small',
-                sx: { width: '135px' },
+                placeholder: 'Hora',
+                sx: { 
+                  width: '135px',
+                  backgroundColor: getDynamicBackground(selectedTime),
+                },
                 disabled: state.isPlaying,
               },
             }}
           />
           <FormControl
             size="small"
-            sx={{ width: '170px' }}
+            sx={{
+              width: '170px',
+              backgroundColor: getDynamicBackground(tipo),
+              '.MuiOutlinedInput-root': {
+                padding: 0, // Elimina padding interno no deseado
+              },
+              '.MuiOutlinedInput-notchedOutline': {
+                borderWidth: '1px', // Mantiene el borde visible
+              },
+            }}
             disabled={state.isPlaying}
           >
-            <InputLabel id="tipo-label">Tipo</InputLabel>
             <Select
-              labelId="tipo-label"
-              id="tipo-select"
+              displayEmpty
               value={tipo}
-              label="Tipo"
               onChange={handleChange}
               disabled={state.isPlaying}
+              renderValue={(selected) => {
+                if (!selected) {
+                  return <span style={{ color: '#999' }}>Tipo</span>; // Placeholder estilizado
+                }
+                return selected;
+              }}
+              sx={{
+                padding: '8px 12px', // Centra el texto dentro del cuadro
+                height: '40px', // Asegura un tamaño uniforme con otros inputs
+                lineHeight: 'normal', // Centra visualmente el texto
+              }}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    marginTop: '5px', // Ajusta el espacio entre el cuadro y el menú desplegable
+                  },
+                },
+              }}
             >
-              <MenuItem value="semanal">Semanal</MenuItem>
-              <MenuItem value="colapso">Hasta el colapso</MenuItem>
+              <MenuItem value="" disabled>
+                Tipo
+              </MenuItem>
+              <MenuItem value="Semanal">Semanal</MenuItem>
+              <MenuItem value="Hasta el colapso">Hasta el colapso</MenuItem>
             </Select>
           </FormControl>
           <Button
@@ -152,16 +173,18 @@ const CustomHeader: React.FC = () => {
             placeholder="Ingrese el código del Pedido, Camión u Oficina"
             value={searchCode}
             onChange={(e) => setSearchCode(e.target.value)}
-            sx={{ width: 486 }}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                handleSearch();
-              }
+            sx={{ 
+              width: 486,
+              backgroundColor: getDynamicBackground(searchCode),
+            }}
+            inputProps={{
+              style: {
+                fontSize: '15.5px', // Ajusta el tamaño del texto
+              },
             }}
           />
           <Button
             variant="contained"
-            onClick={handleSearch}
             color="primary"
             sx={{
               minWidth: '40px', // Establece el tamaño mínimo para que sea un cuadrado
