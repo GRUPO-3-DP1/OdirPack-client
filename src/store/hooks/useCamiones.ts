@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { Camion } from '../types/Camion';
 import { crearCamion, getCamiones } from '../services/camiones';
 
-type CamionData = Omit<Camion, 'camionId'>;
+export type CamionData = Omit<Camion, 'camionId'>;
 
 type UseCamionesReturn = {
   camiones: Camion[];
@@ -36,15 +36,14 @@ function useCamiones(): UseCamionesReturn {
     setLoading(true);
     setError(null);
     try {
-      await crearCamion(camionData);
+      await crearCamion({ ...camionData, fechaLibre: camionData.fechaLibre ?? '' });
       console.log('Camion created successfully.');
-      await fetchCamiones();
     } catch (err) {
       setError(`Failed to create camion: ${(err as Error).message}`);
     } finally {
       setLoading(false);
     }
-  }, [fetchCamiones]);
+  }, []);
 
   return { camiones, loading, error, fetchCamiones, createCamion, setCamiones };
 }
