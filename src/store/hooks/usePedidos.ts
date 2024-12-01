@@ -1,52 +1,56 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { crearPedido, getPedidos } from '../services/pedido';
 import { Pedido } from '../types/Pedido';
 
-type PedidoHooksReturn = {
-    pedidos: Pedido[];
-    loading: boolean;
-    error: any;
-    fetchPedidos: () => Promise<void>;
-    setPedidos: React.Dispatch<React.SetStateAction<Pedido[]>>;
-    createPedido: (pedidoData: { destinoId: string, cantidadTotal: number, clienteId: string }) => Promise<void>;
+type PedidoData = {
+  destinoId: string;
+  cantidadTotal: number;
+  clienteId: string;
 };
 
-function usePedidos(): PedidoHooksReturn {
-    const [pedidos, setPedidos] = useState<Pedido[]>([]);
-    const [loading, setLoading] = useState<boolean>(false); // Inicialmente no está cargando
-    const [error, setError] = useState<any>(null);
+type UsePedidosReturn = {
+  pedidos: Pedido[];
+  loading: boolean;
+  error: string | null;
+  fetchPedidos: () => Promise<void>;
+  setPedidos: React.Dispatch<React.SetStateAction<Pedido[]>>;
+  createPedido: (pedidoData: PedidoData) => Promise<void>;
+};
 
-    const fetchPedidos = async () => {
-        setLoading(true);
-        setError(null);
+function usePedidos(): UsePedidosReturn {
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-        try {
-            const data = await getPedidos();
-            setPedidos(data); 
-            console.log("Se cargaron datos de BD");
-        } catch (err) {
-            setError("Error en usePedidos: " + (err as Error).message);
-        } finally {
-            setLoading(false);
-        }
+  const fetchPedidos = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getPedidos();
+      setPedidos(data);
+      console.log('Pedidos fetched successfully.');
+    } catch (err) {
+      setError(`Failed to fetch pedidos: ${(err as Error).message}`);
+    } finally {
+      setLoading(false);
     }
+  }, []);
 
-    // Función para crear un pedido
-    const createPedido = async (pedidoData: { destinoId: string, cantidadTotal: number, clienteId: string }) => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            await crearPedido(pedidoData);
-
-        } catch (err) {
-            setError("Error al crear el pedido: " + (err as Error).message);
-        } finally {
-            setLoading(false);
-        }
+  const createPedido = useCallback(async (pedidoData: PedidoData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await crearPedido(pedidoData);
+      console.log('Pedido created successfully.');
+      await fetchPedidos();
+    } catch (err) {
+      setError(`Failed to create pedido: ${(err as Error).message}`);
+    } finally {
+      setLoading(false);
     }
+  }, [fetchPedidos]);
 
-    return { pedidos, loading, error, fetchPedidos, setPedidos, createPedido};
+  return { pedidos, loading, error, fetchPedidos, setPedidos, createPedido };
 }
 
 export default usePedidos;
