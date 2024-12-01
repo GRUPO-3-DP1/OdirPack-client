@@ -4,6 +4,7 @@ import styles from './page.module.css';
 import { Box, Button, FormControl, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
 import { Add, UploadFile } from '@mui/icons-material';
 import ModalCargaMasiva from './Componentes/ModalCargaMasiva';
+import { formatDate } from '../../utils/formatDate';
 
 const Page: React.FC = () => {
   const { pedidos, fetchPedidos } = usePedidos();
@@ -32,10 +33,6 @@ const Page: React.FC = () => {
     setIsModalOpen(false);
     fetchPedidos();
   };
-
-  useEffect(() => {
-    fetchPedidos();
-  }, []);
 
   return (
     <div className={styles.contenedor}>
@@ -68,15 +65,15 @@ const Page: React.FC = () => {
         <Button
           className={styles.button}
           variant="contained"
-          onClick={()=>{}}
-          startIcon= {<Add/>}
+          onClick={() => { }}
+          startIcon={<Add />}
         > Nuevo Pedido </Button>
         {/* Botón Subir Archivo */}
         <Button
           className={styles.button}
           variant="contained"
           onClick={handleOpenModal}
-          startIcon= {<UploadFile/>}
+          startIcon={<UploadFile />}
         > Subir Archivo </Button>
       </Box>
 
@@ -109,22 +106,9 @@ const Page: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {isModalOpen && <ModalCargaMasiva onClose={handleCloseModal}/>}
+      {isModalOpen && <ModalCargaMasiva onClose={handleCloseModal} />}
     </div>
   );
 };
 
 export default Page;
-
-const formatDate = (isoDate: string) => {
-  const date = new Date(isoDate);
-  return date.toLocaleString('es-PE', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false // 24-hour format
-  });
-};
