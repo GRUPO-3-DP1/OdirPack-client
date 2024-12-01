@@ -8,6 +8,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { ArchivosProvider } from './context/Archivos/ArchivosContext';
 import { APIProvider } from '@vis.gl/react-google-maps';
+import { SelectionProvider } from './context/Buscador/SelectionProvider';
 
 const customTheme = createTheme({
   palette: {
@@ -52,12 +53,14 @@ const App: React.FC = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <ArchivosProvider>
-        <ThemeProvider theme={customTheme}>
-          <CssBaseline />
-          <APIProvider apiKey="AIzaSyBwA7pyze0XndTMMLOhspsQdFq8Xj52_eY">
-            <RouterProvider router={router} />
-          </APIProvider>
-        </ThemeProvider>
+        <SelectionProvider>
+          <ThemeProvider theme={customTheme}>
+            <CssBaseline />
+            <APIProvider apiKey="AIzaSyBwA7pyze0XndTMMLOhspsQdFq8Xj52_eY">
+              <RouterProvider router={router} />
+            </APIProvider>
+          </ThemeProvider>
+        </SelectionProvider>
       </ArchivosProvider>
     </LocalizationProvider>
   );

@@ -20,20 +20,24 @@ import dayjs, { Dayjs } from 'dayjs';
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
 import { dataPrueba } from '../../data/nuevaDataPrueba';
+import { useSelection } from '../../context/Buscador/useSelection';
 
 const CustomHeader: React.FC = () => {
 
-  // Estados existentes...
+  // Estados locales
   const [searchCode, setSearchCode] = useState<string>('');
   const [tipo, setTipo] = useState("");
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-10-01'));
   const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2024-10-01T00:00'));
 
+  // Hooks de contexto
+  const { state: simulationState, dispatch, userId, stopSimulation } = useData();
+  const { setSelectedOficina, setSelectedCamion, setSelectedPedido } = useSelection();
+
+
   const handleChange = (event: SelectChangeEvent) => {
     setTipo(event.target.value);
   };
-
-  const { state, dispatch, userId, stopSimulation } = useData();
 
   const startSimulation = async () => {
     console.log("startSimulation");
@@ -59,10 +63,59 @@ const CustomHeader: React.FC = () => {
     }
   };
 
-  const getDynamicBackground = (value: any) => (value ? '#E6F0FB' : '#FAFAFA'); 
+  const getDynamicBackground = (value: Dayjs | string | null) => (value ? '#E6F0FB' : '#FAFAFA'); 
+
+  // Actualizar todas las referencias a state por simulationState
+  const handleSearch = () => {
+    const query = searchCode.trim();
+
+    setSelectedOficina(null);
+    setSelectedCamion(null);
+    setSelectedPedido(null);
+
+    // Buscar en oficinas
+    // const office = simulationState.offices.find((office) => office.ubigeo === query);
+    // if (office) {
+    //   setSelectedOficina(office);
+    //   return;
+    // }
+    if (query.includes(',')) {
+      const [departamento, provincia] = query.split(',').map(part => part.trim().toUpperCase());
+      const office = simulationState.offices.find((office) =>
+        office.departamento.toUpperCase() === departamento &&
+        office.provincia.toUpperCase() === provincia
+      );
+      if (office) {
+        setSelectedOficina(office);
+        return;
+      }
+    }
+
+    // Buscar en camiones
+    const truck = simulationState.vehicles.find((vehicle) => vehicle.idVehiculo === query);
+    if (truck) {
+      setSelectedCamion(truck);
+      return;
+    }
+
+    // Buscar en pedidos
+    const allOrders = [
+      ...simulationState.unplannedOrders,
+      ...simulationState.vehicles.flatMap(vehicle => vehicle.ruta?.pedidos || [])
+    ];
+    
+    const order = allOrders.find((order) => 
+      order.idPedido.toUpperCase() === query
+    );
+    if (order) {
+      setSelectedPedido(order);
+      return;
+    }
+
+  };
 
   return (
-    <Header isLoading={state.isPlaying}>
+    <Header isLoading={simulationState.isPlaying}>
       <Box
         display="flex"
         flexDirection="column"
@@ -73,7 +126,7 @@ const CustomHeader: React.FC = () => {
           <DatePicker
             value={selectedDate}
             onChange={(newValue) => setSelectedDate(newValue)}
-            disabled={state.isPlaying}
+            disabled={simulationState.isPlaying}
             format="DD/MM/YYYY" 
             slotProps={{
               textField: {
@@ -83,14 +136,14 @@ const CustomHeader: React.FC = () => {
                   width: '149px',
                   backgroundColor: getDynamicBackground(selectedDate),  
                 },
-                disabled: state.isPlaying,
+                disabled: simulationState.isPlaying,
               },
             }}
           />
           <TimePicker
             value={selectedTime}
             onChange={(newValue) => setSelectedTime(newValue)}
-            disabled={state.isPlaying}
+            disabled={simulationState.isPlaying}
             views={['hours', 'minutes']}
             ampm 
             slotProps={{
@@ -101,7 +154,7 @@ const CustomHeader: React.FC = () => {
                   width: '135px',
                   backgroundColor: getDynamicBackground(selectedTime),
                 },
-                disabled: state.isPlaying,
+                disabled: simulationState.isPlaying,
               },
             }}
           />
@@ -117,13 +170,13 @@ const CustomHeader: React.FC = () => {
                 borderWidth: '1px', // Mantiene el borde visible
               },
             }}
-            disabled={state.isPlaying}
+            disabled={simulationState.isPlaying}
           >
             <Select
               displayEmpty
               value={tipo}
               onChange={handleChange}
-              disabled={state.isPlaying}
+              disabled={simulationState.isPlaying}
               renderValue={(selected) => {
                 if (!selected) {
                   return <span style={{ color: '#999' }}>Tipo</span>; // Placeholder estilizado
@@ -152,8 +205,8 @@ const CustomHeader: React.FC = () => {
           </FormControl>
           <Button
             variant="contained"
-            onClick={state.isPlaying ? stopSimulation : startSimulation}
-            color={state.isPlaying ? 'error' : 'primary'}
+            onClick={simulationState.isPlaying ? stopSimulation : startSimulation}
+            color={simulationState.isPlaying ? 'error' : 'primary'}
             sx={{
               minWidth: '40px', // Tamaño mínimo para igualarlo al botón de búsqueda
               height: '40px', // Igual altura que el botón de búsqueda
@@ -163,7 +216,7 @@ const CustomHeader: React.FC = () => {
               justifyContent: 'center',
             }}
           >
-            {state.isPlaying ? <Stop /> : <PlayArrow />}
+            {simulationState.isPlaying ? <Stop /> : <PlayArrow />}
           </Button>        
         </Box>
         {/* Contenedor para el buscador */}
@@ -186,6 +239,7 @@ const CustomHeader: React.FC = () => {
           <Button
             variant="contained"
             color="primary"
+            onClick={handleSearch}
             sx={{
               minWidth: '40px', // Establece el tamaño mínimo para que sea un cuadrado
               height: '40px', // Asegura que sea un cuadrado

@@ -48,6 +48,7 @@ interface PanelInformacionProps {
   show: boolean;
   selectedOficina: Oficina | null;
   selectedCamion: Camion | null;
+  selectedPedido: Order | null;
   operationType: 'semanal' | 'colapso' | 'diaadia';
 }
 
@@ -55,6 +56,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   show,
   selectedOficina,
   selectedCamion,
+  selectedPedido,
   operationType,
 }) => {
   const { state, dispatch } = useData();
@@ -388,7 +390,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                           <Box display="flex" alignItems="center">
                             <IconComponent sx={{ color: iconColor, marginRight: '8px' }} />
                             <Typography variant="subtitle1" color="textPrimary">
-                              <b>{pedido.idPedido}</b>
+                              <b>Pedido {pedido.idPedido}</b>
                             </Typography>
                           </Box>
                           <Typography variant="body2" color="textSecondary">
@@ -568,7 +570,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                         Código:
                       </Typography>
                       <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                        OFC-{selectedOficina.almacen}
+                        OFC-{selectedOficina.ubigeo}
                       </Typography>
                     </Box>
                     <Box display="flex">
@@ -755,7 +757,71 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
 
 
           </>
-        ) : (
+      ) : selectedPedido ? (
+        // Nuevo panel para pedidos
+        <Box sx={{
+          backgroundColor: '#f5f5f5',
+          padding: '8px',
+          borderRadius: '4px',
+          marginBottom: '8px',
+        }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <div>
+              <Typography variant="subtitle1" color="textPrimary">
+                <b>Información del pedido</b>
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                <b>Código:</b>{' '}
+                <Typography component="span" variant="body2" color="textPrimary">
+                  {selectedPedido.idPedido}
+                </Typography>
+              </Typography>
+            </div>
+            <Box display="flex" flexDirection="column" alignItems="center">
+              <LocalShipping color="primary" sx={{ mb: 0.5 }} />
+              <Typography variant="body2" color="textSecondary">
+                <b>Cantidad:</b>{' '}
+                <Typography component="span" variant="body2" color="textPrimary">
+                  {selectedPedido.cantidad}
+                </Typography>
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Accordion defaultExpanded disableGutters>
+            <AccordionSummary
+              expandIcon={<ExpandMore />}
+              sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+            >
+              <Typography variant="subtitle2" color="textPrimary">
+                <b>Detalles del pedido</b>
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+              <Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="body2" color="textSecondary">
+                    <b>Origen:</b>{' '}
+                    {selectedPedido.ubigeoOrigen || 'No asignado'}
+                  </Typography>
+                </Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="body2" color="textSecondary">
+                    <b>Destino:</b>{' '}
+                    {selectedPedido.ubigeoDestino}
+                  </Typography>
+                </Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="body2" color="textSecondary">
+                    <b>Fecha de registro:</b>{' '}
+                    {dayjs(selectedPedido.fechaRegistro).format('DD/MM/YYYY HH:mm')}
+                  </Typography>
+                </Box>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+        </Box>      
+      ) : (
           // Información de la simulación por defecto
           <>
             <Box

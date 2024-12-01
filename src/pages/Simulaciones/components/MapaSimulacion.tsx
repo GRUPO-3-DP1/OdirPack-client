@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Vehicle as Camion } from '../../../context/Simulacion/simulationTypes';
 import { useData } from '../../../context/useData';
+import { useSelection } from '../../../context/Buscador/useSelection';
 import PanelLeyenda from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelLeyenda/PanelLeyenda';
 import PanelInformacion from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelInformacion/PanelInformacion';
 import PanelResultados from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelResultados/PanelResultados';
 import { Oficina } from '../../../context/Simulacion/simulationTypes';
+//import { Order } from '../../../context/Simulacion/simulationTypes';
 import Mapa from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Mapa';
 import OficinasLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Layers/OficinasLayer/OficinasLayer';
 import CamionesLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Layers/CamionesLayer/CamionesLayer';
@@ -18,22 +20,31 @@ interface MapaProps {
 const MapaSimulacion: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType = 'semanal' }) => {
   const { state } = useData();
 
-  const [selectedOficina, setSelectedOficina] = useState<Oficina | null>(null);
-  const [selectedCamion, setSelectedCamion] = useState<Camion | null>(null);
+  const {
+    selectedOficina,
+    setSelectedOficina,
+    selectedCamion,
+    setSelectedCamion,
+    selectedPedido,
+    setSelectedPedido,
+  } = useSelection(); 
 
   const handleOficinaClick = (oficina: Oficina) => {
     setSelectedOficina(oficina);
     setSelectedCamion(null);
+    setSelectedPedido(null);
   };
 
   const handleCamionClick = (camion: Camion) => {
     setSelectedCamion(camion);
     setSelectedOficina(null);
+    setSelectedPedido(null);
   };
 
   const handleMapClick = () => {
     setSelectedOficina(null);
     setSelectedCamion(null);
+    setSelectedPedido(null);
   };
 
   return (
@@ -45,6 +56,7 @@ const MapaSimulacion: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, oper
         show={alwaysShowInfoPanel || state.isPlaying}
         selectedOficina={selectedOficina}
         selectedCamion={selectedCamion}
+        selectedPedido={selectedPedido} 
         operationType={operationType}
       />
 
