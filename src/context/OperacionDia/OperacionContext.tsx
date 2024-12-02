@@ -1,18 +1,19 @@
 // OperacionContext.tsx
 import React, { createContext, useReducer, useEffect, useState } from 'react';
+//import React, { createContext, useReducer, useEffect } from 'react';
 import oficinas from '../../data/oficinas';
 import { SimulationAction, SimulationState, Vehicle, Oficina, Order } from './operacionTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
 import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
-import { convertUnplannedPedidosToOrders } from '../../utils/convertUnplannedPedidosToOrders';
-import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles';
-import { convertOffices } from '../../utils/convertOffices';
+// import { convertUnplannedPedidosToOrders } from '../../utils/convertUnplannedPedidosToOrders';
+// import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles';
+// import { convertOffices } from '../../utils/convertOffices';
 import { locationCoordinates } from '../../utils/locationCoordinates';
 import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
 import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
 import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
-import { useWebSocket } from '../../store/hooks/useWebSocket';
-import { Services } from '../../../config';
+// import { useWebSocket } from '../../store/hooks/useWebSocket';
+// import { Services } from '../../../config';
 
 export const OperacionContext = createContext<{
   state: SimulationState;
@@ -86,190 +87,192 @@ const initialState: SimulationState = {
 export function OperacionProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(operacionReducer, initialState);
 
-  const [userId, setUserId] = useState<string>('');
-  const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]);
+  const [userId] = useState<string>('');
+  const [solutions] = useState<ResponseAlgorithm[]>([]);
 
-  const { isConnected, closeWebSocket } = useWebSocket({
-    url: `${Services.WebUrl}/conexion-websocket`,
-    onMessage: (data) => {
-      if (data.userId) {
-        setUserId(data.userId);
-      } else {
-        const newResponse = data;
-        //console.log('Respuesta del algoritmo recibida:', newResponse);
-        setSolutions((prevResponses) => [...prevResponses, newResponse]);
-      }
-    },
-    onOpen: () => {
-      //console.log('Conexión WebSocket establecida en OperacionProvider');
-    },
-    onClose: () => {
-      //console.log('Conexión WebSocket cerrada en OperacionProvider');
-    },
-  });
 
-  const [lastProcessedSolution, setLastProcessedSolution] = useState<string | null>(null);
-  const [indexActualProcess, setIndexActualProcess] = useState(0);
 
-  useEffect(() => {
-    if (indexActualProcess < solutions.length) {
-      const newResponse = solutions[indexActualProcess];
+  // const { isConnected, closeWebSocket } = useWebSocket({
+  //   url: `${Services.WebUrl}/conexion-websocket`,
+  //   onMessage: (data) => {
+  //     if (data.userId) {
+  //       setUserId(data.userId);
+  //     } else {
+  //       const newResponse = data;
+  //       //console.log('Respuesta del algoritmo recibida:', newResponse);
+  //       setSolutions((prevResponses) => [...prevResponses, newResponse]);
+  //     }
+  //   },
+  //   onOpen: () => {
+  //     //console.log('Conexión WebSocket establecida en OperacionProvider');
+  //   },
+  //   onClose: () => {
+  //     //console.log('Conexión WebSocket cerrada en OperacionProvider');
+  //   },
+  // });
 
-      const newSolutionString = JSON.stringify(newResponse.solucion);
+  // const [lastProcessedSolution, setLastProcessedSolution] = useState<string | null>(null);
+  // const [indexActualProcess, setIndexActualProcess] = useState(0);
 
-      //console.log('Solución a procesar:', newResponse);
+  // useEffect(() => {
+  //   if (indexActualProcess < solutions.length) {
+  //     const newResponse = solutions[indexActualProcess];
 
-      if (newSolutionString !== lastProcessedSolution) {
-        setLastProcessedSolution(newSolutionString);
+  //     const newSolutionString = JSON.stringify(newResponse.solucion);
 
-        const newVehicles = convertSolutionToVehicles(newResponse);
+  //     //console.log('Solución a procesar:', newResponse);
 
-        // Procesar oficinas
-        const newOffices = convertOffices(newResponse.oficinas);
+  //     if (newSolutionString !== lastProcessedSolution) {
+  //       setLastProcessedSolution(newSolutionString);
 
-        // Fusionar oficinas
-        const mergedOffices = state.offices.map((office) => {
-          const updatedOffice = newOffices.find((o) => o.ubigeo === office.ubigeo);
-          if (updatedOffice) {
-            return {
-              ...office,
-              ...updatedOffice,
-            };
-          }
-          return office;
-        });
+  //       const newVehicles = convertSolutionToVehicles(newResponse);
 
-        dispatch({ type: 'SET_OFFICES', payload: mergedOffices });
+  //       // Procesar oficinas
+  //       const newOffices = convertOffices(newResponse.oficinas);
 
-        // Procesar pedidos no planificados
-        const newUnplannedOrders = newResponse.pedidosNoPlanificados || [];
+  //       // Fusionar oficinas
+  //       const mergedOffices = state.offices.map((office) => {
+  //         const updatedOffice = newOffices.find((o) => o.ubigeo === office.ubigeo);
+  //         if (updatedOffice) {
+  //           return {
+  //             ...office,
+  //             ...updatedOffice,
+  //           };
+  //         }
+  //         return office;
+  //       });
 
-        // Convertir pedidos no planificados a Order[]
-        const unplannedOrders: Order[] = convertUnplannedPedidosToOrders(newUnplannedOrders);
+  //       dispatch({ type: 'SET_OFFICES', payload: mergedOffices });
 
-        // Actualizar vehículos
-        if (!state.vehicles || state.vehicles.length === 0) {
-          dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
-          //console.log('Primera respuesta:', newVehicles);
+  //       // Procesar pedidos no planificados
+  //       const newUnplannedOrders = newResponse.pedidosNoPlanificados || [];
 
-          // Actualizar datos de simulación
-          dispatch({
-            type: 'UPDATE_SIMULATION_DATA',
-            payload: {
-              totalTrucks: newVehicles.length,
-              occupiedOffices: calculateOccupiedOffices(newOffices),
-            },
-          });
-        } else {
-          //console.log('Procesando');
+  //       // Convertir pedidos no planificados a Order[]
+  //       const unplannedOrders: Order[] = convertUnplannedPedidosToOrders(newUnplannedOrders);
 
-          // Fusionar vehículos existentes con los de la nueva solución
-          const updatedVehicles = state.vehicles.map((existingVehicle) => {
-            const matchingNewVehicle = newVehicles.find(
-              (v) => v.idVehiculo === existingVehicle.idVehiculo
-            );
+  //       // Actualizar vehículos
+  //       if (!state.vehicles || state.vehicles.length === 0) {
+  //         dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
+  //         //console.log('Primera respuesta:', newVehicles);
 
-            if (matchingNewVehicle) {
-              const newPosition =
-                existingVehicle.position.lat === 0
-                  ? {
-                      lat: matchingNewVehicle.position.lat,
-                      lng: matchingNewVehicle.position.lng,
-                      progress: 0,
-                      currentSegmentIndex: -1,
-                    }
-                  : existingVehicle.position;
-              const newFechaInicio =
-                existingVehicle.ruta.fechaInicio === null
-                  ? matchingNewVehicle.ruta.fechaInicio
-                  : existingVehicle.ruta.fechaInicio;
-              //console.log('Encontró match', existingVehicle.idVehiculo);
+  //         // Actualizar datos de simulación
+  //         dispatch({
+  //           type: 'UPDATE_SIMULATION_DATA',
+  //           payload: {
+  //             totalTrucks: newVehicles.length,
+  //             occupiedOffices: calculateOccupiedOffices(newOffices),
+  //           },
+  //         });
+  //       } else {
+  //         //console.log('Procesando');
 
-              return {
-                ...existingVehicle,
-                position: newPosition,
-                capacidadCarga: matchingNewVehicle.capacidadCarga,
-                fechaLibre: matchingNewVehicle.fechaLibre,
-                ruta: {
-                  fechaInicio: newFechaInicio,
-                  fechasSalida: [
-                    ...(existingVehicle.ruta.fechasSalida || []),
-                    ...(matchingNewVehicle.ruta.fechasSalida || []),
-                  ],
-                  fechasLlegada: [
-                    ...(existingVehicle.ruta.fechasLlegada || []),
-                    ...(matchingNewVehicle.ruta.fechasLlegada || []),
-                  ],
-                  tramos: [
-                    ...(existingVehicle.ruta.tramos || []),
-                    ...(matchingNewVehicle.ruta.tramos || []),
-                  ],
-                  pedidos: [
-                    ...(existingVehicle.ruta.pedidos || []),
-                    ...(matchingNewVehicle.ruta.pedidos || []),
-                  ],
-                },
-              };
-            }
+  //         // Fusionar vehículos existentes con los de la nueva solución
+  //         const updatedVehicles = state.vehicles.map((existingVehicle) => {
+  //           const matchingNewVehicle = newVehicles.find(
+  //             (v) => v.idVehiculo === existingVehicle.idVehiculo
+  //           );
 
-            return existingVehicle;
-          });
+  //           if (matchingNewVehicle) {
+  //             const newPosition =
+  //               existingVehicle.position.lat === 0
+  //                 ? {
+  //                     lat: matchingNewVehicle.position.lat,
+  //                     lng: matchingNewVehicle.position.lng,
+  //                     progress: 0,
+  //                     currentSegmentIndex: -1,
+  //                   }
+  //                 : existingVehicle.position;
+  //             const newFechaInicio =
+  //               existingVehicle.ruta.fechaInicio === null
+  //                 ? matchingNewVehicle.ruta.fechaInicio
+  //                 : existingVehicle.ruta.fechaInicio;
+  //             //console.log('Encontró match', existingVehicle.idVehiculo);
 
-          // Agregar vehículos nuevos que no estaban antes
-          const newVehiclesToAdd = newVehicles.filter(
-            (newVehicle) =>
-              !state.vehicles.some(
-                (existingVehicle) => existingVehicle.idVehiculo === newVehicle.idVehiculo
-              )
-          );
+  //             return {
+  //               ...existingVehicle,
+  //               position: newPosition,
+  //               capacidadCarga: matchingNewVehicle.capacidadCarga,
+  //               fechaLibre: matchingNewVehicle.fechaLibre,
+  //               ruta: {
+  //                 fechaInicio: newFechaInicio,
+  //                 fechasSalida: [
+  //                   ...(existingVehicle.ruta.fechasSalida || []),
+  //                   ...(matchingNewVehicle.ruta.fechasSalida || []),
+  //                 ],
+  //                 fechasLlegada: [
+  //                   ...(existingVehicle.ruta.fechasLlegada || []),
+  //                   ...(matchingNewVehicle.ruta.fechasLlegada || []),
+  //                 ],
+  //                 tramos: [
+  //                   ...(existingVehicle.ruta.tramos || []),
+  //                   ...(matchingNewVehicle.ruta.tramos || []),
+  //                 ],
+  //                 pedidos: [
+  //                   ...(existingVehicle.ruta.pedidos || []),
+  //                   ...(matchingNewVehicle.ruta.pedidos || []),
+  //                 ],
+  //               },
+  //             };
+  //           }
 
-          const allVehicles = [...updatedVehicles, ...newVehiclesToAdd];
+  //           return existingVehicle;
+  //         });
 
-          // Actualizar el estado con la lista combinada de vehículos
-          dispatch({ type: 'SET_VEHICLES', payload: allVehicles });
-          //console.log('Vehículos actualizados:', allVehicles);
+  //         // Agregar vehículos nuevos que no estaban antes
+  //         const newVehiclesToAdd = newVehicles.filter(
+  //           (newVehicle) =>
+  //             !state.vehicles.some(
+  //               (existingVehicle) => existingVehicle.idVehiculo === newVehicle.idVehiculo
+  //             )
+  //         );
 
-          // Actualizar datos de simulación
-          dispatch({
-            type: 'UPDATE_SIMULATION_DATA',
-            payload: {
-              totalTrucks: allVehicles.length,
-              occupiedOffices: calculateOccupiedOffices(newOffices),
-            },
-          });
-        }
+  //         const allVehicles = [...updatedVehicles, ...newVehiclesToAdd];
 
-        // Actualizar oficinas en el estado
-        dispatch({ type: 'SET_OFFICES', payload: mergedOffices });
+  //         // Actualizar el estado con la lista combinada de vehículos
+  //         dispatch({ type: 'SET_VEHICLES', payload: allVehicles });
+  //         //console.log('Vehículos actualizados:', allVehicles);
 
-        // Actualizar pedidos no planificados en el estado
-        dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: unplannedOrders });
-      } else {
-        //console.log('Es la misma solución');
-      }
+  //         // Actualizar datos de simulación
+  //         dispatch({
+  //           type: 'UPDATE_SIMULATION_DATA',
+  //           payload: {
+  //             totalTrucks: allVehicles.length,
+  //             occupiedOffices: calculateOccupiedOffices(newOffices),
+  //           },
+  //         });
+  //       }
 
-      // Actualizar el índice para procesar la siguiente respuesta
-      setIndexActualProcess(indexActualProcess + 1);
-    }
-  }, [
-    indexActualProcess,
-    solutions,
-    lastProcessedSolution,
-    state.vehicles,
-    dispatch,
-    state.offices,
-  ]);
+  //       // Actualizar oficinas en el estado
+  //       dispatch({ type: 'SET_OFFICES', payload: mergedOffices });
+
+  //       // Actualizar pedidos no planificados en el estado
+  //       dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: unplannedOrders });
+  //     } else {
+  //       //console.log('Es la misma solución');
+  //     }
+
+  //     // Actualizar el índice para procesar la siguiente respuesta
+  //     setIndexActualProcess(indexActualProcess + 1);
+  //   }
+  // }, [
+  //   indexActualProcess,
+  //   solutions,
+  //   lastProcessedSolution,
+  //   state.vehicles,
+  //   dispatch,
+  //   state.offices,
+  // ]);
 
   // Función para calcular oficinas ocupadas
-  const calculateOccupiedOffices = (offices: Oficina[]): number => {
-    let occupied = 0;
-    offices.forEach((office) => {
-      if ((office.horasStock ?? []).some((horaStock) => horaStock.stock > 0)) {
-        occupied += 1;
-      }
-    });
-    return occupied;
-  };
+  // const calculateOccupiedOffices = (offices: Oficina[]): number => {
+  //   let occupied = 0;
+  //   offices.forEach((office) => {
+  //     if ((office.horasStock ?? []).some((horaStock) => horaStock.stock > 0)) {
+  //       occupied += 1;
+  //     }
+  //   });
+  //   return occupied;
+  // };
 
   const timeIncrement = 1000; // Tiempo real
 
@@ -491,9 +494,9 @@ export function OperacionProvider({ children }: { children: React.ReactNode }) {
 
   const stopSimulation = () => {
     dispatch({ type: 'STOP_SIMULATION' });
-    if (isConnected) {
-      closeWebSocket();
-    }
+    // if (isConnected) {
+    //   closeWebSocket();
+    // }
   };
 
   return (
