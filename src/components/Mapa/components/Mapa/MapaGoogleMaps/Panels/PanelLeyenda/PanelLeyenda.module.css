@@ -17,9 +17,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-
+  justify-content: center;
   font-size: 16px;
   font-weight: bold;
+  position: relative;
 }
 
 .lista {
@@ -41,6 +42,13 @@
 
   justify-content: center;
   align-items: center;
+}
+
+.title button {
+  position: absolute; /* Posicionar el botón en relación al contenedor .title */
+  top: 50%; /* Centrar verticalmente */
+  right: 0; /* Alinear a la derecha */
+  transform: translateY(-50%); /* Corregir el desplazamiento vertical */
 }
 
 .button {

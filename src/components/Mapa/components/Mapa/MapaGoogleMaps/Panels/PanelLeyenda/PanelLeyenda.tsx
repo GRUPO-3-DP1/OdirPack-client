@@ -6,6 +6,7 @@ import { IconButton, Switch } from '@mui/material';
 import { Close, Map } from '@mui/icons-material';
 import { leyendaItems } from '../../../../../../../data/leyendaItems';
 import { useMapMarker } from '../../../../../../../context/MapMarker/useMapMarker';
+import { Divider } from '@mui/material';
 
 type PanelLeyendaProps = {
   show?: boolean;
@@ -30,6 +31,8 @@ const PanelLeyenda: React.FC<PanelLeyendaProps> = ({ show = true }) => {
                   <Close fontSize='inherit' />
                 </IconButton>
               </div>
+
+              <Divider sx={{ marginY: 0 }} />
 
               <ul className={styles.lista}>
                 {leyendaItems.map((item, index) =>

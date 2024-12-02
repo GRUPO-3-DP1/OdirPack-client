@@ -26,6 +26,16 @@ const OficinasLayer: React.FC<OficinasLayerProps> = ({ onOficinaClick }) => {
       {
         visibility.oficinas &&
         mergedOffices.map((oficina, index) => {
+
+          // Si es un almacén y la visibilidad de almacenes está desactivada, no lo renderizamos
+          if (oficina.isAlmacen && !visibility.almacenes) {
+            return null;
+          }
+
+          // Si es una oficina y la visibilidad de oficinas está desactivada, no lo renderizamos
+          if (!oficina.isAlmacen && !visibility.oficinas) {
+            return null;
+          }
           // Definir la capacidad máxima
           const maxCapacity = oficina.almacen;
 
