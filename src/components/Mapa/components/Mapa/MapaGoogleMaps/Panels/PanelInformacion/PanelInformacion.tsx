@@ -876,14 +876,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 </Typography>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
                   <Typography variant="body2" color="textSecondary">
-                    <b>Origen:</b>{' '}
-                    {selectedPedido.ubigeoOrigen
-                      ? `${oficinas.find((o) => o.ubigeo === selectedPedido.ubigeoOrigen)?.departamento}, ${
-                          oficinas.find((o) => o.ubigeo === selectedPedido.ubigeoOrigen)?.provincia
-                        }`
-                      : 'No asignado'}
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
                     <b>Destino:</b>{' '}
                     {`${oficinas.find((o) => o.ubigeo === selectedPedido.ubigeoDestino)?.departamento}, ${
                       oficinas.find((o) => o.ubigeo === selectedPedido.ubigeoDestino)?.provincia

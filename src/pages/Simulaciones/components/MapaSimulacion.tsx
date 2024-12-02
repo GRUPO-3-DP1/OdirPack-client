@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Vehicle as Camion } from '../../../context/Simulacion/simulationTypes';
 import { useData } from '../../../context/useData';
 import { useSelection } from '../../../context/Buscador/useSelection';
@@ -19,6 +19,17 @@ interface MapaProps {
 
 const MapaSimulacion: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType = 'semanal' }) => {
   const { state } = useData();
+  const [showResumen, setShowResumen] = useState(false);
+
+  const handleCloseResumen = () => {
+    setShowResumen(false);
+  };
+
+  useEffect(() => {
+    if (state.ends) {
+      setShowResumen(true);
+    }
+  }, [state.ends]);
 
   const {
     selectedOficina,
@@ -60,7 +71,10 @@ const MapaSimulacion: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, oper
         operationType={operationType}
       />
 
-      <PanelResultados show={state.ends} />
+      {/*<PanelResultados show={state.ends} />*/}
+      {showResumen && (
+        <PanelResultados show={true} onClose={handleCloseResumen} />
+      )}
 
       {/* Layers de marcadores */}
       <BloqueosLayer />

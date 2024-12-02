@@ -1,301 +1,247 @@
+// PanelResultados.tsx
+
 import React, { useEffect, useState } from 'react';
-import PanelBase from '../PanelBase/PanelBase';
-import { ControlPosition } from '@vis.gl/react-google-maps';
+import { ControlPosition, MapControl } from '@vis.gl/react-google-maps';
 import styles from './PanelResultados.module.css';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
-import { AddRoad } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { Box, Typography, Button, IconButton, Divider } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
 import { useData } from '../../../../../../../context/useData';
-import { PedidoAlgorithmResponse, ResponseAlgorithm, TramoAlgorithmResponse } from '../../../../../../../store/types/ResponseAlgorithm';
+import { Order } from '../../../../../../../context/Simulacion/simulationTypes';
+import { Visibility } from '@mui/icons-material';
+
+dayjs.extend(duration);
 
 type PanelResultadosProps = {
   show?: boolean;
+  onClose?: () => void;
 };
 
-type PedidoTableRow = {
-  idPedido: string;
-  cantidad: number;
-  origen: string;
-  destino: string;
-  fechaRegistro: string;
-  fechaPlazoMaximo: string;
-  estado: string;
-};
+const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true, onClose }) => {
+  const { state } = useData();
 
-type RutaTableRow = {
-  idRuta: string;
-  placa: string;
-  fechaInicio: string;
-  cantidadPedidos: number;
-  origen: string;
-  tramos: TramoAlgorithmResponse[];
-};
+  // Obtener los datos necesarios del estado
+  const {
+    ordersDelivered,
+    ordersPending,
+    vehicles,
+    offices,
+    startTime,
+    endTime,
+    ends,
+    trucksInMotion,
+    trucksInMaintenance,
+  } = state;
 
-const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true }) => {
-  const { solutions } = useData();
-  const [pedidos, setPedidos] = useState<PedidoTableRow[]>([]);
-  const [rutas, setRutas] = useState<RutaTableRow[]>([]);
-  const [mostrarTramos, setMostrarTramos] = useState(false);
-  const [tramosSeleccionados, setTramosSeleccionados] = useState<TramoAlgorithmResponse[]>([]);
-  const [rutaSeleccionada, setRutaSeleccionada] = useState<RutaTableRow | null>(null);
+  // Estados locales para tiempo real
+  const [simulationStartTime, setSimulationStartTime] = useState<Date | null>(null);
+  const [simulationEndTime, setSimulationEndTime] = useState<Date | null>(null);
 
-  const handleMostrarTramos = (tramos: TramoAlgorithmResponse[], ruta: RutaTableRow) => {
-    setTramosSeleccionados(tramos);
-    setRutaSeleccionada(ruta);
-    setMostrarTramos(true);
-  };
-
-  const handleVolver = () => {
-    setMostrarTramos(false);
-    setTramosSeleccionados([]);
-    setRutaSeleccionada(null);
-  };
-
-  // Extract Pedidos and Rutas from solutions
   useEffect(() => {
-    const pedidosData = extractAllPedidos(solutions).map((pedido) => ({
-      idPedido: pedido.idPedido,
-      cantidad: pedido.cantidad,
-      origen: pedido.ubigeoOrigen || "Desconocido",
-      destino: pedido.ubigeoDestino,
-      fechaRegistro: pedido.fechaRegistro,
-      fechaPlazoMaximo: pedido.fechaPlazoMaximo,
-      estado: pedido.estado || "No Planificado",
-    }));
+    if (!simulationStartTime) {
+      setSimulationStartTime(new Date());
+    }
+  }, [simulationStartTime]);
 
-    const rutasData = extractAllRutas(solutions).map((ruta) => ({
-      idRuta: ruta.idRuta,
-      placa: ruta.placa,
-      origen: ruta.origen || "Desconocido",
-      fechaInicio: ruta.fechaInicio,
-      cantidadPedidos: ruta.cantidadPedidos,
-      tramos: ruta.tramos
-    }));
-    
-    setPedidos(pedidosData);
-    setRutas(rutasData);
-  }, [solutions]);
+  useEffect(() => {
+    if (ends && simulationStartTime && !simulationEndTime) {
+      setSimulationEndTime(new Date());
+    }
+  }, [ends, simulationStartTime, simulationEndTime]);
+
+  if (!show) {
+    return null;
+  }
+
+  // Cálculos de pedidos
+  const totalPedidos = ordersDelivered + ordersPending;
+  const pedidosEntregados = ordersDelivered;
+  const pedidosPendientes = ordersPending;
+
+  // Cálculos de camiones
+  const totalCamiones = vehicles.length;
+  const camionesEnMovimiento = trucksInMotion;
+  const camionesEnMantenimiento = trucksInMaintenance;
+
+  // Cálculos de oficinas
+  const totalOficinas = offices.length;
+  let countLowSaturation = 0;
+  let countMediumSaturation = 0;
+  let countHighSaturation = 0;
+
+  offices.forEach((oficina) => {
+    if (oficina.isAlmacen) {
+      return; // Excluir almacenes
+    }
+
+    const maxCapacity = oficina.almacen || 0;
+
+    const currentLoad = oficina.currentOrders?.reduce(
+      (total: number, currentOrder: { order: Order; arrivalTime: Date }) =>
+        total + (currentOrder.order.cantidad || 0),
+      0
+    ) || 0;
+
+    const occupancyRate = maxCapacity > 0 ? currentLoad / maxCapacity : 0;
+
+    // Determinar el nivel de saturación
+    if (occupancyRate > 0.8) {
+      countHighSaturation += 1;
+    } else if (occupancyRate > 0.5) {
+      countMediumSaturation += 1;
+    } else {
+      countLowSaturation += 1;
+    }
+  });
+
+  // Cálculos de tiempos
+  let tiempoRealMs = 0;
+  let tiempoReal = dayjs.duration(0);
+
+  if (simulationStartTime && simulationEndTime) {
+    tiempoRealMs = simulationEndTime.getTime() - simulationStartTime.getTime();
+    tiempoReal = dayjs.duration(tiempoRealMs);
+  }
+
+  const tiempoSimuladoMs = endTime.getTime() - startTime.getTime();
+  const tiempoSimulado = dayjs.duration(tiempoSimuladoMs);
+
+  const fechaInicio = dayjs(startTime).format('DD/MM/YYYY, hh:mm A');
+  const fechaFin = dayjs(endTime).format('DD/MM/YYYY, hh:mm A');
+
+  const handleVerDetalle = () => {
+    // Por ahora no hace nada
+  };
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
 
   return (
-    <>
-      {mostrarTramos ? (
-        // Display the Tramos panel when mostrarTramos is true
-        <PanelBase show={show} position={ControlPosition.CENTER}>
-          <div className={styles.container}>
-            <div className={styles.headerContainer}>
-              <IconButton onClick={handleVolver} color="primary" className={styles.backButton}>
-                <ArrowBackIcon />
-              </IconButton>
-              <div className={styles.title}>Tramos</div>
-            </div>
-              {rutaSeleccionada && (
-                <div className={styles.routeInfo}>
-                  <div><strong>Número de Ruta:</strong> {rutaSeleccionada.idRuta}</div>
-                  <div><strong>Número de Placa:</strong> {rutaSeleccionada.placa}</div>
-                  <div><strong>Número de Paquetes:</strong> {rutaSeleccionada.cantidadPedidos}</div>
-                </div>
+    <MapControl position={ControlPosition.TOP_CENTER}>
+      <div className={styles.panel}>
+        <Box sx={{ padding: '16px', position: 'relative' }}>
+          {/* Título centrado y botón de cerrar */}
+          <Typography
+            variant="h6"
+            sx={{
+              textAlign: 'center',
+              fontWeight: 'bold',
+              position: 'relative',
+            }}
+          >
+            Resumen de la simulación semanal
+          </Typography>
+          <IconButton
+            onClick={handleClose}
+            sx={{
+              position: 'absolute', // Posiciona el botón de cerrar
+              top: '8px', // Margen desde la parte superior
+              right: '8px', // Margen desde la parte derecha
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+
+          <Divider sx={{ marginY: 1.5 }} />
+
+          {/* Detalles de pedidos */}
+          <Typography variant="subtitle1">
+            <b>Detalles de pedidos (Total: {totalPedidos}):</b>
+          </Typography>
+          <Box display="flex" justifyContent="space-between">
+            <Typography sx={{ marginTop: 1 }}>
+              ✅ Entregados: {pedidosEntregados}
+            </Typography>
+            <Typography sx={{ marginTop: 1 }}>
+              ⏳ Pendientes: {pedidosPendientes}
+            </Typography>
+          </Box>
+
+          {/* Detalles de camiones */}
+          <Typography variant="subtitle1" sx={{ marginTop: 1.5 }}>
+            <b>Detalles de camiones (Flota: {totalCamiones}):</b>
+          </Typography>
+          <Box display="flex" justifyContent="space-between">
+            <Typography sx={{ marginTop: 1 }}>
+              🚚 Movimiento: {camionesEnMovimiento}
+            </Typography>
+            <Typography sx={{ marginTop: 1 }}>
+              🛠️ Mantenimiento: {camionesEnMantenimiento}
+            </Typography>
+          </Box>
+
+          {/* Detalles de oficinas */}
+          <Typography variant="subtitle1" sx={{ marginTop: 1.5 }}>
+            <b>Detalles de oficinas (Sedes: {totalOficinas}):</b>
+          </Typography>
+          <Box display="flex" justifyContent="space-between">
+            <Box>
+              <Typography sx={{ marginTop: 1 }} >
+                🟩 Saturación {'<'}50%: {countLowSaturation}
+              </Typography>
+              <Typography sx={{ marginTop: 1 }}>
+                🟥 Saturación {'>'}80%: {countHighSaturation}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography sx={{ marginTop: 2.5 }}>
+                🟨 Saturación 50-80%: {countMediumSaturation}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Tiempos */}
+          <Typography variant="subtitle1" sx={{ marginTop: 1.5 }}>
+            <b>Tiempos:</b>
+          </Typography>
+          <Box display="flex" justifyContent="space-between">
+            <Typography sx={{ marginTop: 0.5 }}>
+              ⏱️ Real: {simulationStartTime && simulationEndTime ? (
+                `${tiempoReal.hours()}h ${tiempoReal.minutes()}m ${tiempoReal.seconds()}s`
+              ) : (
+                '0h 0m 0s'
               )}
-            <TableContainer component={Paper} className={styles.tableContainer}>
-              <Table stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Origen</TableCell>
-                    <TableCell>Destino</TableCell>
-                    <TableCell>Fecha Salida</TableCell>
-                    <TableCell>Fecha Llegada</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {tramosSeleccionados.map((tramo, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{tramo.origen.descripcion}</TableCell>
-                      <TableCell>{tramo.destino.descripcion}</TableCell>
-                      <TableCell>{"21/10/2024, 06:00:00"}</TableCell>
-                      <TableCell>{"21/10/2024, 08:00:00"}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </div>
-        </PanelBase>
-      ) : (
-        // Display the main Pedidos and Rutas panel when mostrarTramos is false
-        <PanelBase show={show} position={ControlPosition.CENTER}>
-          <div className={styles.container}>
-            <div className={styles.title}>Pedidos</div>
-            <TableContainer component={Paper} className={styles.tableContainer}>
-              <Table stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Número de Pedido</TableCell>
-                    <TableCell>Cantidad De Paquetes</TableCell>
-                    <TableCell>Origen</TableCell>
-                    <TableCell>Destino</TableCell>
-                    <TableCell>Fecha De Registro</TableCell>
-                    <TableCell>Fecha Plazo Máximo</TableCell>
-                    <TableCell>Estado</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {pedidos.map((pedido) => (
-                    <TableRow key={pedido.idPedido}>
-                      <TableCell>{pedido.idPedido}</TableCell>
-                      <TableCell>{pedido.cantidad}</TableCell>
-                      <TableCell>{pedido.origen}</TableCell>
-                      <TableCell>{pedido.destino}</TableCell>
-                      <TableCell>{formatDate(pedido.fechaRegistro)}</TableCell>
-                      <TableCell>{formatDate(pedido.fechaPlazoMaximo)}</TableCell>
-                      <TableCell>{pedido.estado}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <div className={styles.title}>Rutas</div>
-            <TableContainer component={Paper} className={styles.tableContainer}>
-              <Table stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Número De Ruta</TableCell>
-                    <TableCell>Número De Placa</TableCell>
-                    <TableCell>Origen</TableCell>
-                    <TableCell>Fecha De Inicio</TableCell>
-                    <TableCell>Número De Paquetes</TableCell>
-                    <TableCell>Tramos</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rutas.map((ruta) => (
-                    <TableRow key={ruta.idRuta}>
-                      <TableCell>{ruta.idRuta}</TableCell>
-                      <TableCell>{ruta.placa}</TableCell>
-                      <TableCell>{ruta.origen}</TableCell>
-                      <TableCell>{formatDate(ruta.fechaInicio)}</TableCell>
-                      <TableCell>{ruta.cantidadPedidos}</TableCell>
-                      <TableCell>
-                        <AddRoad fontSize="small" color="primary" onClick={() => handleMostrarTramos(ruta.tramos, ruta)} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            </div>
-            <div className={styles.buttonContainer}>
-              <Button
-                variant='contained'
-                className={styles.buttton}
-                onClick={() => {}}
-              >
-                Salir
-              </Button>
-            </div>
-          </PanelBase>
-        )}
-      </>
+            </Typography>
+            <Typography sx={{ marginTop: 0.5 }}>
+              ⏱️ Simulado: {state.isPlaying ? (
+                `${tiempoSimulado.days()}d ${tiempoSimulado.hours()}h ${tiempoSimulado.minutes()}m`
+              ) : (
+                '0d 0h 0m'
+              )}
+            </Typography>
+          </Box>
+          <Box display="flex" justifyContent="space-between" >
+            <Typography sx={{ marginTop: 1 }}>
+              📅 Inicio: {simulationStartTime ? fechaInicio : 'Simulación no iniciada'}
+            </Typography>
+            <Typography sx={{ marginTop: 1 }}>
+              📅 Fin: {simulationEndTime ? fechaFin : 'Simulación no iniciada'}
+            </Typography>
+          </Box>
+
+          {/* Botón "Ver Detalle" */}
+          <Box sx={{ textAlign: 'center', marginTop: 2.5}}> 
+            <Button 
+              variant="contained" 
+              color="primary" 
+              onClick={handleVerDetalle}
+              sx={{
+                textTransform: 'none',
+                gap: 1,
+              }}
+            >
+              <Visibility sx={{ fontSize: 20 }} />
+              Detalle
+            </Button>
+          </Box>
+        </Box>
+      </div>
+    </MapControl>
   );
 };
 
 export default PanelResultados;
-
-
-const formatDate = (isoDate: string) => {
-  const date = new Date(isoDate);
-  return date.toLocaleString('es-PE', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false // Formato de 24 horas
-  });
-};
-
-const extractAllPedidos = (solutions: ResponseAlgorithm[]) => {
-  const allPedidos: PedidoAlgorithmResponse[] = [];
-
-  // Iterar sobre todas las soluciones
-  solutions.forEach(solution => {
-    const planificadosPedidos = solution.solucion.flatMap(solucionItem => {
-      if (!solucionItem.rutasVehiculos) return [];
-
-      return Object.values(solucionItem.rutasVehiculos).flatMap(vehicleItem => {
-        if (vehicleItem && vehicleItem.ruta) {
-          return (vehicleItem.ruta.pedidos || []).map(pedido => ({
-            ...pedido,
-            ubigeoOrigen: vehicleItem.ruta? vehicleItem.ruta.tramos[0].origen.descripcion: null,
-            estado: 'Planificado'
-          }));
-        }
-        return [];
-      });
-    });
-
-    // Agregar o actualizar los pedidos en la lista total
-    planificadosPedidos.forEach(pedido => {
-      const existingPedido = allPedidos.find(p => p.idPedido === pedido.idPedido);
-
-      if (existingPedido) {
-        // Si el pedido ya existe, sumar la cantidad
-        existingPedido.cantidad += pedido.cantidad;
-      } else {
-        // Si no existe, agregarlo a la lista
-        allPedidos.push(pedido);
-      }
-    });
-  });
-
-  return allPedidos;
-};
-
-// Generador de ID para rutas
-let lastIdNumber = 0;
-
-const generateRouteId = () => {
-  lastIdNumber += 1;
-  return `R${lastIdNumber.toString().padStart(3, '0')}`;
-};
-
-
-const extractAllRutas = (solutions: ResponseAlgorithm[]) => {
-  const allRutas: { idRuta: string; fechaInicio: string; placa: string; origen: string; cantidadPedidos: number; tramos: TramoAlgorithmResponse[]}[] = [];
-
-  // Reiniciar el contador de IDs al inicio de la función
-  lastIdNumber = 0;
-
-  // Iterar sobre todas las soluciones
-  solutions.forEach(solution => {
-    const rutas = solution.solucion.flatMap(solucionItem => {
-      if (!solucionItem.rutasVehiculos) return [];
-
-      return Object.values(solucionItem.rutasVehiculos).flatMap(vehicleItem => {
-        if (vehicleItem && vehicleItem.ruta) {
-          // Calcular la cantidad total de paquetes en esta ruta
-          const cantidadPedidos = (vehicleItem.ruta.pedidos || []).reduce((total, pedido) => total + (pedido.cantidad || 0), 0);
-
-          if (cantidadPedidos > 0) {
-            return [{
-              idRuta: generateRouteId(), // Generar un ID único para cada ruta
-              fechaInicio: vehicleItem.ruta.fechaInicio,
-              placa: vehicleItem.idVehiculo,
-              origen: vehicleItem.ruta.tramos[0].origen.descripcion,
-              cantidadPedidos: cantidadPedidos,
-              tramos: vehicleItem.ruta.tramos,
-            }];
-          }
-        }
-        return [];
-      });
-    });
-
-    // Agregar rutas en la lista total
-    rutas.forEach(ruta => {
-        allRutas.push(ruta);
-    });
-  });
-
-  return allRutas;
-};
