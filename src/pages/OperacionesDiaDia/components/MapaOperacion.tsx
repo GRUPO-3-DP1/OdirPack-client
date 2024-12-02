@@ -6,6 +6,7 @@ import PanelLeyenda from '../../../components/Mapa/components/Mapa/MapaGoogleMap
 import PanelInformacion from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelInformacion/PanelInformacion';
 import PanelResultados from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelResultados/PanelResultados';
 import { Oficina } from '../../../context/OperacionDia/operacionTypes';
+import { Order } from '../../../context/OperacionDia/operacionTypes';
 import Mapa from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Mapa';
 import OficinasLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Layers/OficinasLayer/OficinasLayer';
 import CamionesLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Layers/CamionesLayer/CamionesLayer';
@@ -21,20 +22,24 @@ const MapaOperacion: React.FC<MapaProps> = ({ alwaysShowInfoPanel = true, operat
 
   const [selectedOficina, setSelectedOficina] = useState<Oficina | null>(null);
   const [selectedCamion, setSelectedCamion] = useState<Camion | null>(null);
+  const [selectedPedido, setSelectedPedido] = useState<Order | null>(null);
 
   const handleOficinaClick = (oficina: Oficina) => {
     setSelectedOficina(oficina);
     setSelectedCamion(null);
+    setSelectedPedido(null);
   };
 
   const handleCamionClick = (camion: Camion) => {
     setSelectedCamion(camion);
     setSelectedOficina(null);
+    setSelectedPedido(null);
   };
 
   const handleMapClick = () => {
     setSelectedOficina(null);
     setSelectedCamion(null);
+    setSelectedPedido(null);
   };
 
   return (
@@ -46,6 +51,7 @@ const MapaOperacion: React.FC<MapaProps> = ({ alwaysShowInfoPanel = true, operat
         show={alwaysShowInfoPanel || state.isPlaying}
         selectedOficina={selectedOficina}
         selectedCamion={selectedCamion}
+        selectedPedido={selectedPedido}
         operationType={operationType}
       />
 
