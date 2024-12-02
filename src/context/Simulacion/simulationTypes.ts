@@ -34,6 +34,15 @@ export type VehiclePosition = {
   currentSegmentIndex: number;
 };
 
+/*export type Vehicle = {
+  idVehiculo: string;
+  capacidadCarga: number;
+  fechaLibre: string|null;
+  ruta: Route;
+  position: VehiclePosition;
+};*/
+
+
 export type Vehicle = {
   idVehiculo: string;
   capacidadCarga: number;
