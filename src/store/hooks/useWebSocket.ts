@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { SolucionAlgorithmResponse } from '../types/ResponseAlgorithm';
 
 interface UseWebSocketOptions {
   url: string;
@@ -35,6 +36,16 @@ export const useWebSocket = ({
       const data = JSON.parse(event.data);
       console.log('Mensaje recibido:', data);
       onMessage?.(data);
+      // ver si está enviando los averiados planificados bien
+      (data.solucion as SolucionAlgorithmResponse[]).forEach((solucion) => {
+        Object.values(solucion.rutasVehiculos).forEach((rutaVehiculo) => {
+          if(rutaVehiculo.isAveriado){
+            console.log('Averiado:', rutaVehiculo.idVehiculo);
+          }
+          
+        });
+      });      
+
     };
 
     wsRef.current.onclose = () => {
