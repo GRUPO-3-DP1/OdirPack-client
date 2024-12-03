@@ -7,7 +7,8 @@ export const Services = {
     ServiceErrorConectionMessage: "Ocurrió un problema de conexión interna. Intentar nuevamente o contactar al equipo de soporte"
 };
 
-/*export const Services = { 
+/*
+export const Services = { 
     BaseUrl: "http://localhost:8081",
     WebUrl: "ws://localhost:8081",
     Headers: {

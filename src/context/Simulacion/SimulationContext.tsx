@@ -339,7 +339,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     if (isConnected) {
       closeWebSocket();
     }
-  };
+  };  
 
   return (
     <SimulationContext.Provider
