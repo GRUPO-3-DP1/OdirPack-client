@@ -435,6 +435,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     dispatch({ type: 'RESET_SIMULATION' });
     setLastProcessedSolution(null);
     setIndexActualProcess(0);
+    console.log("reseteo valores");
     if (isConnected) {
       closeWebSocket();
     }
