@@ -123,33 +123,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
         const newVehicles = convertSolutionToVehicles(newResponse);
 
-        // Procesar oficinas
-        const newOffices = convertOffices(newResponse.oficinas);
-
-        // Fusionar oficinas
-        const mergedOffices = state.offices.map((office) => {
-          const updatedOffice = newOffices.find((o) => o.ubigeo === office.ubigeo);
-          if (updatedOffice) {
-            return {
-              ...office,
-              ...updatedOffice,
-            };
-          }
-          return office;
-        });
-
-        dispatch({ type: 'SET_OFFICES', payload: mergedOffices });
-
-        // Procesar pedidos no planificados
-        const newUnplannedOrders = newResponse.pedidosNoPlanificados || [];
-
-        // Convertir pedidos no planificados a Order[]
-        const unplannedOrders: Order[] = convertUnplannedPedidosToOrders(newUnplannedOrders);
-
         // Actualizar vehículos
         if (!state.vehicles || state.vehicles.length === 0) {
           dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
-          //console.log('Primera respuesta:', newVehicles);
+          console.log('Vehículos actualizados:', state.vehicles);
 
           // Actualizar datos de simulación
           
@@ -195,14 +172,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           dispatch({ type: 'SET_VEHICLES', payload: [...updatedVehicles] });
           console.log('Vehículos actualizados:', updatedVehicles);
 
-      
         }
 
-        // Actualizar oficinas en el estado
-        dispatch({ type: 'SET_OFFICES', payload: newOffices });
-
-        // Actualizar pedidos no planificados en el estado
-        dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: unplannedOrders });
       } else {
         //console.log('Es la misma solución');
       }
@@ -210,7 +181,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       // Actualizar el índice para procesar la siguiente respuesta
       setIndexActualProcess(indexActualProcess + 1);
     }
-  }, [indexActualProcess, solutions, lastProcessedSolution, state.vehicles, dispatch, state.offices]);
+  }, [state.vehicles,indexActualProcess,lastProcessedSolution]);
 
   // Función para calcular oficinas ocupadas
 
@@ -224,9 +195,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       const newTime = new Date(state.currentTime.getTime() + timeIncrement * state.speed);
 
       if (newTime >= state.endTime) {
-        dispatch({ type: 'STOP_SIMULATION' });
+        dispatch({ type: 'RESET_SIMULATION' });
         clearInterval(updateInterval);
         state.ends = true;
+        state.vehicles =[];
         //console.log('Ya pasó la fecha límite');
         return;
       }
@@ -343,75 +315,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
       dispatch({ type: 'UPDATE_VEHICLE_POSITION', payload: updatedVehicles });
 
-      // Procesar llegadas de pedidos
-      const arrivedOrders: {
-        order: Order;
-        arrivalTime: Date;
-        ubigeoDestino: string;
-      }[] = [];
-
-      state.vehicles.forEach((vehicle) => {
-        vehicle.ruta.pedidos.forEach((pedido) => {
-          if (pedido.fechaLlegada) {
-            const arrivalTime = new Date(pedido.fechaLlegada);
-            if (arrivalTime <= newTime && !state.processedOrderIds.includes(pedido.idPedido)) {
-              if (!state.processedOrderIds.includes(pedido.idPedido)) {
-                // Pedido llega a la oficina
-                arrivedOrders.push({
-                  order: pedido,
-                  arrivalTime: arrivalTime,
-                  ubigeoDestino: pedido.ubigeoDestino,
-                });
-              }
-            }
-          }
-        });
-      });
-
-      // Actualizar processedOrderIds
-      const newProcessedOrderIds = [...state.processedOrderIds];
-      arrivedOrders.forEach((arrivedOrder) => {
-        newProcessedOrderIds.push(arrivedOrder.order.idPedido);
-      });
-
-      // Procesar salidas de pedidos
-      const updatedOffices = state.offices.map((office) => {
-
-        const updatedOffice = { ...office, currentOrders: [...(office.currentOrders ?? [])] };
-
-        // Agregar pedidos que llegan
-        arrivedOrders.forEach((arrivedOrder) => {
-          if (arrivedOrder.ubigeoDestino === office.ubigeo) {
-            updatedOffice.currentOrders.push({
-              order: arrivedOrder.order,
-              arrivalTime: arrivedOrder.arrivalTime,
-            });
-          }
-        });
-
-        // Remover pedidos que han estado más de 4 horas
-        updatedOffice.currentOrders = updatedOffice.currentOrders.filter((currentOrder) => {
-          const timeInOffice = newTime.getTime() - currentOrder.arrivalTime.getTime();
-          const fourHoursInMs = 4 * 60 * 60 * 1000;
-          return timeInOffice <= fourHoursInMs;
-        });
-
-        return updatedOffice;
-      });
-
-      // Actualizar oficinas y processedOrderIds en el estado
-      dispatch({ type: 'SET_OFFICES', payload: updatedOffices });
-      dispatch({ type: 'SET_PROCESSED_ORDER_IDS', payload: newProcessedOrderIds });
-
-      // Actualizar datos de simulación
-      dispatch({
-        type: 'UPDATE_SIMULATION_DATA',
-        payload: {
-          trucksInMotion: calculateTrucksInMotion(updatedVehicles),
-          ordersDelivered: calculateOrdersDelivered(updatedVehicles, newTime),
-          ordersPending: calculateOrdersPending(updatedVehicles, newTime),
-        },
-      });
     }, timeIncrement / state.speed);
 
     return () => clearInterval(updateInterval);
@@ -429,7 +332,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
   const stopSimulation = () => {
     dispatch({ type: 'RESET_SIMULATION' });
-    console.log("reseteo valores");
+    setSolutions([]);
+    setIndexActualProcess(0);
+    setLastProcessedSolution(null);
+
     if (isConnected) {
       closeWebSocket();
     }
