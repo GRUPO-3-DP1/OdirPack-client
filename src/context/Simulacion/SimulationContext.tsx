@@ -53,6 +53,8 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, unplannedOrders: action.payload };
     case 'SET_PROCESSED_ORDER_IDS':
       return { ...state, processedOrderIds: action.payload };
+    case 'RESET_SIMULATION':  // Resetea el estado a los valores iniciales
+      return { ...initialState };
     default:
       return state;
   }
@@ -66,7 +68,7 @@ const initialOffices = oficinas.map((office) => ({
 const initialState = {
   isPlaying: false,
   vehicles: [],
-  speed: 90,
+  speed: 70,
   ends: false,
   startTime: new Date('2024-10-21T00:00:00Z'),
   currentTime: new Date('2024-10-21T00:00:00Z'),
@@ -116,8 +118,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       const newResponse = solutions[indexActualProcess];
 
       const newSolutionString = JSON.stringify(newResponse.solucion);
-
-      //console.log('Solución a procesar:', newResponse);
 
       if (newSolutionString !== lastProcessedSolution) {
         setLastProcessedSolution(newSolutionString);
@@ -173,7 +173,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                   : existingVehicle.position;
               const newFechaInicio =
                 existingVehicle.ruta.fechaInicio === null ? matchingNewVehicle.ruta.fechaInicio : existingVehicle.ruta.fechaInicio;
-              //console.log('Encontró match', existingVehicle.idVehiculo);
 
               return {
                 ...existingVehicle,
@@ -195,7 +194,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
           // Actualizar el estado con la lista combinada de vehículos
           dispatch({ type: 'SET_VEHICLES', payload: [...updatedVehicles] });
-          //console.log('Vehículos actualizados:', updatedVehicles);
+          console.log('Vehículos actualizados:', updatedVehicles);
 
       
         }
@@ -429,21 +428,9 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     state,
   ]);
 
-  const stopSimulation = async () => {
-    try {
-      // Llamar al backend para detener la simulación
-      await axios.post(
-        `${Services.BaseUrl}/simulacion/detener?userId=${userId}`,
-        null,
-        { headers: Services.Headers }
-      );
-      console.log("Simulación detenida en el backend");
-    } catch (error) {
-      console.error("Error al detener la simulación en el backend:", error);
-    }
-  
-    // Detener la simulación en el frontend
-    dispatch({ type: 'STOP_SIMULATION' });
+  const stopSimulation = () => {
+    dispatch({ type: 'RESET_SIMULATION' });
+    console.log("reseteo valores");
     if (isConnected) {
       closeWebSocket();
     }

@@ -140,4 +140,8 @@ export type SimulationAction =
   | { type: 'UPDATE_SIMULATION_DATA'; payload: Partial<SimulationState>; }
   | { type: 'SET_OFFICES'; payload: Oficina[]; }
   | { type: 'SET_UNPLANNED_ORDERS'; payload: Order[]; }
-  | { type: 'SET_PROCESSED_ORDER_IDS'; payload: string[]; };
+  | { type: 'SET_PROCESSED_ORDER_IDS'; payload: string[]; }
+  | { type: 'RESET_SIMULATION';};  // Acción para reiniciar el estado
+
+
+  
