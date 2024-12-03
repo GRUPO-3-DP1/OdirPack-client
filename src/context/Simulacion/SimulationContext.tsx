@@ -1,15 +1,10 @@
 import React, { createContext, useReducer, useEffect, useState } from 'react';
 import oficinas from '../../data/oficinas';
-import { SimulationAction, SimulationState, Vehicle, Oficina, Order } from './simulationTypes';
+import { SimulationAction, SimulationState, Vehicle, Oficina } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
 import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
-import { convertUnplannedPedidosToOrders } from '../../utils/convertUnplannedPedidosToOrders';
 import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles';
-import { convertOffices } from '../../utils/convertOffices';
 import { locationCoordinates } from '../../utils/locationCoordinates';
-import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
-import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
-import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
 import { useWebSocket } from '../../store/hooks/useWebSocket';
 import { Services } from '../../../config';
 
