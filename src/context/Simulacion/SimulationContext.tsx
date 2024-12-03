@@ -65,7 +65,7 @@ const initialOffices = oficinas.map((office) => ({
 const initialState = {
   isPlaying: false,
   vehicles: [],
-  speed: 90,
+  speed: 20,
   ends: false,
   startTime: new Date('2024-10-21T00:00:00Z'),
   currentTime: new Date('2024-10-21T00:00:00Z'),
