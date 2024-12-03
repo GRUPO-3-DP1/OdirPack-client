@@ -126,16 +126,27 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
       vehicle.maintenance.officeUbigeo === selectedOficina?.ubigeo
   );
 
-  // Obtener los pedidos del camión seleccionado
-  const pedidosDelCamion = selectedCamion?.ruta?.pedidos.map((pedido) => {
+  // Obtener los pedidos del camión entregados
+  const pedidosDelCamion = selectedCamion?.ruta?.pedidos
+  .filter((pedido) => {
+    const fechaRegistro = pedido.fechaRegistro ? new Date(pedido.fechaRegistro) : null;
     const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
-    const estado = fechaLlegada && fechaLlegada <= state.currentTime ? 'Entregado' : 'Pendiente';
+    return fechaRegistro && fechaRegistro <= state.currentTime && fechaLlegada && fechaLlegada <= state.currentTime;
+  })
+  .map((pedido) => {
+    const estado = 'Entregado';
+    return {...pedido, estado};});
 
-    return {
-      ...pedido,
-      estado,
-    };
-  });
+  // Obtener pedidos actuales que entregará
+  const pedidosDelCamionActual = selectedCamion?.ruta?.pedidos
+  .filter((pedido) => {
+    const fechaRegistro = pedido.fechaRegistro ? new Date(pedido.fechaRegistro) : null;
+    const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+    return fechaRegistro && fechaRegistro <= state.currentTime && fechaLlegada && fechaLlegada > state.currentTime;
+  })
+  .map((pedido) => {
+    return {...pedido,estado: 'Pendiente'};});
+
 
   // Crear un mapeo de código de destino a índice de segmento
   const destinoToSegmentIndex: { [ubigeoDestino: string]: number; } = {};
@@ -349,7 +360,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 </Box>
               </Box>
             </Box>
-            <Accordion defaultExpanded disableGutters>
+            <Accordion disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls="panel2-content"
@@ -400,7 +411,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
             </Accordion>
 
             {/*Pedidos del camion*/}
-            <Accordion defaultExpanded disableGutters>
+            <Accordion disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls="lista-pedidos-content"
@@ -408,13 +419,13 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
               >
                 <Typography variant="subtitle2" color="textPrimary">
-                  <b>Lista de pedidos</b>
+                  <b>Lista de pedidos Entregados</b>
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
                 <Box
                   sx={{
-                    maxHeight: '300px', // Limitar la altura del contenedor
+                    maxHeight: '140px', // Limitar la altura del contenedor
                     overflowY: 'auto', // Habilitar scroll vertical
                     padding: '8px',
                     border: '1px solid #ddd',
@@ -465,7 +476,87 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                             </Typography>
                           ) : (
                             <Typography variant="body2" color="textSecondary">
-                              <b>Plazo máximo:</b> {dayjs(pedido.fechaLlegada).format('DD/MM/YYYY, hh:mm A')}
+                              <b>Fecha Registro:</b> {dayjs(pedido.fechaRegistro).format('DD/MM/YYYY, hh:mm A')}
+                            </Typography>
+                          )}
+                        </Box>
+                      );
+                    })
+                  ) : (
+                    <Typography variant="body2" color="textSecondary">
+                      El camión no tiene pedidos asignados.
+                    </Typography>
+                  )}
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+            {/* Lista de pedidos A entregar*/}
+            <Accordion disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="lista-pedidos-content"
+                id="lista-pedidos-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>Lista de pedidos Actual</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                <Box
+                  sx={{
+                    maxHeight: '140px', // Limitar la altura del contenedor
+                    overflowY: 'auto', // Habilitar scroll vertical
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: '#f9f9f9',
+                  }}
+                >
+                  {pedidosDelCamionActual && pedidosDelCamionActual.length > 0 ? (
+                    pedidosDelCamionActual.map((pedido) => {
+                      const isEntregado = pedido.estado === 'Entregado';
+                      const cardColor = isEntregado ? '#e8f5e9' : '#fffde7'; // Verde claro para entregado, amarillo claro para pendiente
+                      const iconColor = isEntregado ? '#66bb6a' : '#ffeb3b'; // Verde para entregado, amarillo para pendiente
+                      const IconComponent = isEntregado ? CheckCircle : PendingActions;
+
+                      // Obtener la oficina de destino para mostrar el departamento y provincia
+                      const destinoOficina = oficinas.find((office) => office.ubigeo === pedido.ubigeoDestino);
+
+                      return (
+                        <Box
+                          key={pedido.idPedido}
+                          sx={{
+                            backgroundColor: cardColor,
+                            padding: '8px',
+                            borderRadius: '4px',
+                            marginBottom: '8px',
+                          }}
+                        >
+                          <Box display="flex" alignItems="center">
+                            <IconComponent sx={{ color: iconColor, marginRight: '8px' }} />
+                            <Typography variant="subtitle1" color="textPrimary">
+                              <b>Pedido {pedido.idPedido}</b>
+                            </Typography>
+                          </Box>
+                          <Typography variant="body2" color="textSecondary">
+                            <b>Estado:</b> {pedido.estado}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            <b>Cantidad:</b> {pedido.cantidad} unidades
+                          </Typography>
+                          {destinoOficina && (
+                            <Typography variant="body2" color="textSecondary">
+                              <b>Destino:</b> {destinoOficina.departamento}, {destinoOficina.provincia}
+                            </Typography>
+                          )}
+                          {isEntregado ? (
+                            <Typography variant="body2" color="textSecondary">
+                              <b>Hora de entrega:</b> {dayjs(pedido.fechaLlegada).format('DD/MM/YYYY, hh:mm A')}
+                            </Typography>
+                          ) : (
+                            <Typography variant="body2" color="textSecondary">
+                              <b>Fecha Registro:</b> {dayjs(pedido.fechaRegistro).format('DD/MM/YYYY, hh:mm A')}
                             </Typography>
                           )}
                         </Box>
