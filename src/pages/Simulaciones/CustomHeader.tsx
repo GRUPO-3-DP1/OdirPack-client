@@ -7,7 +7,6 @@ import {
 import {
   Button,
   FormControl,
-  InputLabel,
   MenuItem,
   Select,
   Box,
@@ -21,18 +20,24 @@ import dayjs, { Dayjs } from 'dayjs';
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
 import { dataPrueba } from '../../data/nuevaDataPrueba';
-
+import { useSelection } from '../../context/Buscador/useSelection';
 
 const CustomHeader: React.FC = () => {
+
+  // Estados locales
+  const [searchCode, setSearchCode] = useState<string>('');
   const [tipo, setTipo] = useState("");
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-10-01'));
   const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2024-10-01T00:00'));
 
+  // Hooks de contexto
+  const { state: simulationState, dispatch, userId, stopSimulation } = useData();
+  const { setSelectedOficina, setSelectedCamion, setSelectedPedido } = useSelection();
+
+
   const handleChange = (event: SelectChangeEvent) => {
     setTipo(event.target.value);
   };
-
-  const { state, dispatch, userId, stopSimulation } = useData();
 
   const startSimulation = async () => {
     console.log("startSimulation");
@@ -58,23 +63,59 @@ const CustomHeader: React.FC = () => {
     }
   };
 
-  const [searchCode, setSearchCode] = useState('');
+  const getDynamicBackground = (value: Dayjs | string | null) => (value ? '#E6F0FB' : '#FAFAFA'); 
 
+  // Actualizar todas las referencias a state por simulationState
   const handleSearch = () => {
-    if (!searchCode) return;
+    const query = searchCode.trim();
 
-    // Identificar el tipo de código
-    const type = searchCode.toUpperCase().startsWith('PED-') ? 'pedido' :
-      searchCode.toUpperCase().startsWith('CAM-') ? 'camion' :
-        searchCode.toUpperCase().startsWith('OFC-') ? 'oficina' :
-          'desconocido';
+    setSelectedOficina(null);
+    setSelectedCamion(null);
+    setSelectedPedido(null);
 
-    console.log('Buscando:', { code: searchCode, type });
-    // Aquí implementarías la lógica para mostrar el popup con la información
+    // Buscar en oficinas
+    // const office = simulationState.offices.find((office) => office.ubigeo === query);
+    // if (office) {
+    //   setSelectedOficina(office);
+    //   return;
+    // }
+    if (query.includes(',')) {
+      const [departamento, provincia] = query.split(',').map(part => part.trim().toUpperCase());
+      const office = simulationState.offices.find((office) =>
+        office.departamento.toUpperCase() === departamento &&
+        office.provincia.toUpperCase() === provincia
+      );
+      if (office) {
+        setSelectedOficina(office);
+        return;
+      }
+    }
+
+    // Buscar en camiones
+    const truck = simulationState.vehicles.find((vehicle) => vehicle.idVehiculo === query);
+    if (truck) {
+      setSelectedCamion(truck);
+      return;
+    }
+
+    // Buscar en pedidos
+    const allOrders = [
+      ...simulationState.unplannedOrders,
+      ...simulationState.vehicles.flatMap(vehicle => vehicle.ruta?.pedidos || [])
+    ];
+    
+    const order = allOrders.find((order) => 
+      order.idPedido.toUpperCase() === query
+    );
+    if (order) {
+      setSelectedPedido(order);
+      return;
+    }
+
   };
 
   return (
-    <Header isLoading={state.isPlaying}>
+    <Header isLoading={simulationState.isPlaying}>
       <Box
         display="flex"
         flexDirection="column"
@@ -83,56 +124,89 @@ const CustomHeader: React.FC = () => {
       >
         <Box display="flex" alignItems="center" gap={2}>
           <DatePicker
-            label="Fecha"
             value={selectedDate}
             onChange={(newValue) => setSelectedDate(newValue)}
-            disabled={state.isPlaying}
-            format="DD/MM/YYYY"
+            disabled={simulationState.isPlaying}
+            format="DD/MM/YYYY" 
             slotProps={{
               textField: {
                 size: 'small',
-                sx: { width: '149px' },
-                disabled: state.isPlaying,
+                placeholder: 'Fecha',
+                sx: { 
+                  width: '149px',
+                  backgroundColor: getDynamicBackground(selectedDate),  
+                },
+                disabled: simulationState.isPlaying,
               },
             }}
           />
           <TimePicker
-            label="Hora"
             value={selectedTime}
             onChange={(newValue) => setSelectedTime(newValue)}
-            disabled={state.isPlaying}
+            disabled={simulationState.isPlaying}
             views={['hours', 'minutes']}
             ampm
             slotProps={{
               textField: {
                 size: 'small',
-                sx: { width: '135px' },
-                disabled: state.isPlaying,
+                placeholder: 'Hora',
+                sx: { 
+                  width: '135px',
+                  backgroundColor: getDynamicBackground(selectedTime),
+                },
+                disabled: simulationState.isPlaying,
               },
             }}
           />
           <FormControl
             size="small"
-            sx={{ width: '170px' }}
-            disabled={state.isPlaying}
+            sx={{
+              width: '170px',
+              backgroundColor: getDynamicBackground(tipo),
+              '.MuiOutlinedInput-root': {
+                padding: 0, // Elimina padding interno no deseado
+              },
+              '.MuiOutlinedInput-notchedOutline': {
+                borderWidth: '1px', // Mantiene el borde visible
+              },
+            }}
+            disabled={simulationState.isPlaying}
           >
-            <InputLabel id="tipo-label">Tipo</InputLabel>
             <Select
-              labelId="tipo-label"
-              id="tipo-select"
+              displayEmpty
               value={tipo}
-              label="Tipo"
               onChange={handleChange}
-              disabled={state.isPlaying}
+              disabled={simulationState.isPlaying}
+              renderValue={(selected) => {
+                if (!selected) {
+                  return <span style={{ color: '#999' }}>Tipo</span>; // Placeholder estilizado
+                }
+                return selected;
+              }}
+              sx={{
+                padding: '8px 12px', // Centra el texto dentro del cuadro
+                height: '40px', // Asegura un tamaño uniforme con otros inputs
+                lineHeight: 'normal', // Centra visualmente el texto
+              }}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    marginTop: '5px', // Ajusta el espacio entre el cuadro y el menú desplegable
+                  },
+                },
+              }}
             >
-              <MenuItem value="semanal">Semanal</MenuItem>
-              <MenuItem value="colapso">Hasta el colapso</MenuItem>
+              <MenuItem value="" disabled>
+                Tipo
+              </MenuItem>
+              <MenuItem value="Semanal">Semanal</MenuItem>
+              <MenuItem value="Hasta el colapso">Hasta el colapso</MenuItem>
             </Select>
           </FormControl>
           <Button
             variant="contained"
-            onClick={state.isPlaying ? stopSimulation : startSimulation}
-            color={state.isPlaying ? 'error' : 'primary'}
+            onClick={simulationState.isPlaying ? stopSimulation : startSimulation}
+            color={simulationState.isPlaying ? 'error' : 'primary'}
             sx={{
               minWidth: '40px', // Tamaño mínimo para igualarlo al botón de búsqueda
               height: '40px', // Igual altura que el botón de búsqueda
@@ -142,8 +216,8 @@ const CustomHeader: React.FC = () => {
               justifyContent: 'center',
             }}
           >
-            {state.isPlaying ? <Stop /> : <PlayArrow />}
-          </Button>
+            {simulationState.isPlaying ? <Stop /> : <PlayArrow />}
+          </Button>        
         </Box>
         {/* Contenedor para el buscador */}
         <Box display="flex" alignItems="center" justifyContent="flex-start" gap={2}>
@@ -152,17 +226,20 @@ const CustomHeader: React.FC = () => {
             placeholder="Ingrese el código del Pedido, Camión u Oficina"
             value={searchCode}
             onChange={(e) => setSearchCode(e.target.value)}
-            sx={{ width: 486 }}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                handleSearch();
-              }
+            sx={{ 
+              width: 486,
+              backgroundColor: getDynamicBackground(searchCode),
+            }}
+            inputProps={{
+              style: {
+                fontSize: '15.5px', // Ajusta el tamaño del texto
+              },
             }}
           />
           <Button
             variant="contained"
-            onClick={handleSearch}
             color="primary"
+            onClick={handleSearch}
             sx={{
               minWidth: '40px', // Establece el tamaño mínimo para que sea un cuadrado
               height: '40px', // Asegura que sea un cuadrado

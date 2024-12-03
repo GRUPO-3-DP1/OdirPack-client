@@ -4,10 +4,12 @@ import styles from './page.module.css';
 import { Box, Button, FormControl, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
 import { Add, UploadFile } from '@mui/icons-material';
 import { formatDate } from '../../utils/formatDate';
+import CreateCamionDialog from './components/CreateCamionDialog';
 
 const Page: React.FC = () => {
   const { camiones, fetchCamiones } = useCamiones();
   const [placa, setPlaca] = useState<string>('');
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchCamiones();
@@ -36,7 +38,7 @@ const Page: React.FC = () => {
         <Button
           className={styles.button}
           variant="contained"
-          onClick={() => { }}
+          onClick={() => setCreateDialogOpen(true)} // Abre el diálogo
           startIcon={<Add />}
         >
           Crear Camión
@@ -60,10 +62,10 @@ const Page: React.FC = () => {
             <TableRow>
               <TableCell>ID</TableCell>
               <TableCell>Placa</TableCell>
-              <TableCell>Fecha Libre</TableCell>
               <TableCell>Almacén</TableCell>
               <TableCell>Tipo</TableCell>
               <TableCell>Capacidad</TableCell>
+              <TableCell>Fecha Libre</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -71,15 +73,20 @@ const Page: React.FC = () => {
               <TableRow key={camion.camionId}>
                 <TableCell>{camion.camionId}</TableCell>
                 <TableCell>{camion.placa}</TableCell>
-                <TableCell>{formatDate(camion.fechaLibre)}</TableCell>
                 <TableCell>{camion.almacenId || 'N/A'}</TableCell>
                 <TableCell>{camion.tipo}</TableCell>
                 <TableCell>{camion.capacidad}</TableCell>
+                <TableCell>{formatDate(camion.fechaLibre || '')}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+      <CreateCamionDialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        onCreateSuccess={fetchCamiones}
+      />
     </div>
   );
 };

@@ -1,10 +1,10 @@
 import { useContext } from 'react';
 import { SimulationContext } from './Simulacion/SimulationContext';
-import { OperacionContext } from './OperacionDia/OperacionContext';
+//import { OperacionContext } from './OperacionDia/OperacionContext';
 
 export const useData = () => {
   const simulationContext = useContext(SimulationContext);
-  const operacionContext = useContext(OperacionContext);
+  const operacionContext = null; // useContext(OperacionContext);
 
   if (simulationContext) {
     return simulationContext;

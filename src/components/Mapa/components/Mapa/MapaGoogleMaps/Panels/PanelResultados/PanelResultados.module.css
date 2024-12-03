@@ -1,111 +1,13 @@
-.container {
-  border: 1px solid #ccc;
-  max-width: auto;
-  max-height: 600px;
-  padding: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
+/* PanelResultados.module.css */
 
-.tableContainer {
-  max-height: 200px;
-}
-
-.tableCell {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: auto;
-  background-color: #ea3a3a;
-}
-
-.scrollableContent {
-  max-height: 300px;
-  overflow-y: auto;
-  display: block;
-}
-
-.scrollableBody {
-  display: block;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.title {
-  font-size: 24px;
-  font-weight: bold;
-  text-align: left;
-  margin-top: 20px;
-  margin-bottom: 10px;
-}
-
-.titlePanel {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  align-items: center;
-
-  background: linear-gradient(90deg, #FFF 38.49%, rgba(222, 250, 240, 0.53) 73.05%, rgba(188, 246, 226, 0.06) 107.62%);
-}
-
-.title {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.information {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.state {
-  display: flex;
-  gap: 5px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.headerContainer {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  height: 60px;
-  margin-bottom: 20px;
-}
-
-.backButton {
-  border: 1px solid #3f51b5;
-  border-radius: 5px;
-  padding: 5px;
-  background-color: #e0e0e0;
-}
-
-.title {
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.routeInfo {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  border: 1px solid #ccc;
+.panel {
+  background-color: rgba(255, 255, 255, 0.9);
+  user-select: none;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
   border-radius: 8px;
-  background-color: #f9f9f9;
-  margin-top: 10px;
-}
-
-.routeInfo > div {
-  margin-right: 20px;
-}
-
-.routeInfo > div:last-child {
-  margin-right: 0;
-}
-.buttonContainer {
+  width: 500px;
+  height: fit-content;
   display: flex;
-  justify-content: end;
-  padding: 5px;
+  flex-direction: column;
+  overflow: hidden;
 }
