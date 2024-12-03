@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { SolucionAlgorithmResponse } from '../types/ResponseAlgorithm';
 
 interface UseWebSocketOptions {
   url: string;
@@ -18,94 +17,65 @@ export const useWebSocket = ({
 }: UseWebSocketOptions) => {
   const wsRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [allowReconnect, setAllowReconnect] = useState(true); // Control de reconexión
 
   const reconnectInterval = useRef<number | null>(null);
   const reconnectAttempts = useRef(0);
+  const maxReconnectAttempts = 5;
 
-  const connect = () => {
+  const connectWebSocket = () => {
+    if (!allowReconnect) return; // Evitar reconexiones no deseadas
+
     wsRef.current = new WebSocket(url);
 
     wsRef.current.onopen = () => {
-      console.log('WebSocket conectado a', url);
       setIsConnected(true);
       reconnectAttempts.current = 0; // Resetear intentos
-      onOpen?.();
+      if (onOpen) onOpen();
     };
 
     wsRef.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log('Mensaje recibido:', data);
-      onMessage?.(data);
-      // ver si está enviando los averiados planificados bien
-      (data.solucion as SolucionAlgorithmResponse[]).forEach((solucion) => {
-        Object.values(solucion.rutasVehiculos).forEach((rutaVehiculo) => {
-          if(rutaVehiculo.isAveriado){
-            console.log('Averiado:', rutaVehiculo.idVehiculo);
-          }
-          
-        });
-      });      
+      if (onMessage) onMessage(JSON.parse(event.data));
     };
 
     wsRef.current.onclose = () => {
-      console.log('WebSocket cerrado');
       setIsConnected(false);
-      onClose?.();
+      if (onClose) onClose();
 
-      // Intentar reconexión
-      if (reconnectAttempts.current < 5) {
-        reconnectAttempts.current += 1;
-        reconnectInterval.current = window.setTimeout(() => {
-          console.log(`Intentando reconexión (#${reconnectAttempts.current})...`);
-          connect();
-        }, 3000);
-      } else {
-        console.error('No se pudo reconectar después de múltiples intentos.');
+      // Intentar reconectar solo si está permitido
+      if (allowReconnect) {
+        if (reconnectAttempts.current < maxReconnectAttempts) {
+          reconnectInterval.current = window.setTimeout(() => {
+            reconnectAttempts.current++;
+            connectWebSocket();
+          }, 2000); // Intentar cada 2 segundos
+        }
       }
     };
 
     wsRef.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      onError?.(error);
+      if (onError) onError(error);
     };
-  };
-
-  useEffect(() => {
-    connect();
-
-    return () => {
-      wsRef.current?.close();
-      if (reconnectInterval.current) {
-        clearTimeout(reconnectInterval.current);
-      }
-    };
-  }, [url]);
-
-  const sendMessage = (message: any) => {
-    if (wsRef.current && isConnected) {
-      wsRef.current.send(JSON.stringify(message));
-    } else {
-      console.warn('No se puede enviar el mensaje. WebSocket no conectado.');
-    }
   };
 
   const closeWebSocket = () => {
+    setAllowReconnect(false); // Deshabilitar reconexiones
     if (wsRef.current) {
       wsRef.current.close();
-      setIsConnected(false);
-      if (reconnectInterval.current) {
-        clearTimeout(reconnectInterval.current);
-      }
-      //createNewConnection();
+      wsRef.current = null;
     }
   };
 
-  // const createNewConnection = () => {
-  //   if (wsRef.current) {
-  //     wsRef.current.close();
-  //   }
-  //   connect();
-  // };
+  useEffect(() => {
+    connectWebSocket();
 
-  return { isConnected, sendMessage, closeWebSocket };
+    return () => {
+      if (reconnectInterval.current) {
+        clearTimeout(reconnectInterval.current);
+      }
+      closeWebSocket();
+    };
+  }, [url, allowReconnect]);
+
+  return { isConnected, closeWebSocket, reconnect: () => setAllowReconnect(false) };
 };

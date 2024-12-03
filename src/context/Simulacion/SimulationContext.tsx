@@ -1,5 +1,4 @@
 import React, { createContext, useReducer, useEffect, useState } from 'react';
-import oficinas from '../../data/oficinas';
 import { SimulationAction, SimulationState, Vehicle, Oficina } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
 import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
@@ -54,11 +53,6 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
   }
 }
 
-const initialOffices = oficinas.map((office) => ({
-  ...office,
-  currentOrders: [],
-}));
-
 const initialState = {
   isPlaying: false,
   vehicles: [],
@@ -70,11 +64,11 @@ const initialState = {
   trucksInMotion: 0,
   trucksInMaintenance: 0,
   totalTrucks: 0,
-  totalOffices: oficinas.length,
+  totalOffices: 0,
   occupiedOffices: 0,
   ordersDelivered: 0,
   ordersPending: 0,
-  offices: initialOffices,
+  offices: [],
   unplannedOrders: [],
   processedOrderIds: [],
 };
@@ -85,22 +79,22 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   const [userId, setUserId] = useState<string>('');
   const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]);
 
-  const { isConnected, closeWebSocket } = useWebSocket({
+  const { isConnected, closeWebSocket, reconnect } = useWebSocket({
     url: `${Services.WebUrl}/conexion-websocket`,
     onMessage: (data) => {
       if (data.userId) {
         setUserId(data.userId);
       } else {
         const newResponse = data;
-        //console.log('Respuesta del algoritmo recibida:', newResponse);
+        console.log('Respuesta del algoritmo recibida:', newResponse);
         setSolutions((prevResponses) => [...prevResponses, newResponse]);
       }
     },
     onOpen: () => {
-      //console.log('Conexión WebSocket establecida en SimulationProvider');
+      console.log('Conexión WebSocket establecida en SimulationProvider');
     },
     onClose: () => {
-      //console.log('Conexión WebSocket cerrada en SimulationProvider');
+      console.log('Conexión WebSocket cerrada en SimulationProvider');
     },
   });
 
@@ -318,11 +312,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     state.currentTime,
     state.speed,
     state.endTime,
-    state.vehicles,
-    state.offices,
-    state.processedOrderIds,
-    dispatch,
-    state,
+    state.vehicles
   ]);
 
   const stopSimulation = () => {
@@ -332,6 +322,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     setLastProcessedSolution(null);
 
     if (isConnected) {
+      reconnect();
       closeWebSocket();
     }
   };  
