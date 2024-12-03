@@ -128,7 +128,12 @@ export type SimulationAction =
   | { type: 'UPDATE_VEHICLE_POSITION'; payload: Vehicle[]; }
   | { type: 'SET_CURRENT_TIME'; payload: Date; }
   | { type: 'SET_VEHICLES'; payload: Vehicle[]; }
-  | { type: 'UPDATE_SIMULATION_DATA'; payload: Partial<SimulationState>; }
+  //| { type: 'UPDATE_SIMULATION_DATA'; payload: Partial<SimulationState>; }
+  | { type: 'SET_TOTAL_TRUCKS'; payload: number }
+  | { type: 'SET_OCCUPIED_OFFICES'; payload: number }
+  | { type: 'SET_TRUCKS_IN_MOTION'; payload: number }
+  | { type: 'SET_ORDERS_DELIVERED'; payload: number }
+  | { type: 'SET_ORDERS_PENDING'; payload: number }
   | { type: 'SET_OFFICES'; payload: Oficina[]; }
   | { type: 'SET_UNPLANNED_ORDERS'; payload: Order[]; }
   | { type: 'SET_PROCESSED_ORDER_IDS'; payload: string[]; };

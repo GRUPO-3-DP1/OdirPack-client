@@ -29,9 +29,6 @@ import {
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import styles from './PanelInformacion.module.css';
-//import useAveria from '../../../../../../../store/hooks/useAveria';
-//import { Averia } from '../../../../../../../store/types/Averia'; 
-
 
 dayjs.extend(duration);
 import { Oficina } from '../../../../../../../context/Simulacion/simulationTypes';

@@ -118,7 +118,7 @@ export type SimulationAction =
   | { type: 'UPDATE_VEHICLE_POSITION'; payload: Vehicle[]; }
   | { type: 'SET_CURRENT_TIME'; payload: Date; }
   | { type: 'SET_VEHICLES'; payload: Vehicle[]; }
-  | { type: 'UPDATE_SIMULATION_DATA'; payload: Partial<SimulationState>; }
+  //| { type: 'UPDATE_SIMULATION_DATA'; payload: Partial<SimulationState>; }
   | { type: 'SET_OFFICES'; payload: Oficina[]; }
   | { type: 'SET_UNPLANNED_ORDERS'; payload: Order[]; }
   | { type: 'SET_PROCESSED_ORDER_IDS'; payload: string[]; };
