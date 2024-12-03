@@ -1,15 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styles from './page.module.css';
-import { Button, Chip, styled } from '@mui/material';
+import { Chip, styled, Box, Typography, Button, CircularProgress } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
-import { useArchivos } from '../../context/Archivos/useArchivos';
-
-const validarNombreArchivo = (file: File): boolean => {
-  const esCSV = file.name.endsWith('.txt');
-  const contienePalabraClave = file.name.includes('c.1inf54.24-2.bloqueo.');
-
-  return esCSV && contienePalabraClave;
-};
+import { Mes } from '../../store/types/Mes';
+import useArchivos from '../../store/hooks/useArchivos';
+import { PedidosSimulacion } from '../../store/types/PedidosSimulacion';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -24,60 +19,94 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 const Page: React.FC = () => {
-  const { archivos, bloqueos, subirArchivo, eliminarArchivo } = useArchivos();
+  const { simulacion, loading, error, fetchSimulacion, uploadFile, deleteFile } = useArchivos();
 
-  console.log(bloqueos);
+  useEffect(() => {
+    fetchSimulacion();
+  }, [fetchSimulacion]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, mes: Mes) => {
     if (event.target.files) {
-      Array.from(event.target.files).forEach((file) => {
-        if (validarNombreArchivo(file)) {
-          subirArchivo(file);
-        } else {
-          alert(`El archivo "${file.name}" no cumple con el formato requerido.`);
-        }
-      });
+      const files = Array.from(event.target.files);
+      for (const file of files) {
+        await uploadFile(mes, file); // Esperar a que se complete la subida
+      }
+      await fetchSimulacion(); // Refrescar la información después de subir archivos
     }
   };
 
-  return (
-    <>
-      <div className={styles.container}>
-        <h3>Datos de simulación</h3>
-        <div className={styles.bloque}>
-          <p>Bloqueos programados</p>
-          <Button
-            component="label"
-            role={undefined}
-            variant="contained"
-            tabIndex={-1}
-            startIcon={<CloudUpload />}
-          >
-            Seleccionar Archivo(s)
-            <VisuallyHiddenInput
-              type="file"
-              onChange={handleFileChange}
-              multiple
-            />
-          </Button>
-        </div>
-        <div className={styles.archivos}>
-          {archivos.map((archivo) => (
+  const handleDelete = async (mes: Mes) => {
+    await deleteFile(mes); // Esperar a que se complete la eliminación
+    await fetchSimulacion(); // Refrescar la información después de eliminar un archivo
+  };
+
+  const renderChip = (mes: Mes) => {
+    const mesKey = mes.toLowerCase() as keyof PedidosSimulacion;
+
+    const archivo = simulacion[mesKey];
+
+    return (
+      <Box key={mes}>
+        <Typography variant="h6">{mes}</Typography>
+
+        <div className={styles.monthContainer}>
+          {archivo ? (
             <Chip
-              key={archivo.id}
-              label={`${archivo.name}`}
-              onDelete={() => eliminarArchivo(archivo.id)}
-              className={styles.chip}
+              variant="outlined"
+              label={archivo.nombre}
+              onDelete={() => handleDelete(mes)}
+              color="primary"
+              className={styles.button}
             />
-          ))}
+          ) : (
+            <Button
+              component="label"
+              variant="contained"
+              startIcon={<CloudUpload />}
+              className={styles.button}
+            >
+              Subir Archivo
+              <VisuallyHiddenInput
+                type="file"
+                onChange={(e) => handleFileChange(e, mes)}
+                multiple
+              />
+            </Button>
+          )}
         </div>
+      </Box>
+    );
+  };
 
-      </div>
-
+  if (loading) {
+    return (
       <div className={styles.container}>
-        <h3>Datos generales</h3>
+        <CircularProgress />
+        <Typography variant="h6" sx={{ marginTop: '10px' }}>Cargando simulación...</Typography>
       </div>
-    </>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <Typography color="error">{error}</Typography>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.container}>
+      <h3>Simulacion - Pedidos</h3>
+      <Box
+        display="grid"
+        gridTemplateColumns="repeat(3, 1fr)"
+        gap={3}
+        sx={{ marginTop: '20px' }}
+      >
+        {Object.values(Mes).map((mes) => renderChip(mes))}
+      </Box>
+    </div>
   );
 };
 
