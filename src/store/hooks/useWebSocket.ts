@@ -45,7 +45,6 @@ export const useWebSocket = ({
           
         });
       });      
-
     };
 
     wsRef.current.onclose = () => {
