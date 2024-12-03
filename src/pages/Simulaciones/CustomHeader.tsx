@@ -12,7 +12,7 @@ import {
   Select,
   Box,
   SelectChangeEvent,
-  TextField, 
+  TextField,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { PlayArrow, Stop } from '@mui/icons-material';
@@ -59,16 +59,16 @@ const CustomHeader: React.FC = () => {
   };
 
   const [searchCode, setSearchCode] = useState('');
-  
+
   const handleSearch = () => {
     if (!searchCode) return;
-    
+
     // Identificar el tipo de código
     const type = searchCode.toUpperCase().startsWith('PED-') ? 'pedido' :
-                searchCode.toUpperCase().startsWith('CAM-') ? 'camion' :
-                searchCode.toUpperCase().startsWith('OFC-') ? 'oficina' : 
-                'desconocido';
-                
+      searchCode.toUpperCase().startsWith('CAM-') ? 'camion' :
+        searchCode.toUpperCase().startsWith('OFC-') ? 'oficina' :
+          'desconocido';
+
     console.log('Buscando:', { code: searchCode, type });
     // Aquí implementarías la lógica para mostrar el popup con la información
   };
@@ -87,7 +87,7 @@ const CustomHeader: React.FC = () => {
             value={selectedDate}
             onChange={(newValue) => setSelectedDate(newValue)}
             disabled={state.isPlaying}
-            format="DD/MM/YYYY" 
+            format="DD/MM/YYYY"
             slotProps={{
               textField: {
                 size: 'small',
@@ -102,7 +102,7 @@ const CustomHeader: React.FC = () => {
             onChange={(newValue) => setSelectedTime(newValue)}
             disabled={state.isPlaying}
             views={['hours', 'minutes']}
-            ampm 
+            ampm
             slotProps={{
               textField: {
                 size: 'small',
@@ -143,7 +143,7 @@ const CustomHeader: React.FC = () => {
             }}
           >
             {state.isPlaying ? <Stop /> : <PlayArrow />}
-          </Button>        
+          </Button>
         </Box>
         {/* Contenedor para el buscador */}
         <Box display="flex" alignItems="center" justifyContent="flex-start" gap={2}>
