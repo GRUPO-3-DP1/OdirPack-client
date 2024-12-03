@@ -215,7 +215,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   // Función para calcular oficinas ocupadas
 
 
-  const timeIncrement = 1000*state.speed;// Avanzar un segundo de simulación por intervalo
+  const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
 
   useEffect(() => {
     if (!state.isPlaying) return;
