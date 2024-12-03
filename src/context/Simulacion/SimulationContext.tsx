@@ -6,7 +6,6 @@ import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles
 import { locationCoordinates } from '../../utils/locationCoordinates';
 import { useWebSocket } from '../../store/hooks/useWebSocket';
 import { Services } from '../../../config';
-import oficinas from '../../data/oficinas';
 
 export const SimulationContext = createContext<{
   state: SimulationState;
@@ -54,11 +53,6 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
   }
 }
 
-const initialOffices = oficinas.map((office) => ({
-  ...office,
-  currentOrders: [],
-}));
-
 const initialState = {
   isPlaying: false,
   vehicles: [],
@@ -70,11 +64,11 @@ const initialState = {
   trucksInMotion: 0,
   trucksInMaintenance: 0,
   totalTrucks: 0,
-  totalOffices: oficinas.length,
+  totalOffices: 0,
   occupiedOffices: 0,
   ordersDelivered: 0,
   ordersPending: 0,
-  offices: initialOffices,
+  offices: [],
   unplannedOrders: [],
   processedOrderIds: [],
 };
