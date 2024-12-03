@@ -118,7 +118,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           console.log('Vehículos actualizados:', state.vehicles);
 
           // Actualizar datos de simulación
-          
+
         } else {
           //console.log('Procesando');
 
@@ -170,7 +170,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       // Actualizar el índice para procesar la siguiente respuesta
       setIndexActualProcess(indexActualProcess + 1);
     }
-  }, [state.vehicles,indexActualProcess,lastProcessedSolution]);
+  }, [state.vehicles, indexActualProcess, lastProcessedSolution]);
 
   // Función para calcular oficinas ocupadas
 
@@ -187,7 +187,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         dispatch({ type: 'RESET_SIMULATION' });
         clearInterval(updateInterval);
         state.ends = true;
-        state.vehicles =[];
+        state.vehicles = [];
         //console.log('Ya pasó la fecha límite');
         return;
       }
@@ -199,8 +199,16 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         const startTime = new Date(ruta.fechaInicio);
         const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
 
-        // Verificar si el vehículo está en mantenimiento
-        
+        // Verificar si un vehiculo esta con una averia
+        if (vehicle.maintenance?.inMaintenance && newTime >= vehicle.maintenance.startTime && newTime < new Date(vehicle.maintenance.startTime.getTime() + vehicle.maintenance.duration)) {
+          // El vehículo está en mantenimiento, no actualizar posición
+          return {
+            ...vehicle,
+            position: {
+              ...vehicle.position,
+            },
+          };
+        }
 
         // Detectar si el vehículo ha llegado a una oficina
         const arrivalTimes = ruta.fechasLlegada.map((fecha) => new Date(fecha));
@@ -325,7 +333,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       reconnect();
       closeWebSocket();
     }
-  };  
+  };
 
   return (
     <SimulationContext.Provider
