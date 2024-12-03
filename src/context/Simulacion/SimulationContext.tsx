@@ -433,7 +433,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   const stopSimulation = () => {
     dispatch({ type: 'STOP_SIMULATION' });
     dispatch({ type: 'RESET_SIMULATION' });
-
+    setLastProcessedSolution(null);
+    setIndexActualProcess(0);
     if (isConnected) {
       closeWebSocket();
     }
