@@ -52,6 +52,8 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, unplannedOrders: action.payload };
     case 'SET_PROCESSED_ORDER_IDS':
       return { ...state, processedOrderIds: action.payload };
+    case 'RESET_SIMULATION':  // Resetea el estado a los valores iniciales
+      return { ...initialState };
     default:
       return state;
   }
@@ -65,7 +67,7 @@ const initialOffices = oficinas.map((office) => ({
 const initialState = {
   isPlaying: false,
   vehicles: [],
-  speed: 20,
+  speed: 70,
   ends: false,
   startTime: new Date('2024-10-21T00:00:00Z'),
   currentTime: new Date('2024-10-21T00:00:00Z'),
@@ -430,6 +432,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
   const stopSimulation = () => {
     dispatch({ type: 'STOP_SIMULATION' });
+    dispatch({ type: 'RESET_SIMULATION' });
+
     if (isConnected) {
       closeWebSocket();
     }
