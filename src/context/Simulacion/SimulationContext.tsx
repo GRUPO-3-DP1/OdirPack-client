@@ -118,8 +118,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
       const newSolutionString = JSON.stringify(newResponse.solucion);
 
-      //console.log('Solución a procesar:', newResponse);
-
       if (newSolutionString !== lastProcessedSolution) {
         setLastProcessedSolution(newSolutionString);
 
@@ -174,7 +172,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                   : existingVehicle.position;
               const newFechaInicio =
                 existingVehicle.ruta.fechaInicio === null ? matchingNewVehicle.ruta.fechaInicio : existingVehicle.ruta.fechaInicio;
-              //console.log('Encontró match', existingVehicle.idVehiculo);
 
               return {
                 ...existingVehicle,
@@ -196,7 +193,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
           // Actualizar el estado con la lista combinada de vehículos
           dispatch({ type: 'SET_VEHICLES', payload: [...updatedVehicles] });
-          //console.log('Vehículos actualizados:', updatedVehicles);
+          console.log('Vehículos actualizados:', updatedVehicles);
 
       
         }
@@ -432,9 +429,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
   const stopSimulation = () => {
     dispatch({ type: 'RESET_SIMULATION' });
-    setLastProcessedSolution(null);
-    setIndexActualProcess(0);
-    setSolutions([]);
     console.log("reseteo valores");
     if (isConnected) {
       closeWebSocket();
