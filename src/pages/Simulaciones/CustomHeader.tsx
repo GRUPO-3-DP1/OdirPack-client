@@ -46,7 +46,6 @@ const CustomHeader: React.FC = () => {
       const startTime = new Date(selectedDate.year(), selectedDate.month(), selectedDate.date(), selectedTime.hour(), selectedTime.minute());
       const endTime = new Date(startTime.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 días después
       dispatch({ type: 'START_SIMULATION', payload: { startTime, endTime } });
-      dispatch({ type: 'RESET_SIMULATION' });
       // Llama a handleIniciarSimulacion después de iniciar la simulación
       await handleIniciarSimulacion();
     }
