@@ -153,13 +153,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           //console.log('Primera respuesta:', newVehicles);
 
           // Actualizar datos de simulación
-          dispatch({
-            type: 'UPDATE_SIMULATION_DATA',
-            payload: {
-              totalTrucks: newVehicles.length,
-              occupiedOffices: calculateOccupiedOffices(newOffices),
-            },
-          });
+          
         } else {
           //console.log('Procesando');
 
@@ -203,14 +197,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           dispatch({ type: 'SET_VEHICLES', payload: [...updatedVehicles] });
           //console.log('Vehículos actualizados:', updatedVehicles);
 
-          // Actualizar datos de simulación
-          dispatch({
-            type: 'UPDATE_SIMULATION_DATA',
-            payload: {
-              totalTrucks: updatedVehicles.length,
-              occupiedOffices: calculateOccupiedOffices(newOffices),
-            },
-          });
+      
         }
 
         // Actualizar oficinas en el estado
@@ -228,15 +215,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   }, [indexActualProcess, solutions, lastProcessedSolution, state.vehicles, dispatch, state.offices]);
 
   // Función para calcular oficinas ocupadas
-  const calculateOccupiedOffices = (offices: Oficina[]): number => {
-    let occupied = 0;
-    offices.forEach((office) => {
-      if ((office.horasStock ?? []).some((horaStock) => horaStock.stock > 0)) {
-        occupied += 1;
-      }
-    });
-    return occupied;
-  };
+
 
   const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
 
@@ -262,22 +241,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
 
         // Verificar si el vehículo está en mantenimiento
-        if (vehicle.maintenance && vehicle.maintenance.inMaintenance) {
-          const maintenanceEndTime = new Date(
-            vehicle.maintenance.startTime.getTime() + vehicle.maintenance.duration
-          );
-          if (newTime >= maintenanceEndTime) {
-            // Finaliza el mantenimiento
-            vehicle = {
-              ...vehicle,
-              maintenance: undefined, // Eliminar el objeto maintenance
-            };
-            // Continuar para actualizar la posición
-          } else {
-            // Mantener el vehículo en mantenimiento
-            return vehicle;
-          }
-        }
+        
 
         // Detectar si el vehículo ha llegado a una oficina
         const arrivalTimes = ruta.fechasLlegada.map((fecha) => new Date(fecha));

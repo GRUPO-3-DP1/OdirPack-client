@@ -9,9 +9,9 @@ import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
 // import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles';
 // import { convertOffices } from '../../utils/convertOffices';
 import { locationCoordinates } from '../../utils/locationCoordinates';
-import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
-import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
-import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
+// import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
+// import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
+// import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
 // import { useWebSocket } from '../../store/hooks/useWebSocket';
 // import { Services } from '../../../config';
 
@@ -46,8 +46,8 @@ function operacionReducer(state: SimulationState, action: SimulationAction): Sim
       return { ...state, currentTime: action.payload };
     case 'SET_VEHICLES':
       return { ...state, vehicles: action.payload };
-    case 'UPDATE_SIMULATION_DATA':
-      return { ...state, ...action.payload };
+    // case 'UPDATE_SIMULATION_DATA':
+    //   return { ...state, ...action.payload };
     case 'SET_OFFICES':
       return { ...state, offices: action.payload };
     case 'SET_UNPLANNED_ORDERS':
@@ -471,14 +471,14 @@ export function OperacionProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'SET_PROCESSED_ORDER_IDS', payload: newProcessedOrderIds });
 
       // Actualizar datos de simulación
-      dispatch({
-        type: 'UPDATE_SIMULATION_DATA',
-        payload: {
-          trucksInMotion: calculateTrucksInMotion(updatedVehicles),
-          ordersDelivered: calculateOrdersDelivered(updatedVehicles, newTime),
-          ordersPending: calculateOrdersPending(updatedVehicles, newTime),
-        },
-      });
+      // dispatch({
+      //   type: 'UPDATE_SIMULATION_DATA',
+      //   payload: {
+      //     trucksInMotion: calculateTrucksInMotion(updatedVehicles),
+      //     ordersDelivered: calculateOrdersDelivered(updatedVehicles, newTime),
+      //     ordersPending: calculateOrdersPending(updatedVehicles, newTime),
+      //   },
+      // });
     }, timeIncrement / state.speed);
 
     return () => clearInterval(updateInterval);
