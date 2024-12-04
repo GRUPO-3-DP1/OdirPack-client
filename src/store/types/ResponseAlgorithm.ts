@@ -32,6 +32,7 @@ export type Ruta = {
 export type VehiculoAlgorithmResponse = {
     idVehiculo: string;
     capacidadCarga: number;
+    isAveriado: boolean;
     fechaLibre: string | null;
     ruta: Ruta|null;
 };
@@ -51,11 +52,22 @@ export type OficinaAlgorithmResponse = {
     horas_stock: any[]; // Cambia el tipo según lo que contenga horas_stock
 };
 
+export type VehiculoAveriadoAlgorithmResponse = {
+    idVehiculo: string; // ID del vehículo averiado
+    tipoAveria: string; // Tipo de avería ("SINIESTRO", "FUERTE", "MODERADA")
+    tramoInicio: string; // Código del Ubigeo de inicio del tramo
+    tramoFin: string; // Código del Ubigeo de fin del tramo
+    horaAveria: string; // Hora exacta en la que ocurrió la avería (ISO 8601)
+    fechaReparacion: string; // Fecha en la que el vehículo estará operativo (ISO 8601)
+};
+
+
 export type ResponseAlgorithm = {
     mensaje: string;
     solucion: SolucionAlgorithmResponse[];
     pedidosNoPlanificados: PedidoAlgorithmResponse[];
     oficinas: OficinaAlgorithmResponse[];
+    vehiculosAveriados: VehiculoAveriadoAlgorithmResponse[];
     yaNoPlanificar: boolean;
 };
 

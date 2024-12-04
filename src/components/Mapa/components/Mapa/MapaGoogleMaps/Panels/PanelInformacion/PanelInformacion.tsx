@@ -118,22 +118,35 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
 
   // Obtener camiones en mantenimiento en la oficina seleccionada
   const maintenanceVehicles = state.vehicles.filter(
-    (vehicle): vehicle is Camion & { maintenance: NonNullable<Camion['maintenance']> } =>
+    (vehicle): vehicle is Camion & { maintenance: NonNullable<Camion['maintenance']>; } =>
       vehicle.maintenance !== undefined &&
       vehicle.maintenance.inMaintenance &&
       vehicle.maintenance.officeUbigeo === selectedOficina?.ubigeo
   );
 
-  // Obtener los pedidos del camión seleccionado
-  const pedidosDelCamion = selectedCamion?.ruta?.pedidos.map((pedido) => {
-    const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
-    const estado = fechaLlegada && fechaLlegada <= state.currentTime ? 'Entregado' : 'Pendiente';
+  // Obtener los pedidos del camión entregados
+  const pedidosDelCamion = selectedCamion?.ruta?.pedidos
+    .filter((pedido) => {
+      const fechaRegistro = pedido.fechaRegistro ? new Date(pedido.fechaRegistro) : null;
+      const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+      return fechaRegistro && fechaRegistro <= state.currentTime && fechaLlegada && fechaLlegada <= state.currentTime;
+    })
+    .map((pedido) => {
+      const estado = 'Entregado';
+      return { ...pedido, estado };
+    });
 
-    return {
-      ...pedido,
-      estado,
-    };
-  });
+  // Obtener pedidos actuales que entregará
+  const pedidosDelCamionActual = selectedCamion?.ruta?.pedidos
+    .filter((pedido) => {
+      const fechaRegistro = pedido.fechaRegistro ? new Date(pedido.fechaRegistro) : null;
+      const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+      return fechaRegistro && fechaRegistro <= state.currentTime && fechaLlegada && fechaLlegada > state.currentTime;
+    })
+    .map((pedido) => {
+      return { ...pedido, estado: 'Pendiente' };
+    });
+
 
   // Crear un mapeo de código de destino a índice de segmento
   const destinoToSegmentIndex: { [ubigeoDestino: string]: number; } = {};
@@ -255,9 +268,9 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
 
   // Encontrar el camión asignado al pedido seleccionado
   const assignedTruck = state.vehicles.find(
-  (vehicle) =>
-    vehicle.ruta &&
-    vehicle.ruta.pedidos.some((pedido) => pedido.idPedido === selectedPedido?.idPedido)
+    (vehicle) =>
+      vehicle.ruta &&
+      vehicle.ruta.pedidos.some((pedido) => pedido.idPedido === selectedPedido?.idPedido)
   );
 
   let officeVisits: Array<{
@@ -267,12 +280,12 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     departureTime: Date | null;
     unidadesEntregadas: number;
   }> = [];
-  
+
   if (assignedTruck && assignedTruck.ruta) {
     const tramos = assignedTruck.ruta.tramos;
     const fechasLlegada = assignedTruck.ruta.fechasLlegada;
     const fechasSalida = assignedTruck.ruta.fechasSalida;
-  
+
     officeVisits = tramos.map((tramo, index) => {
       const officeUbigeo = tramo.destino.codigo;
       const office = oficinas.find((office) => office.ubigeo === officeUbigeo);
@@ -280,7 +293,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
       const departureTimeStr = fechasSalida[index];
       const arrivalTime = arrivalTimeStr ? new Date(arrivalTimeStr) : null;
       const departureTime = departureTimeStr ? new Date(departureTimeStr) : null;
-  
+
       // Determinar el pedidoStatus y unidades entregadas
       let status = 'Programado';
       const currentTime = state.currentTime;
@@ -297,7 +310,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
           status = 'Visitado';
         }
       }
-  
+
       return {
         office: office!,
         status,
@@ -307,7 +320,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
       };
     });
   }
-  
+
 
 
   return (
@@ -347,7 +360,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 </Box>
               </Box>
             </Box>
-            <Accordion defaultExpanded disableGutters>
+            <Accordion disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls="panel2-content"
@@ -398,7 +411,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
             </Accordion>
 
             {/*Pedidos del camion*/}
-            <Accordion defaultExpanded disableGutters>
+            <Accordion disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls="lista-pedidos-content"
@@ -406,13 +419,13 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
               >
                 <Typography variant="subtitle2" color="textPrimary">
-                  <b>Lista de pedidos</b>
+                  <b>Lista de pedidos Entregados</b>
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
                 <Box
                   sx={{
-                    maxHeight: '300px', // Limitar la altura del contenedor
+                    maxHeight: '140px', // Limitar la altura del contenedor
                     overflowY: 'auto', // Habilitar scroll vertical
                     padding: '8px',
                     border: '1px solid #ddd',
@@ -463,7 +476,87 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                             </Typography>
                           ) : (
                             <Typography variant="body2" color="textSecondary">
-                              <b>Plazo máximo:</b> {dayjs(pedido.fechaLlegada).format('DD/MM/YYYY, hh:mm A')}
+                              <b>Fecha Registro:</b> {dayjs(pedido.fechaRegistro).format('DD/MM/YYYY, hh:mm A')}
+                            </Typography>
+                          )}
+                        </Box>
+                      );
+                    })
+                  ) : (
+                    <Typography variant="body2" color="textSecondary">
+                      El camión no tiene pedidos asignados.
+                    </Typography>
+                  )}
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+            {/* Lista de pedidos A entregar*/}
+            <Accordion disableGutters>
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                aria-controls="lista-pedidos-content"
+                id="lista-pedidos-header"
+                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+              >
+                <Typography variant="subtitle2" color="textPrimary">
+                  <b>Lista de pedidos Actual</b>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                <Box
+                  sx={{
+                    maxHeight: '140px', // Limitar la altura del contenedor
+                    overflowY: 'auto', // Habilitar scroll vertical
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: '#f9f9f9',
+                  }}
+                >
+                  {pedidosDelCamionActual && pedidosDelCamionActual.length > 0 ? (
+                    pedidosDelCamionActual.map((pedido) => {
+                      const isEntregado = pedido.estado === 'Entregado';
+                      const cardColor = isEntregado ? '#e8f5e9' : '#fffde7'; // Verde claro para entregado, amarillo claro para pendiente
+                      const iconColor = isEntregado ? '#66bb6a' : '#ffeb3b'; // Verde para entregado, amarillo para pendiente
+                      const IconComponent = isEntregado ? CheckCircle : PendingActions;
+
+                      // Obtener la oficina de destino para mostrar el departamento y provincia
+                      const destinoOficina = oficinas.find((office) => office.ubigeo === pedido.ubigeoDestino);
+
+                      return (
+                        <Box
+                          key={pedido.idPedido}
+                          sx={{
+                            backgroundColor: cardColor,
+                            padding: '8px',
+                            borderRadius: '4px',
+                            marginBottom: '8px',
+                          }}
+                        >
+                          <Box display="flex" alignItems="center">
+                            <IconComponent sx={{ color: iconColor, marginRight: '8px' }} />
+                            <Typography variant="subtitle1" color="textPrimary">
+                              <b>Pedido {pedido.idPedido}</b>
+                            </Typography>
+                          </Box>
+                          <Typography variant="body2" color="textSecondary">
+                            <b>Estado:</b> {pedido.estado}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            <b>Cantidad:</b> {pedido.cantidad} unidades
+                          </Typography>
+                          {destinoOficina && (
+                            <Typography variant="body2" color="textSecondary">
+                              <b>Destino:</b> {destinoOficina.departamento}, {destinoOficina.provincia}
+                            </Typography>
+                          )}
+                          {isEntregado ? (
+                            <Typography variant="body2" color="textSecondary">
+                              <b>Hora de entrega:</b> {dayjs(pedido.fechaLlegada).format('DD/MM/YYYY, hh:mm A')}
+                            </Typography>
+                          ) : (
+                            <Typography variant="body2" color="textSecondary">
+                              <b>Fecha Registro:</b> {dayjs(pedido.fechaRegistro).format('DD/MM/YYYY, hh:mm A')}
                             </Typography>
                           )}
                         </Box>
@@ -515,7 +608,15 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                     }
 
                     try {
-                      const fechaRegistro = new Date(); // Fecha actual para registro de la avería
+
+                      let fechaRegistro: Date;
+                      if (operationType === 'semanal') {
+                        fechaRegistro = state.currentTime;
+                      }
+                      else {
+                        fechaRegistro = dayjs().toDate();
+                      }
+
                       const horasAdicionales =
                         tipoAveria === '1' ? 4 :
                           tipoAveria === '2' ? 36 :
@@ -810,187 +911,186 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
 
 
           </>
-      ) : selectedPedido ? (
-        // Nuevo panel para pedidos
-        <>
-          {/* Información del pedido */}
-          <Box
-            sx={{
-              backgroundColor: '#f5f5f5',
-              padding: '8px',
-              borderRadius: '4px',
-              marginBottom: '8px',
-            }}
-          >
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <div>
-                <Typography variant="subtitle1" color="textPrimary">
-                  <b>Información del pedido</b>
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  <b>Código:</b>{' '}
-                  <Typography component="span" variant="body2" color="textPrimary">
-                    {selectedPedido.idPedido}
-                  </Typography>
-                </Typography>
-              </div>
-              <Box display="flex" flexDirection="column" alignItems="center">
-                <Inventory color="primary" sx={{ mb: 0.5 }} />
-                <Typography variant="body2" color="textSecondary">
-                  <b>Estado:</b>{' '}
-                  {selectedPedido?.fechaLlegada && state.currentTime >= new Date(selectedPedido.fechaLlegada)
-                    ? 'Entregado'
-                    : 'Pendiente'}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Detalles del pedido */}
-          <Accordion defaultExpanded disableGutters>
-            <AccordionSummary
-              expandIcon={<ExpandMore />}
-              sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+        ) : selectedPedido ? (
+          // Nuevo panel para pedidos
+          <>
+            {/* Información del pedido */}
+            <Box
+              sx={{
+                backgroundColor: '#f5f5f5',
+                padding: '8px',
+                borderRadius: '4px',
+                marginBottom: '8px',
+              }}
             >
-              <Typography variant="subtitle2" color="textPrimary">
-                <b>Detalles del pedido</b>
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-              <Box>
-                <Typography variant="body2" color="textSecondary">
-                  <b>Cantidad:</b> {selectedPedido.cantidad} unidades
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  <b>Fecha de registro:</b>{' '}
-                  {dayjs(selectedPedido.fechaRegistro).format('DD/MM/YYYY, hh:mm A')}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  <b>Plazo máximo:</b>{' '}
-                  {dayjs(selectedPedido.fechaLlegada).format('DD/MM/YYYY, hh:mm A')}
-                </Typography>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <div>
+                  <Typography variant="subtitle1" color="textPrimary">
+                    <b>Información del pedido</b>
+                  </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    <b>Destino:</b>{' '}
-                    {`${oficinas.find((o) => o.ubigeo === selectedPedido.ubigeoDestino)?.departamento}, ${
-                      oficinas.find((o) => o.ubigeo === selectedPedido.ubigeoDestino)?.provincia
-                    }`}
+                    <b>Código:</b>{' '}
+                    <Typography component="span" variant="body2" color="textPrimary">
+                      {selectedPedido.idPedido}
+                    </Typography>
+                  </Typography>
+                </div>
+                <Box display="flex" flexDirection="column" alignItems="center">
+                  <Inventory color="primary" sx={{ mb: 0.5 }} />
+                  <Typography variant="body2" color="textSecondary">
+                    <b>Estado:</b>{' '}
+                    {selectedPedido?.fechaLlegada && state.currentTime >= new Date(selectedPedido.fechaLlegada)
+                      ? 'Entregado'
+                      : 'Pendiente'}
                   </Typography>
                 </Box>
               </Box>
-            </AccordionDetails>
-          </Accordion>
+            </Box>
 
-          {/* Camión asignado */}
-          {assignedTruck && (
+            {/* Detalles del pedido */}
             <Accordion defaultExpanded disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
               >
                 <Typography variant="subtitle2" color="textPrimary">
-                  <b>Camión asignado</b>
+                  <b>Detalles del pedido</b>
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
                 <Box>
                   <Typography variant="body2" color="textSecondary">
-                    <b>Código:</b> {assignedTruck.idVehiculo}
+                    <b>Cantidad:</b> {selectedPedido.cantidad} unidades
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    <b>Hora de salida:</b>{' '}
-                    {dayjs(assignedTruck.ruta.fechasSalida[0]).format('DD/MM/YYYY, hh:mm A')}
+                    <b>Fecha de registro:</b>{' '}
+                    {dayjs(selectedPedido.fechaRegistro).format('DD/MM/YYYY, hh:mm A')}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    <b>Hora de entrega:</b>{' '}
+                    <b>Plazo máximo:</b>{' '}
                     {dayjs(selectedPedido.fechaLlegada).format('DD/MM/YYYY, hh:mm A')}
                   </Typography>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Typography variant="body2" color="textSecondary">
+                      <b>Destino:</b>{' '}
+                      {`${oficinas.find((o) => o.ubigeo === selectedPedido.ubigeoDestino)?.departamento}, ${oficinas.find((o) => o.ubigeo === selectedPedido.ubigeoDestino)?.provincia
+                        }`}
+                    </Typography>
+                  </Box>
                 </Box>
               </AccordionDetails>
             </Accordion>
-          )}
 
-          {/* Oficinas en la ruta */}
-          {assignedTruck && officeVisits.length > 0 && (
-            <Accordion defaultExpanded disableGutters>
-              <AccordionSummary
-                expandIcon={<ExpandMore />}
-                sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
-              >
-                <Typography variant="subtitle2" color="textPrimary">
-                  <b>Oficinas en la ruta</b>
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-                <Box
-                  sx={{
-                    maxHeight: '300px',
-                    overflowY: 'auto',
-                    padding: '8px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    backgroundColor: '#f9f9f9',
-                  }}
+            {/* Camión asignado */}
+            {assignedTruck && (
+              <Accordion defaultExpanded disableGutters>
+                <AccordionSummary
+                  expandIcon={<ExpandMore />}
+                  sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
                 >
-                  {officeVisits.map((visit, index) => {
-                    const { office, status, arrivalTime, departureTime, unidadesEntregadas } = visit;
+                  <Typography variant="subtitle2" color="textPrimary">
+                    <b>Camión asignado</b>
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                  <Box>
+                    <Typography variant="body2" color="textSecondary">
+                      <b>Código:</b> {assignedTruck.idVehiculo}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      <b>Hora de salida:</b>{' '}
+                      {dayjs(assignedTruck.ruta.fechasSalida[0]).format('DD/MM/YYYY, hh:mm A')}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      <b>Hora de entrega:</b>{' '}
+                      {dayjs(selectedPedido.fechaLlegada).format('DD/MM/YYYY, hh:mm A')}
+                    </Typography>
+                  </Box>
+                </AccordionDetails>
+              </Accordion>
+            )}
 
-                    let cardColor = '';
-                    switch (status) {
-                      case 'Programado':
-                        cardColor = '#E0E0E0'; // Gris claro
-                        break;
-                      case 'Visitado':
-                        cardColor = '#90CAF9'; // Azul claro
-                        break;
-                      case 'Entregado':
-                        cardColor = '#81C784'; // Verde claro
-                        break;
-                      default:
-                        cardColor = '#FFFFFF'; // Blanco por defecto
-                    }
+            {/* Oficinas en la ruta */}
+            {assignedTruck && officeVisits.length > 0 && (
+              <Accordion defaultExpanded disableGutters>
+                <AccordionSummary
+                  expandIcon={<ExpandMore />}
+                  sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+                >
+                  <Typography variant="subtitle2" color="textPrimary">
+                    <b>Oficinas en la ruta</b>
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+                  <Box
+                    sx={{
+                      maxHeight: '300px',
+                      overflowY: 'auto',
+                      padding: '8px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      backgroundColor: '#f9f9f9',
+                    }}
+                  >
+                    {officeVisits.map((visit, index) => {
+                      const { office, status, arrivalTime, departureTime, unidadesEntregadas } = visit;
 
-                    return (
-                      <Box
-                        key={index}
-                        sx={{
-                          backgroundColor: cardColor,
-                          padding: '8px',
-                          borderRadius: '4px',
-                          marginBottom: '8px',
-                        }}
-                      >
-                        <Box display="flex" alignItems="center">
-                          <Business sx={{ color: '#616161', marginRight: '8px' }} />
-                          <Typography variant="subtitle1" color="textPrimary">
-                            <b>
-                              {office.departamento}, {office.provincia}
-                            </b>
+                      let cardColor = '';
+                      switch (status) {
+                        case 'Programado':
+                          cardColor = '#E0E0E0'; // Gris claro
+                          break;
+                        case 'Visitado':
+                          cardColor = '#90CAF9'; // Azul claro
+                          break;
+                        case 'Entregado':
+                          cardColor = '#81C784'; // Verde claro
+                          break;
+                        default:
+                          cardColor = '#FFFFFF'; // Blanco por defecto
+                      }
+
+                      return (
+                        <Box
+                          key={index}
+                          sx={{
+                            backgroundColor: cardColor,
+                            padding: '8px',
+                            borderRadius: '4px',
+                            marginBottom: '8px',
+                          }}
+                        >
+                          <Box display="flex" alignItems="center">
+                            <Business sx={{ color: '#616161', marginRight: '8px' }} />
+                            <Typography variant="subtitle1" color="textPrimary">
+                              <b>
+                                {office.departamento}, {office.provincia}
+                              </b>
+                            </Typography>
+                          </Box>
+                          <Typography variant="body2" color="textSecondary">
+                            <b>Estado:</b> {status}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            <b>Hora de llegada:</b>{' '}
+                            {arrivalTime ? dayjs(arrivalTime).format('DD/MM/YYYY, hh:mm A') : 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            <b>Hora de salida:</b>{' '}
+                            {departureTime ? dayjs(departureTime).format('DD/MM/YYYY, hh:mm A') : 'N/A'}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            <b>Unidades entregadas:</b> {unidadesEntregadas}
                           </Typography>
                         </Box>
-                        <Typography variant="body2" color="textSecondary">
-                          <b>Estado:</b> {status}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          <b>Hora de llegada:</b>{' '}
-                          {arrivalTime ? dayjs(arrivalTime).format('DD/MM/YYYY, hh:mm A') : 'N/A'}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          <b>Hora de salida:</b>{' '}
-                          {departureTime ? dayjs(departureTime).format('DD/MM/YYYY, hh:mm A') : 'N/A'}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          <b>Unidades entregadas:</b> {unidadesEntregadas}
-                        </Typography>
-                      </Box>
-                    );
-                  })}
-                </Box>
-              </AccordionDetails>
-            </Accordion>
-          )}
-        </>     
-      ) : (
+                      );
+                    })}
+                  </Box>
+                </AccordionDetails>
+              </Accordion>
+            )}
+          </>
+        ) : (
           // Información de la simulación por defecto
           <>
             <Box

@@ -12,7 +12,7 @@ import {
   Select,
   Box,
   SelectChangeEvent,
-  TextField, 
+  TextField,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { PlayArrow, Stop } from '@mui/icons-material';
@@ -167,7 +167,7 @@ const CustomHeader: React.FC = () => {
             onChange={(newValue) => setSelectedTime(newValue)}
             disabled={simulationState.isPlaying}
             views={['hours', 'minutes']}
-            ampm 
+            ampm
             slotProps={{
               textField: {
                 size: 'small',

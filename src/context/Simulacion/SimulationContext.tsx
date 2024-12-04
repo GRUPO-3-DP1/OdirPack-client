@@ -1,16 +1,10 @@
 //SimulationContext.tsx
 import React, { createContext, useReducer, useEffect, useState } from 'react';
-import oficinas from '../../data/oficinas';
-import { SimulationAction, SimulationState, Vehicle, Oficina, Order } from './simulationTypes';
+import { SimulationAction, SimulationState, Vehicle, Oficina } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
 import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
-import { convertUnplannedPedidosToOrders } from '../../utils/convertUnplannedPedidosToOrders';
 import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles';
-import { convertOffices } from '../../utils/convertOffices';
 import { locationCoordinates } from '../../utils/locationCoordinates';
-import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
-import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
-import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
 import { useWebSocket } from '../../store/hooks/useWebSocket';
 import { Services } from '../../../config';
 
@@ -62,20 +56,17 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, unplannedOrders: action.payload };
     case 'SET_PROCESSED_ORDER_IDS':
       return { ...state, processedOrderIds: action.payload };
+    case 'RESET_SIMULATION':  // Resetea el estado a los valores iniciales
+      return { ...initialState };
     default:
       return state;
   }
 }
 
-const initialOffices = oficinas.map((office) => ({
-  ...office,
-  currentOrders: [],
-}));
-
 const initialState = {
   isPlaying: false,
   vehicles: [],
-  speed: 90,
+  speed: 50,
   ends: false,
   startTime: new Date('2024-10-21T00:00:00Z'),
   currentTime: new Date('2024-10-21T00:00:00Z'),
@@ -83,11 +74,11 @@ const initialState = {
   trucksInMotion: 0,
   trucksInMaintenance: 0,
   totalTrucks: 0,
-  totalOffices: oficinas.length,
+  totalOffices: 0,
   occupiedOffices: 0,
   ordersDelivered: 0,
   ordersPending: 0,
-  offices: initialOffices,
+  offices: [],
   unplannedOrders: [],
   processedOrderIds: [],
   operationType: 'semanal',
@@ -99,22 +90,22 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   const [userId, setUserId] = useState<string>('');
   const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]);
 
-  const { isConnected, closeWebSocket } = useWebSocket({
+  const { isConnected, closeWebSocket, reconnect } = useWebSocket({
     url: `${Services.WebUrl}/conexion-websocket`,
     onMessage: (data) => {
       if (data.userId) {
         setUserId(data.userId);
       } else {
         const newResponse = data;
-        //console.log('Respuesta del algoritmo recibida:', newResponse);
+        console.log('Respuesta del algoritmo recibida:', newResponse);
         setSolutions((prevResponses) => [...prevResponses, newResponse]);
       }
     },
     onOpen: () => {
-      //console.log('Conexión WebSocket establecida en SimulationProvider');
+      console.log('Conexión WebSocket establecida en SimulationProvider');
     },
     onClose: () => {
-      //console.log('Conexión WebSocket cerrada en SimulationProvider');
+      console.log('Conexión WebSocket cerrada en SimulationProvider');
     },
   });
 
@@ -127,55 +118,17 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
       const newSolutionString = JSON.stringify(newResponse.solucion);
 
-      //console.log('Solución a procesar:', newResponse);
-
       if (newSolutionString !== lastProcessedSolution) {
         setLastProcessedSolution(newSolutionString);
 
         const newVehicles = convertSolutionToVehicles(newResponse);
 
-        // Procesar oficinas
-        const newOffices = convertOffices(newResponse.oficinas);
-
-        // Fusionar oficinas
-        const mergedOffices = state.offices.map((office) => {
-          const updatedOffice = newOffices.find((o) => o.ubigeo === office.ubigeo);
-          if (updatedOffice) {
-            return {
-              ...office,
-              ...updatedOffice,
-            };
-          }
-          return office;
-        });
-
-        dispatch({ type: 'SET_OFFICES', payload: mergedOffices });
-
-        // Procesar pedidos no planificados
-        const newUnplannedOrders = newResponse.pedidosNoPlanificados || [];
-
-        // Convertir pedidos no planificados a Order[]
-        const unplannedOrders: Order[] = convertUnplannedPedidosToOrders(newUnplannedOrders);
-
         // Actualizar vehículos
         if (!state.vehicles || state.vehicles.length === 0) {
           dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
-          //console.log('Primera respuesta:', newVehicles);
+          console.log('Vehículos actualizados:', state.vehicles);
 
           // Actualizar datos de simulación
-          // dispatch({
-          //   type: 'UPDATE_SIMULATION_DATA',
-          //   payload: {
-          //     totalTrucks: newVehicles.length,
-          //     occupiedOffices: calculateOccupiedOffices(newOffices),
-          //   },
-          // });
-
-          // Actualizar 'totalTrucks'
-          dispatch({ type: 'SET_TOTAL_TRUCKS', payload: newVehicles.length });
-          // Actualizar 'occupiedOffices'
-          dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: calculateOccupiedOffices(newOffices) });
-
 
         } else {
           //console.log('Procesando');
@@ -196,7 +149,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                   : existingVehicle.position;
               const newFechaInicio =
                 existingVehicle.ruta.fechaInicio === null ? matchingNewVehicle.ruta.fechaInicio : existingVehicle.ruta.fechaInicio;
-              //console.log('Encontró match', existingVehicle.idVehiculo);
 
               return {
                 ...existingVehicle,
@@ -218,29 +170,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
           // Actualizar el estado con la lista combinada de vehículos
           dispatch({ type: 'SET_VEHICLES', payload: [...updatedVehicles] });
-          //console.log('Vehículos actualizados:', updatedVehicles);
-
-          // Actualizar datos de simulación
-          // dispatch({
-          //   type: 'UPDATE_SIMULATION_DATA',
-          //   payload: {
-          //     totalTrucks: updatedVehicles.length,
-          //     occupiedOffices: calculateOccupiedOffices(newOffices),
-          //   },
-          // });
-
-          // Actualizar 'totalTrucks'
-          dispatch({ type: 'SET_TOTAL_TRUCKS', payload: updatedVehicles.length });
-          // Actualizar 'occupiedOffices'
-          dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: calculateOccupiedOffices(newOffices) });
+          console.log('Vehículos actualizados:', updatedVehicles);
 
         }
 
-        // Actualizar oficinas en el estado
-        dispatch({ type: 'SET_OFFICES', payload: newOffices });
-
-        // Actualizar pedidos no planificados en el estado
-        dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: unplannedOrders });
       } else {
         //console.log('Es la misma solución');
       }
@@ -248,18 +181,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       // Actualizar el índice para procesar la siguiente respuesta
       setIndexActualProcess(indexActualProcess + 1);
     }
-  }, [indexActualProcess, solutions, lastProcessedSolution, state.vehicles, dispatch, state.offices]);
+  }, [state.vehicles, indexActualProcess, lastProcessedSolution]);
 
   // Función para calcular oficinas ocupadas
-  const calculateOccupiedOffices = (offices: Oficina[]): number => {
-    let occupied = 0;
-    offices.forEach((office) => {
-      if ((office.horasStock ?? []).some((horaStock) => horaStock.stock > 0)) {
-        occupied += 1;
-      }
-    });
-    return occupied;
-  };
+
 
   const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
 
@@ -270,9 +195,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       const newTime = new Date(state.currentTime.getTime() + timeIncrement * state.speed);
 
       if (newTime >= state.endTime) {
-        dispatch({ type: 'STOP_SIMULATION' });
+        dispatch({ type: 'RESET_SIMULATION' });
         clearInterval(updateInterval);
         state.ends = true;
+        state.vehicles = [];
         //console.log('Ya pasó la fecha límite');
         return;
       }
@@ -284,22 +210,15 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         const startTime = new Date(ruta.fechaInicio);
         const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
 
-        // Verificar si el vehículo está en mantenimiento
-        if (vehicle.maintenance && vehicle.maintenance.inMaintenance) {
-          const maintenanceEndTime = new Date(
-            vehicle.maintenance.startTime.getTime() + vehicle.maintenance.duration
-          );
-          if (newTime >= maintenanceEndTime) {
-            // Finaliza el mantenimiento
-            vehicle = {
-              ...vehicle,
-              maintenance: undefined, // Eliminar el objeto maintenance
-            };
-            // Continuar para actualizar la posición
-          } else {
-            // Mantener el vehículo en mantenimiento
-            return vehicle;
-          }
+        // Verificar si un vehiculo esta con una averia
+        if (vehicle.maintenance?.inMaintenance && newTime >= vehicle.maintenance.startTime && newTime < new Date(vehicle.maintenance.startTime.getTime() + vehicle.maintenance.duration)) {
+          // El vehículo está en mantenimiento, no actualizar posición
+          return {
+            ...vehicle,
+            position: {
+              ...vehicle.position,
+            },
+          };
         }
 
         // Detectar si el vehículo ha llegado a una oficina
@@ -404,84 +323,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
       dispatch({ type: 'UPDATE_VEHICLE_POSITION', payload: updatedVehicles });
 
-      // Procesar llegadas de pedidos
-      const arrivedOrders: {
-        order: Order;
-        arrivalTime: Date;
-        ubigeoDestino: string;
-      }[] = [];
-
-      state.vehicles.forEach((vehicle) => {
-        vehicle.ruta.pedidos.forEach((pedido) => {
-          if (pedido.fechaLlegada) {
-            const arrivalTime = new Date(pedido.fechaLlegada);
-            if (arrivalTime <= newTime && !state.processedOrderIds.includes(pedido.idPedido)) {
-              if (!state.processedOrderIds.includes(pedido.idPedido)) {
-                // Pedido llega a la oficina
-                arrivedOrders.push({
-                  order: pedido,
-                  arrivalTime: arrivalTime,
-                  ubigeoDestino: pedido.ubigeoDestino,
-                });
-              }
-            }
-          }
-        });
-      });
-
-      // Actualizar processedOrderIds
-      const newProcessedOrderIds = [...state.processedOrderIds];
-      arrivedOrders.forEach((arrivedOrder) => {
-        newProcessedOrderIds.push(arrivedOrder.order.idPedido);
-      });
-
-      // Procesar salidas de pedidos
-      const updatedOffices = state.offices.map((office) => {
-
-        const updatedOffice = { ...office, currentOrders: [...(office.currentOrders ?? [])] };
-
-        // Agregar pedidos que llegan
-        arrivedOrders.forEach((arrivedOrder) => {
-          if (arrivedOrder.ubigeoDestino === office.ubigeo) {
-            updatedOffice.currentOrders.push({
-              order: arrivedOrder.order,
-              arrivalTime: arrivedOrder.arrivalTime,
-            });
-          }
-        });
-
-        // Remover pedidos que han estado más de 4 horas
-        updatedOffice.currentOrders = updatedOffice.currentOrders.filter((currentOrder) => {
-          const timeInOffice = newTime.getTime() - currentOrder.arrivalTime.getTime();
-          const fourHoursInMs = 4 * 60 * 60 * 1000;
-          return timeInOffice <= fourHoursInMs;
-        });
-
-        return updatedOffice;
-      });
-
-      // Actualizar oficinas y processedOrderIds en el estado
-      dispatch({ type: 'SET_OFFICES', payload: updatedOffices });
-      dispatch({ type: 'SET_PROCESSED_ORDER_IDS', payload: newProcessedOrderIds });
-
-      // Actualizar datos de simulación
-      // dispatch({
-      //   type: 'UPDATE_SIMULATION_DATA',
-      //   payload: {
-      //     trucksInMotion: calculateTrucksInMotion(updatedVehicles),
-      //     ordersDelivered: calculateOrdersDelivered(updatedVehicles, newTime),
-      //     ordersPending: calculateOrdersPending(updatedVehicles, newTime),
-      //   },
-      // });
-
-      // Actualizar 'trucksInMotion'
-      dispatch({ type: 'SET_TRUCKS_IN_MOTION', payload: calculateTrucksInMotion(updatedVehicles) });
-      // Actualizar 'ordersDelivered'
-      dispatch({ type: 'SET_ORDERS_DELIVERED', payload: calculateOrdersDelivered(updatedVehicles, newTime) });
-      // Actualizar 'ordersPending'
-      dispatch({ type: 'SET_ORDERS_PENDING', payload: calculateOrdersPending(updatedVehicles, newTime) });
-
-
     }, timeIncrement / state.speed);
 
     return () => clearInterval(updateInterval);
@@ -490,16 +331,17 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     state.currentTime,
     state.speed,
     state.endTime,
-    state.vehicles,
-    state.offices,
-    state.processedOrderIds,
-    dispatch,
-    state,
+    state.vehicles
   ]);
 
   const stopSimulation = () => {
-    dispatch({ type: 'STOP_SIMULATION' });
+    dispatch({ type: 'RESET_SIMULATION' });
+    setSolutions([]);
+    setIndexActualProcess(0);
+    setLastProcessedSolution(null);
+
     if (isConnected) {
+      reconnect();
       closeWebSocket();
     }
   };
