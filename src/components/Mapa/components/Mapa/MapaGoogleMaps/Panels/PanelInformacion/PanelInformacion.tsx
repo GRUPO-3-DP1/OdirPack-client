@@ -669,14 +669,14 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                       console.log('Avería registrada con éxito:', averiaData);
 
                       // Actualiza el estado del camión en el contexto
-                      const updatedVehicles = state.vehicles.map((vehicle) =>
+                      /*const updatedVehicles = state.vehicles.map((vehicle) =>
                         vehicle.idVehiculo === selectedCamion.idVehiculo
                           ? {
                             ...vehicle,
                             averia: { ...averiaData, isAveria: true },
                           }
                           : vehicle
-                      );
+                      );*/
 
                       //dispatch({ type: 'SET_VEHICLES', payload: updatedVehicles });
 
