@@ -181,7 +181,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       // Actualizar el índice para procesar la siguiente respuesta
       setIndexActualProcess(indexActualProcess + 1);
     }
-  }, [solutions, indexActualProcess, lastProcessedSolution]);
+  }, [state.vehicles, indexActualProcess, lastProcessedSolution]);
 
   // Función para calcular oficinas ocupadas
 
@@ -195,10 +195,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       const newTime = new Date(state.currentTime.getTime() + timeIncrement * state.speed);
 
       if (newTime >= state.endTime) {
-        dispatch({ type: 'RESET_SIMULATION' });
         clearInterval(updateInterval);
         state.ends = true;
         state.vehicles = [];
+        dispatch({ type: 'RESET_SIMULATION' });
         //console.log('Ya pasó la fecha límite');
         return;
       }
@@ -230,7 +230,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                   inMaintenance: true,
                   startTime: maintenanceStartTime,
                   duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
-                  officeUbigeo: ruta.tramos[1].origen.codigo,
+                  officeUbigeo: ruta.tramos[i].origen.codigo,
                 },
                 position: {
                   ...vehicle.position,
