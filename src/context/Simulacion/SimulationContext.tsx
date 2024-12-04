@@ -230,7 +230,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                   inMaintenance: true,
                   startTime: maintenanceStartTime,
                   duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
-                  officeUbigeo: vehicle.averia.almacenReaparicion,
+                  officeUbigeo: ruta.tramos[i+1].origen.codigo,
                 },
                 position: {
                   ...vehicle.position,
