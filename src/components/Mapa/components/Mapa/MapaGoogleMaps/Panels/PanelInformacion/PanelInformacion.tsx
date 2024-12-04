@@ -55,7 +55,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   selectedPedido,
   operationType,
 }) => {
-  const { state, dispatch } = useData();
+  const { state } = useData();
   const [tipoAveria, setTipoAveria] = useState<string>('');
   //const { registerAveria, loading, error } = useAveria();
 
