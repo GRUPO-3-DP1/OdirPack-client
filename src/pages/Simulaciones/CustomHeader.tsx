@@ -57,7 +57,7 @@ const CustomHeader: React.FC = () => {
         endTime = new Date(startTime.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 días después
       } else if (tipo === 'colapso') {
         console.log('MSJ: Iniciando simulación colapso');
-        endTime = new Date(startTime.getTime() + 365 * 24 * 60 * 60 * 1000); // 1 año después
+        endTime = new Date(startTime.getTime() + 365 * 24 * 60 * 60 * 1000);
       } else {
         console.log('Emergencia, no se escogio ni semanal ni coplapso pero igual quiere ejecutarse');
         return;

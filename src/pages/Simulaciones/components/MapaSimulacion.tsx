@@ -14,10 +14,10 @@ import BloqueosLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMa
 
 interface MapaProps {
   alwaysShowInfoPanel?: boolean;
-  operationType?: 'semanal' | 'colapso' | 'diaadia';
+  operationType: 'semanal' | 'colapso' | 'diaadia';
 }
 
-const MapaSimulacion: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, operationType = 'semanal' }) => {
+const MapaSimulacion: React.FC<MapaProps> = React.memo(({ alwaysShowInfoPanel = false, operationType }) => {
   const { state } = useData();
   const [showResumen, setShowResumen] = useState(false);
 
@@ -82,6 +82,6 @@ const MapaSimulacion: React.FC<MapaProps> = ({ alwaysShowInfoPanel = false, oper
       <CamionesLayer onCamionClick={handleCamionClick} />
     </Mapa>
   );
-};
+});
 
 export default MapaSimulacion;
