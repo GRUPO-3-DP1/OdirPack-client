@@ -199,37 +199,17 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         const startTime = new Date(ruta.fechaInicio);
         const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
 
-        // Verificar si un vehiculo esta con una averia
-        // Verificar si un vehiculo está con una avería
-        const averia = vehicle.averia;
-        if (averia?.isAveria && new Date(averia.fechaRegistro).getTime() === state.currentTime.getTime()) {
-          // El vehículo tiene una avería, no se mueve, y se mantiene en su lugar.
-          return {
-            ...vehicle,
-            position: {
-              ...vehicle.position,
-              currentSegmentIndex: -1, // El vehículo no está en movimiento
-            },
-            maintenance: {
-              inMaintenance: true,
-              startTime: new Date(averia.fechaRegistro),
-              duration: 0, // Puedes asignar la duración de mantenimiento si corresponde
-              officeUbigeo: vehicle.ruta.tramos[0].destino.codigo, // Puedes ajustar según los datos
-            },
-          };
-        }
-
         // Detectar si el vehículo ha llegado a una oficina
         const arrivalTimes = ruta.fechasLlegada.map((fecha) => new Date(fecha));
         for (let i = 0; i < arrivalTimes.length; i++) {
           const arrivalTime = arrivalTimes[i];
           const departureTime = new Date(ruta.fechasSalida[i + 1] || ruta.fechasLlegada[i]);
 
-          if (newTime >= arrivalTime && newTime < departureTime) {
-            // El vehículo ha llegado a una oficina y está en mantenimiento
-            const maintenanceStartTime = arrivalTime;
-            const maintenanceDuration = 60 * 60 * 1000; // 1 horas en milisegundos
-            const maintenanceEndTime = new Date(maintenanceStartTime.getTime() + maintenanceDuration);
+          // Verificar si el vehículo tiene una avería
+          if (vehicle.averia?.isAveria) {
+            // El vehículo tiene una avería y está en mantenimiento
+            const maintenanceStartTime = new Date (vehicle.averia.fechaRegistro);
+            const maintenanceEndTime = new Date (vehicle.averia.fechaReparacion); // 1 hora en milisegundos
 
             // Si el tiempo actual está dentro del periodo de mantenimiento
             if (newTime >= maintenanceStartTime && newTime < maintenanceEndTime) {
@@ -238,14 +218,38 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                 maintenance: {
                   inMaintenance: true,
                   startTime: maintenanceStartTime,
-                  duration: maintenanceDuration,
-                  officeUbigeo: ruta.tramos[i].destino.codigo,
+                  duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
+                  officeUbigeo: vehicle.averia.almacenReaparicion,
                 },
                 position: {
                   ...vehicle.position,
                   currentSegmentIndex: -1,
                 },
               };
+            }
+          } else {
+            // Si el vehículo no tiene avería, proceder con la lógica de oficina como antes
+            if (newTime >= arrivalTime && newTime < departureTime) {
+              const maintenanceStartTime = arrivalTime;
+              const maintenanceDuration = 60 * 60 * 1000; // 1 hora en milisegundos
+              const maintenanceEndTime = new Date(maintenanceStartTime.getTime() + maintenanceDuration);
+
+              // Si el tiempo actual está dentro del periodo de mantenimiento en oficina
+              if (newTime >= maintenanceStartTime && newTime < maintenanceEndTime) {
+                return {
+                  ...vehicle,
+                  maintenance: {
+                    inMaintenance: true,
+                    startTime: maintenanceStartTime,
+                    duration: maintenanceDuration,
+                    officeUbigeo: ruta.tramos[i].destino.codigo,
+                  },
+                  position: {
+                    ...vehicle.position,
+                    currentSegmentIndex: -1,
+                  },
+                };
+              }
             }
           }
         }

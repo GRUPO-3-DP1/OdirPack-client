@@ -678,7 +678,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                           : vehicle
                       );
 
-                      dispatch({ type: 'SET_VEHICLES', payload: updatedVehicles });
+                      //dispatch({ type: 'SET_VEHICLES', payload: updatedVehicles });
 
                       console.log('Avería registrada y estado actualizado:', averiaData);
 
