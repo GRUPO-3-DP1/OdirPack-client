@@ -158,14 +158,20 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
 
   // Obtener pedidos actuales que entregará
   const pedidosDelCamionActual = selectedCamion?.ruta?.pedidos
-    .filter((pedido) => {
-      const fechaRegistro = pedido.fechaRegistro ? new Date(pedido.fechaRegistro) : null;
-      const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
-      return fechaRegistro && fechaRegistro <= state.currentTime && fechaLlegada && fechaLlegada > state.currentTime;
-    })
-    .map((pedido) => {
-      return { ...pedido, estado: 'Pendiente' };
-    });
+  .filter((pedido) => {
+    const fechaSalidaAlmacen = pedido.fechaRecogida ? new Date(pedido.fechaRecogida) : null;
+    const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+
+    // Filtrar por pedidos cuya fecha de salida del almacén sea antes de la hora actual
+    // Si hay fecha de llegada, también debe ser mayor que la hora actual
+    return fechaSalidaAlmacen && fechaSalidaAlmacen <= state.currentTime &&
+          (!fechaLlegada || fechaLlegada > state.currentTime);
+  })
+  .map((pedido) => {
+    // Mapear los pedidos y actualizar su estado a 'Pendiente'
+    return { ...pedido, estado: 'Pendiente' };
+  });
+
 
 
   // Crear un mapeo de código de destino a índice de segmento
