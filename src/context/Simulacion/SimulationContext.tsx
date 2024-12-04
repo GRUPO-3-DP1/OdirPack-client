@@ -219,7 +219,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           if (newTime >= arrivalTime && newTime < departureTime) {
             // El vehículo ha llegado a una oficina y está en mantenimiento
             const maintenanceStartTime = arrivalTime;
-            const maintenanceDuration = 4 * 60 * 60 * 1000; // 4 horas en milisegundos
+            const maintenanceDuration = 60 * 60 * 1000; // 1 horas en milisegundos
             const maintenanceEndTime = new Date(maintenanceStartTime.getTime() + maintenanceDuration);
 
             // Si el tiempo actual está dentro del periodo de mantenimiento

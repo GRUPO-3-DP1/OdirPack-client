@@ -76,13 +76,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     endTime,
   } = state;
 
-  const officeData = state.offices.find((office) => office.ubigeo === selectedOficina?.ubigeo);
   // Calcula la carga actual
-  const currentLoad =
-    officeData && officeData.currentOrders
-      ? officeData.currentOrders.reduce((total, currentOrder) => total + (currentOrder.order.cantidad || 0), 0)
-      : 'Ilimitado';
-
   const maxCapacity = selectedOficina?.almacen || 0;
 
   const totalTime = endTime.getTime() - startTime.getTime();
@@ -92,17 +86,40 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   const fleetSaturation = totalTrucks;
   const trucksInMaintenance = fleetSaturation - trucksInMotion;
 
-  //Para ver los pedidos de las oficinas
+  // Obtener pedidos válidos en la oficina seleccionada y rango de tiempo
+  /*const pedidosEnOficina = state.vehicles
+  .flatMap((vehicle) => vehicle.ruta?.pedidos || [])
+  .filter((pedido) => {
+    const perteneceOficina = pedido.ubigeoDestino === selectedOficina?.ubigeo;
+    const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+    if (!perteneceOficina || !fechaLlegada) return false;
+    const tiempoLimite = new Date(fechaLlegada.getTime() + 4 * 60 * 60 * 1000);
+    return state.currentTime >= fechaLlegada && state.currentTime <= tiempoLimite;
+  });*/
+
+  // Sumar la cantidad de pedidos válidos en una oficina
+  const totalCantidadPedidos = state.vehicles
+  .flatMap((vehicle) => vehicle.ruta?.pedidos || [])
+  .reduce((total, pedido) => {
+    const perteneceOficina = pedido.ubigeoDestino === selectedOficina?.ubigeo;
+    const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+    if (!perteneceOficina || !fechaLlegada) return total;
+    const tiempoLimite = new Date(fechaLlegada.getTime() + 4 * 60 * 60 * 1000);
+    const estaEnRango = state.currentTime >= fechaLlegada && state.currentTime <= tiempoLimite;
+    return estaEnRango ? total + (pedido.cantidad || 0) : total;
+  }, 0);
+
   const scheduledVehicles: ScheduledVehicle[] = state.vehicles.flatMap((vehicle) => {
-    if (!vehicle.ruta || !vehicle.ruta.tramos || !vehicle.ruta.fechasLlegada) return [];
+    if (!vehicle.ruta?.tramos || !vehicle.ruta.fechasLlegada) return [];
+  
     return vehicle.ruta.tramos.map((tramo, index) => {
-      if (
-        tramo?.destino?.codigo &&
-        selectedOficina?.ubigeo &&
-        tramo.destino.codigo === selectedOficina.ubigeo
-      ) {
+      const destinoCodigo = tramo?.destino?.codigo;
+      if (!destinoCodigo || !selectedOficina?.ubigeo) return null;
+  
+      if (destinoCodigo === selectedOficina.ubigeo) {
         const arrivalTimeStr = vehicle.ruta.fechasLlegada[index];
         const arrivalTime = arrivalTimeStr ? new Date(arrivalTimeStr) : null;
+  
         if (arrivalTime && arrivalTime >= state.currentTime) {
           return {
             vehicle,
@@ -113,10 +130,11 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
           };
         }
       }
+  
       return null;
     }).filter(Boolean);
   }).filter(Boolean) as ScheduledVehicle[];
-
+  
 
   // Obtener camiones en mantenimiento en la oficina seleccionada
   const maintenanceVehicles = state.vehicles.filter(
@@ -362,7 +380,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 </Box>
               </Box>
             </Box>
-            <Accordion disableGutters>
+            <Accordion defaultExpanded disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls="panel2-content"
@@ -413,7 +431,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
             </Accordion>
 
             {/*Pedidos del camion*/}
-            <Accordion disableGutters>
+            <Accordion defaultExpanded disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls="lista-pedidos-content"
@@ -493,7 +511,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
               </AccordionDetails>
             </Accordion>
             {/* Lista de pedidos A entregar*/}
-            <Accordion disableGutters>
+            <Accordion defaultExpanded disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls="lista-pedidos-content"
@@ -696,7 +714,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                   <Typography variant="body2" color="textSecondary">
                     <b>Stock:</b>{' '}
                     <Typography component="span" variant="body2" color="textPrimary">
-                      {currentLoad !== 'Ilimitado' ? `${currentLoad}/${maxCapacity}` : 'Ilimitado'}
+                     {`${totalCantidadPedidos}/${maxCapacity}`}
                     </Typography>
                   </Typography>
                 </Box>
