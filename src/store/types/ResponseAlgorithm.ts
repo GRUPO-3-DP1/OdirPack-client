@@ -55,7 +55,7 @@ export type OficinaAlgorithmResponse = {
 
 export type VehiculoAveriadoAlgorithmResponse = {
     idVehiculo: string; // ID del vehículo averiado
-    almacenReaparicion: string;
+    almacenAsignado: string;
     tipoAveria: string; // Tipo de avería ("SINIESTRO", "FUERTE", "MODERADA")
     tramoInicio: string; // Código del Ubigeo de inicio del tramo
     tramoFin: string; // Código del Ubigeo de fin del tramo

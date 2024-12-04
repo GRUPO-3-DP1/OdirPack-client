@@ -75,7 +75,7 @@ export type Vehicle = {
     ubiFin: string;
     fechaReparacion: string;
     cargaReplanificada: boolean;
-    almacenReaparicion: string;
+    almacenAsignado: string;
   }
 };
 

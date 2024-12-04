@@ -70,7 +70,7 @@ export const convertSolutionToVehicles = (solution: ResponseAlgorithm): Vehicle[
             ubiFin: averia.tramoFin || '', // Valor predeterminado si no está presente
             fechaReparacion: averia.fechaReparacion || '', // En lugar de null, asignamos una cadena vacía
             cargaReplanificada: false, // Valor predeterminado si no está presente
-            almacenReaparicion: ''
+            almacenAsignado: averia.almacenAsignado
           }
         : {
             isAveria: false,
@@ -80,7 +80,7 @@ export const convertSolutionToVehicles = (solution: ResponseAlgorithm): Vehicle[
             ubiFin: '',
             fechaReparacion: '',
             cargaReplanificada: false,
-            almacenReaparicion: ''
+            almacenAsignado: ''
           };
 
       return {
