@@ -6,6 +6,7 @@ import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles
 import { locationCoordinates } from '../../utils/locationCoordinates';
 import { useWebSocket } from '../../store/hooks/useWebSocket';
 import { Services } from '../../../config';
+import axios from 'axios';
 
 export const SimulationContext = createContext<{
   state: SimulationState;
@@ -337,6 +338,17 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     setSolutions([]);
     setIndexActualProcess(0);
     setLastProcessedSolution(null);
+    // llamar a /detener del back para detener la simulación
+    try {
+      const response = axios.post(
+        `${Services.BaseUrl}/simulacion/detener?userId=${userId}`,
+        { headers: Services.Headers }
+      );
+      console.log('Simulación detenida', response);
+    } catch (error) {
+      console.error('Error al detener la simulación:', error);
+    }
+    console.log('Simulación detenida');
 
     if (isConnected) {
       reconnect();
