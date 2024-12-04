@@ -181,7 +181,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       // Actualizar el índice para procesar la siguiente respuesta
       setIndexActualProcess(indexActualProcess + 1);
     }
-  }, [state.vehicles, indexActualProcess, lastProcessedSolution, solutions]);
+  }, [state.vehicles, indexActualProcess, lastProcessedSolution]);
 
   // Función para calcular oficinas ocupadas
 
@@ -332,7 +332,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     state.speed,
     state.endTime,
     state.vehicles,
-    state
   ]);
 
   const stopSimulation = () => {
