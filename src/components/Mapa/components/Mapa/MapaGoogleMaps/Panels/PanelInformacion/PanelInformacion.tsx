@@ -110,31 +110,40 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   }, 0);
 
   const scheduledVehicles: ScheduledVehicle[] = state.vehicles.flatMap((vehicle) => {
+    const seenVehicles = new Set<string>(); // Almacenamos las combinaciones ya procesadas
+  
     if (!vehicle.ruta?.tramos || !vehicle.ruta.fechasLlegada) return [];
   
-    return vehicle.ruta.tramos.map((tramo, index) => {
-      const destinoCodigo = tramo?.destino?.codigo;
-      if (!destinoCodigo || !selectedOficina?.ubigeo) return null;
+    return vehicle.ruta.tramos
+      .map((tramo, index) => {
+        const destinoCodigo = tramo?.destino?.codigo;
+        if (!destinoCodigo || !selectedOficina?.ubigeo) return null;
   
-      if (destinoCodigo === selectedOficina.ubigeo) {
-        const arrivalTimeStr = vehicle.ruta.fechasLlegada[index];
-        const arrivalTime = arrivalTimeStr ? new Date(arrivalTimeStr) : null;
+        // Crear una clave única para verificar si ya procesamos este vehículo y oficina
+        const vehicleKey = `${vehicle.idVehiculo}-${selectedOficina.ubigeo}`;
+        if (seenVehicles.has(vehicleKey)) return null; // Si ya fue procesado, lo ignoramos
   
-        if (arrivalTime && arrivalTime >= state.currentTime) {
-          return {
-            vehicle,
-            arrivalTime,
-            deliveringOrders: vehicle.ruta.pedidos.filter(
-              (pedido) => pedido.ubigeoDestino === selectedOficina.ubigeo
-            ),
-          };
+        if (destinoCodigo === selectedOficina.ubigeo) {
+          const arrivalTimeStr = vehicle.ruta.fechasLlegada[index];
+          const arrivalTime = arrivalTimeStr ? new Date(arrivalTimeStr) : null;
+  
+          if (arrivalTime && arrivalTime >= state.currentTime) {
+            seenVehicles.add(vehicleKey); // Marca el vehículo y oficina como procesados
+  
+            return {
+              vehicle,
+              arrivalTime,
+              deliveringOrders: vehicle.ruta.pedidos.filter(
+                (pedido) => pedido.ubigeoDestino === selectedOficina.ubigeo
+              ),
+            };
+          }
         }
-      }
   
-      return null;
-    }).filter(Boolean);
-  }).filter(Boolean) as ScheduledVehicle[];
-  
+        return null;
+      })
+      .filter(Boolean); // Elimina los valores nulos
+  }).filter(Boolean) as ScheduledVehicle[];  
 
   // Obtener camiones en mantenimiento en la oficina seleccionada
   const maintenanceVehicles = state.vehicles.filter(
@@ -161,9 +170,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   .filter((pedido) => {
     const fechaSalidaAlmacen = pedido.fechaRecogida ? new Date(pedido.fechaRecogida) : null;
     const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
-
-    // Filtrar por pedidos cuya fecha de salida del almacén sea antes de la hora actual
-    // Si hay fecha de llegada, también debe ser mayor que la hora actual
     return fechaSalidaAlmacen && fechaSalidaAlmacen <= state.currentTime &&
           (!fechaLlegada || fechaLlegada > state.currentTime);
   })
@@ -171,8 +177,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     // Mapear los pedidos y actualizar su estado a 'Pendiente'
     return { ...pedido, estado: 'Pendiente' };
   });
-
-
 
   // Crear un mapeo de código de destino a índice de segmento
   const destinoToSegmentIndex: { [ubigeoDestino: string]: number; } = {};

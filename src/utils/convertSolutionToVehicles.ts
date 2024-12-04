@@ -1,5 +1,5 @@
 import { Order, Vehicle } from "../context/Simulacion/simulationTypes";
-import { ResponseAlgorithm } from "../store/types/ResponseAlgorithm";
+import { ResponseAlgorithm, VehiculoAveriadoAlgorithmResponse } from "../store/types/ResponseAlgorithm";
 import { convertPedidosToOrders } from "./convertPedidosToOrders";
 import { locationCoordinates } from "./locationCoordinates";
 
@@ -10,6 +10,12 @@ export const convertSolutionToVehicles = (solution: ResponseAlgorithm): Vehicle[
   if (!solution || !Array.isArray(solution.solucion) || solution.solucion.length === 0) {
     return convertedVehicles;
   }
+
+  // Crear un mapa de averías por ID de vehículo
+  const averiasMap = new Map<string, VehiculoAveriadoAlgorithmResponse>();
+  solution.vehiculosAveriados.forEach((averiado) => {
+    averiasMap.set(averiado.idVehiculo, averiado);
+  });
 
   const vehicles = solution.solucion.flatMap((item) => {
     if (!item.rutasVehiculos) {
@@ -52,6 +58,29 @@ export const convertSolutionToVehicles = (solution: ResponseAlgorithm): Vehicle[
         vehicleItem.ruta.fechaInicio
       );
 
+      // Verificar si el vehículo está en la lista de averías
+      const averia = averiasMap.get(vehicleItem.idVehiculo);
+      // Asignar datos de avería si corresponde
+      const averiaInfo = averia
+        ? {
+            isAveria: true,
+            tipo: averia.tipoAveria || '', // Valor predeterminado si no está presente
+            fechaRegistro: averia.horaAveria || '', // Valor predeterminado si no está presente
+            ubiInicio: averia.tramoInicio || '', // Valor predeterminado si no está presente
+            ubiFin: averia.tramoFin || '', // Valor predeterminado si no está presente
+            fechaReparacion: averia.fechaReparacion || '', // En lugar de null, asignamos una cadena vacía
+            cargaReplanificada: false, // Valor predeterminado si no está presente
+          }
+        : {
+            isAveria: false,
+            tipo: '',
+            fechaRegistro: '',
+            ubiInicio: '',
+            ubiFin: '',
+            fechaReparacion: '',
+            cargaReplanificada: false,
+          };
+
       return {
         idVehiculo: vehicleItem.idVehiculo,
         capacidadCarga: vehicleItem.capacidadCarga,
@@ -78,6 +107,7 @@ export const convertSolutionToVehicles = (solution: ResponseAlgorithm): Vehicle[
           progress: 0,
           currentSegmentIndex: -1,
         },
+        averia:averiaInfo
       };
     });
   });

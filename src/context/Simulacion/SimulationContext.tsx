@@ -170,7 +170,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       // Actualizar el índice para procesar la siguiente respuesta
       setIndexActualProcess(indexActualProcess + 1);
     }
-  }, [state.vehicles, indexActualProcess, lastProcessedSolution]);
+  }, [solutions, indexActualProcess, lastProcessedSolution,state.vehicles]);
 
   // Función para calcular oficinas ocupadas
 
@@ -200,12 +200,21 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
 
         // Verificar si un vehiculo esta con una averia
-        if (vehicle.maintenance?.inMaintenance && newTime >= vehicle.maintenance.startTime && newTime < new Date(vehicle.maintenance.startTime.getTime() + vehicle.maintenance.duration)) {
-          // El vehículo está en mantenimiento, no actualizar posición
+        // Verificar si un vehiculo está con una avería
+        const averia = vehicle.averia;
+        if (averia?.isAveria && new Date(averia.fechaRegistro).getTime() === state.currentTime.getTime()) {
+          // El vehículo tiene una avería, no se mueve, y se mantiene en su lugar.
           return {
             ...vehicle,
             position: {
               ...vehicle.position,
+              currentSegmentIndex: -1, // El vehículo no está en movimiento
+            },
+            maintenance: {
+              inMaintenance: true,
+              startTime: new Date(averia.fechaRegistro),
+              duration: 0, // Puedes asignar la duración de mantenimiento si corresponde
+              officeUbigeo: vehicle.ruta.tramos[0].destino.codigo, // Puedes ajustar según los datos
             },
           };
         }
