@@ -55,7 +55,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   selectedPedido,
   operationType,
 }) => {
-  const { state, dispatch } = useData();
+  const { state } = useData();
   const [tipoAveria, setTipoAveria] = useState<string>('');
   //const { registerAveria, loading, error } = useAveria();
 
@@ -74,13 +74,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     endTime,
   } = state;
 
-  const officeData = state.offices.find((office) => office.ubigeo === selectedOficina?.ubigeo);
   // Calcula la carga actual
-  const currentLoad =
-    officeData && officeData.currentOrders
-      ? officeData.currentOrders.reduce((total, currentOrder) => total + (currentOrder.order.cantidad || 0), 0)
-      : 'Ilimitado';
-
   const maxCapacity = selectedOficina?.almacen || 0;
 
   const totalTime = endTime.getTime() - startTime.getTime();
@@ -90,31 +84,64 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   const fleetSaturation = totalTrucks;
   const trucksInMaintenance = fleetSaturation - trucksInMotion;
 
-  //Para ver los pedidos de las oficinas
-  const scheduledVehicles: ScheduledVehicle[] = state.vehicles.flatMap((vehicle) => {
-    if (!vehicle.ruta || !vehicle.ruta.tramos || !vehicle.ruta.fechasLlegada) return [];
-    return vehicle.ruta.tramos.map((tramo, index) => {
-      if (
-        tramo?.destino?.codigo &&
-        selectedOficina?.ubigeo &&
-        tramo.destino.codigo === selectedOficina.ubigeo
-      ) {
-        const arrivalTimeStr = vehicle.ruta.fechasLlegada[index];
-        const arrivalTime = arrivalTimeStr ? new Date(arrivalTimeStr) : null;
-        if (arrivalTime && arrivalTime >= state.currentTime) {
-          return {
-            vehicle,
-            arrivalTime,
-            deliveringOrders: vehicle.ruta.pedidos.filter(
-              (pedido) => pedido.ubigeoDestino === selectedOficina.ubigeo
-            ),
-          };
-        }
-      }
-      return null;
-    }).filter(Boolean);
-  }).filter(Boolean) as ScheduledVehicle[];
+  // Obtener pedidos válidos en la oficina seleccionada y rango de tiempo
+  /*const pedidosEnOficina = state.vehicles
+  .flatMap((vehicle) => vehicle.ruta?.pedidos || [])
+  .filter((pedido) => {
+    const perteneceOficina = pedido.ubigeoDestino === selectedOficina?.ubigeo;
+    const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+    if (!perteneceOficina || !fechaLlegada) return false;
+    const tiempoLimite = new Date(fechaLlegada.getTime() + 4 * 60 * 60 * 1000);
+    return state.currentTime >= fechaLlegada && state.currentTime <= tiempoLimite;
+  });*/
 
+  // Sumar la cantidad de pedidos válidos en una oficina
+  const totalCantidadPedidos = state.vehicles
+  .flatMap((vehicle) => vehicle.ruta?.pedidos || [])
+  .reduce((total, pedido) => {
+    const perteneceOficina = pedido.ubigeoDestino === selectedOficina?.ubigeo;
+    const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+    if (!perteneceOficina || !fechaLlegada) return total;
+    const tiempoLimite = new Date(fechaLlegada.getTime() + 4 * 60 * 60 * 1000);
+    const estaEnRango = state.currentTime >= fechaLlegada && state.currentTime <= tiempoLimite;
+    return estaEnRango ? total + (pedido.cantidad || 0) : total;
+  }, 0);
+
+  const scheduledVehicles: ScheduledVehicle[] = state.vehicles.flatMap((vehicle) => {
+    const seenVehicles = new Set<string>(); // Almacenamos las combinaciones ya procesadas
+  
+    if (!vehicle.ruta?.tramos || !vehicle.ruta.fechasLlegada) return [];
+  
+    return vehicle.ruta.tramos
+      .map((tramo, index) => {
+        const destinoCodigo = tramo?.destino?.codigo;
+        if (!destinoCodigo || !selectedOficina?.ubigeo) return null;
+  
+        // Crear una clave única para verificar si ya procesamos este vehículo y oficina
+        const vehicleKey = `${vehicle.idVehiculo}-${selectedOficina.ubigeo}`;
+        if (seenVehicles.has(vehicleKey)) return null; // Si ya fue procesado, lo ignoramos
+  
+        if (destinoCodigo === selectedOficina.ubigeo) {
+          const arrivalTimeStr = vehicle.ruta.fechasLlegada[index];
+          const arrivalTime = arrivalTimeStr ? new Date(arrivalTimeStr) : null;
+  
+          if (arrivalTime && arrivalTime >= state.currentTime) {
+            seenVehicles.add(vehicleKey); // Marca el vehículo y oficina como procesados
+  
+            return {
+              vehicle,
+              arrivalTime,
+              deliveringOrders: vehicle.ruta.pedidos.filter(
+                (pedido) => pedido.ubigeoDestino === selectedOficina.ubigeo
+              ),
+            };
+          }
+        }
+  
+        return null;
+      })
+      .filter(Boolean); // Elimina los valores nulos
+  }).filter(Boolean) as ScheduledVehicle[];  
 
   // Obtener camiones en mantenimiento en la oficina seleccionada
   const maintenanceVehicles = state.vehicles.filter(
@@ -138,15 +165,16 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
 
   // Obtener pedidos actuales que entregará
   const pedidosDelCamionActual = selectedCamion?.ruta?.pedidos
-    .filter((pedido) => {
-      const fechaRegistro = pedido.fechaRegistro ? new Date(pedido.fechaRegistro) : null;
-      const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
-      return fechaRegistro && fechaRegistro <= state.currentTime && fechaLlegada && fechaLlegada > state.currentTime;
-    })
-    .map((pedido) => {
-      return { ...pedido, estado: 'Pendiente' };
-    });
-
+  .filter((pedido) => {
+    const fechaSalidaAlmacen = pedido.fechaRecogida ? new Date(pedido.fechaRecogida) : null;
+    const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+    return fechaSalidaAlmacen && fechaSalidaAlmacen <= state.currentTime &&
+          (!fechaLlegada || fechaLlegada > state.currentTime);
+  })
+  .map((pedido) => {
+    // Mapear los pedidos y actualizar su estado a 'Pendiente'
+    return { ...pedido, estado: 'Pendiente' };
+  });
 
   // Crear un mapeo de código de destino a índice de segmento
   const destinoToSegmentIndex: { [ubigeoDestino: string]: number; } = {};
@@ -360,7 +388,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 </Box>
               </Box>
             </Box>
-            <Accordion disableGutters>
+            <Accordion defaultExpanded disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls="panel2-content"
@@ -411,7 +439,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
             </Accordion>
 
             {/*Pedidos del camion*/}
-            <Accordion disableGutters>
+            <Accordion defaultExpanded disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls="lista-pedidos-content"
@@ -491,7 +519,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
               </AccordionDetails>
             </Accordion>
             {/* Lista de pedidos A entregar*/}
-            <Accordion disableGutters>
+            <Accordion defaultExpanded disableGutters>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls="lista-pedidos-content"
@@ -639,16 +667,16 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                       //console.log('Avería registrada con éxito:', averiaData);
 
                       // Actualiza el estado del camión en el contexto
-                      const updatedVehicles = state.vehicles.map((vehicle) =>
+                      /*const updatedVehicles = state.vehicles.map((vehicle) =>
                         vehicle.idVehiculo === selectedCamion.idVehiculo
                           ? {
                             ...vehicle,
                             averia: { ...averiaData, isAveria: true },
                           }
                           : vehicle
-                      );
+                      );*/
 
-                      dispatch({ type: 'SET_VEHICLES', payload: updatedVehicles });
+                      //dispatch({ type: 'SET_VEHICLES', payload: updatedVehicles });
 
                       //console.log('Avería registrada y estado actualizado:', averiaData);
 
@@ -694,7 +722,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                   <Typography variant="body2" color="textSecondary">
                     <b>Stock:</b>{' '}
                     <Typography component="span" variant="body2" color="textPrimary">
-                      {currentLoad !== 'Ilimitado' ? `${currentLoad}/${maxCapacity}` : 'Ilimitado'}
+                     {`${totalCantidadPedidos}/${maxCapacity}`}
                     </Typography>
                   </Typography>
                 </Box>

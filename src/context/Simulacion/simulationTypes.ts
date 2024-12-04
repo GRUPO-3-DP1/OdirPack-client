@@ -46,6 +46,7 @@ export type VehiclePosition = {
 
 export type Vehicle = {
   idVehiculo: string;
+  almacenOrigen: string;
   capacidadCarga: number;
   fechaLibre: string | null;
   ruta: Route;
@@ -72,8 +73,9 @@ export type Vehicle = {
     fechaRegistro: string;
     ubiInicio: string;
     ubiFin: string;
-    fechaReparacion: string | null;
+    fechaReparacion: string;
     cargaReplanificada: boolean;
+    almacenReaparicion: string;
   }
 };
 

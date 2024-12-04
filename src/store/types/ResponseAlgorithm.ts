@@ -31,6 +31,7 @@ export type Ruta = {
 
 export type VehiculoAlgorithmResponse = {
     idVehiculo: string;
+    almacenOrigen: string;
     capacidadCarga: number;
     isAveriado: boolean;
     fechaLibre: string | null;
@@ -54,6 +55,7 @@ export type OficinaAlgorithmResponse = {
 
 export type VehiculoAveriadoAlgorithmResponse = {
     idVehiculo: string; // ID del vehículo averiado
+    almacenReaparicion: string;
     tipoAveria: string; // Tipo de avería ("SINIESTRO", "FUERTE", "MODERADA")
     tramoInicio: string; // Código del Ubigeo de inicio del tramo
     tramoFin: string; // Código del Ubigeo de fin del tramo
