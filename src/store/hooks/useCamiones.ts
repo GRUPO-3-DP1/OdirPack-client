@@ -24,7 +24,7 @@ function useCamiones(): UseCamionesReturn {
     try {
       const data = await getCamiones();
       setCamiones(data);
-      console.log('Camiones fetched successfully.');
+      //console.log('Camiones fetched successfully.');
     } catch (err) {
       setError(`Failed to fetch camiones: ${(err as Error).message}`);
     } finally {
@@ -37,7 +37,7 @@ function useCamiones(): UseCamionesReturn {
     setError(null);
     try {
       await crearCamion({ ...camionData, fechaLibre: camionData.fechaLibre ?? '' });
-      console.log('Camion created successfully.');
+      //console.log('Camion created successfully.');
     } catch (err) {
       setError(`Failed to create camion: ${(err as Error).message}`);
     } finally {

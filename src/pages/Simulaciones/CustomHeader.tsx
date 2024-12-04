@@ -1,3 +1,4 @@
+//CustomHeader.tsx  
 import React, { useState } from 'react';
 import Header from '../../components/Header/Header';
 import {
@@ -40,12 +41,33 @@ const CustomHeader: React.FC = () => {
   };
 
   const startSimulation = async () => {
-    console.log("startSimulation");
-    if (selectedDate && selectedTime) {
-      console.log("entra a startSimulation");
-      const startTime = new Date(selectedDate.year(), selectedDate.month(), selectedDate.date(), selectedTime.hour(), selectedTime.minute());
-      const endTime = new Date(startTime.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 días después
-      dispatch({ type: 'START_SIMULATION', payload: { startTime, endTime } });
+    if (selectedDate && selectedTime && tipo) {
+      const startTime = new Date(
+        selectedDate.year(), 
+        selectedDate.month(), 
+        selectedDate.date(), 
+        selectedTime.hour(), 
+        selectedTime.minute()
+      );
+
+      let endTime: Date;
+
+      if (tipo === 'semanal') {
+        console.log('MSJ: Iniciando simulación semanal');
+        endTime = new Date(startTime.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 días después
+      } else if (tipo === 'colapso') {
+        console.log('MSJ: Iniciando simulación colapso');
+        endTime = new Date(startTime.getTime() + 365 * 24 * 60 * 60 * 1000); // 1 año después
+      } else {
+        console.log('Emergencia, no se escogio ni semanal ni coplapso pero igual quiere ejecutarse');
+        return;
+      }
+
+      dispatch({ 
+        type: 'START_SIMULATION', 
+        payload: { startTime, endTime, operationType: tipo },
+      });
+
       // Llama a handleIniciarSimulacion después de iniciar la simulación
       await handleIniciarSimulacion();
     }
@@ -199,8 +221,8 @@ const CustomHeader: React.FC = () => {
               <MenuItem value="" disabled>
                 Tipo
               </MenuItem>
-              <MenuItem value="Semanal">Semanal</MenuItem>
-              <MenuItem value="Hasta el colapso">Hasta el colapso</MenuItem>
+              <MenuItem value="semanal">Semanal</MenuItem>
+              <MenuItem value="colapso">Hasta el colapso</MenuItem>
             </Select>
           </FormControl>
           <Button

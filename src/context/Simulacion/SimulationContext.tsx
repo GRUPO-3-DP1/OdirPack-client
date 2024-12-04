@@ -1,3 +1,4 @@
+//SimulationContext.tsx
 import React, { createContext, useReducer, useEffect, useState } from 'react';
 import oficinas from '../../data/oficinas';
 import { SimulationAction, SimulationState, Vehicle, Oficina, Order } from './simulationTypes';
@@ -32,6 +33,7 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
         startTime: action.payload.startTime,
         currentTime: action.payload.startTime,
         endTime: action.payload.endTime,
+        operationType: action.payload.operationType,
         ends: false,
       };
     case 'STOP_SIMULATION':
@@ -44,8 +46,6 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, currentTime: action.payload };
     case 'SET_VEHICLES':
       return { ...state, vehicles: action.payload };
-    // case 'UPDATE_SIMULATION_DATA':
-    //   return { ...state, ...action.payload };
     case 'SET_TOTAL_TRUCKS':
       return { ...state, totalTrucks: action.payload };
     case 'SET_OCCUPIED_OFFICES':
@@ -90,6 +90,7 @@ const initialState = {
   offices: initialOffices,
   unplannedOrders: [],
   processedOrderIds: [],
+  operationType: 'semanal',
 };
 
 export function SimulationProvider({ children }: { children: React.ReactNode; }) {

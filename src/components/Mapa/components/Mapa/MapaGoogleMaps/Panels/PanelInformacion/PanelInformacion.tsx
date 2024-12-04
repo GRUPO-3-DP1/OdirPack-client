@@ -3,7 +3,6 @@ import { ControlPosition, MapControl } from '@vis.gl/react-google-maps';
 import React, { useState } from 'react';
 import { useData } from '../../../../../../../context/useData';
 import { createAveria } from '../../../../../../../store/services/averia';
-
 import {
   ExpandMore,
   AccessTimeFilled,
@@ -29,7 +28,6 @@ import {
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import styles from './PanelInformacion.module.css';
-
 dayjs.extend(duration);
 import { Oficina } from '../../../../../../../context/Simulacion/simulationTypes';
 import { Vehicle as Camion } from '../../../../../../../context/Simulacion/simulationTypes';
@@ -537,7 +535,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                       };
 
                       await createAveria(averiaData);
-                      console.log('Avería registrada con éxito:', averiaData);
+                      //console.log('Avería registrada con éxito:', averiaData);
 
                       // Actualiza el estado del camión en el contexto
                       const updatedVehicles = state.vehicles.map((vehicle) =>
@@ -551,7 +549,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
 
                       dispatch({ type: 'SET_VEHICLES', payload: updatedVehicles });
 
-                      console.log('Avería registrada y estado actualizado:', averiaData);
+                      //console.log('Avería registrada y estado actualizado:', averiaData);
 
                     } catch (error) {
                       console.error('Error al registrar avería:', error);
