@@ -142,7 +142,11 @@ export type SimulationAction =
   | { type: 'SET_OFFICES'; payload: Oficina[]; }
   | { type: 'SET_UNPLANNED_ORDERS'; payload: Order[]; }
   | { type: 'SET_PROCESSED_ORDER_IDS'; payload: string[]; }
-  | { type: 'RESET_SIMULATION';};  // Acción para reiniciar el estado
-
+  | { type: 'RESET_SIMULATION';}  // Acción para reiniciar el estado
+  | { type: 'SET_TOTAL_TRUCKS'; payload: number }
+  | { type: 'SET_OCCUPIED_OFFICES'; payload: number }
+  | { type: 'SET_TRUCKS_IN_MOTION'; payload: number }
+  | { type: 'SET_ORDERS_DELIVERED'; payload: number }
+  | { type: 'SET_ORDERS_PENDING'; payload: number };
 
   
