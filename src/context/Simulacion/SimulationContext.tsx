@@ -1,3 +1,4 @@
+//SimulationContext.tsx
 import React, { createContext, useReducer, useEffect, useState } from 'react';
 import { SimulationAction, SimulationState, Vehicle, Oficina } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
@@ -26,6 +27,7 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
         startTime: action.payload.startTime,
         currentTime: action.payload.startTime,
         endTime: action.payload.endTime,
+        operationType: action.payload.operationType,
         ends: false,
       };
     case 'STOP_SIMULATION':
@@ -38,8 +40,16 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, currentTime: action.payload };
     case 'SET_VEHICLES':
       return { ...state, vehicles: action.payload };
-    case 'UPDATE_SIMULATION_DATA':
-      return { ...state, ...action.payload };
+    case 'SET_TOTAL_TRUCKS':
+      return { ...state, totalTrucks: action.payload };
+    case 'SET_OCCUPIED_OFFICES':
+      return { ...state, occupiedOffices: action.payload };
+    case 'SET_TRUCKS_IN_MOTION':
+      return { ...state, trucksInMotion: action.payload };
+    case 'SET_ORDERS_DELIVERED':
+      return { ...state, ordersDelivered: action.payload };
+    case 'SET_ORDERS_PENDING':
+      return { ...state, ordersPending: action.payload };
     case 'SET_OFFICES':
       return { ...state, offices: action.payload };
     case 'SET_UNPLANNED_ORDERS':
@@ -71,6 +81,7 @@ const initialState = {
   offices: [],
   unplannedOrders: [],
   processedOrderIds: [],
+  operationType: 'semanal',
 };
 
 export function SimulationProvider({ children }: { children: React.ReactNode; }) {
@@ -333,7 +344,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     state.currentTime,
     state.speed,
     state.endTime,
-    state.vehicles
+    state.vehicles,
   ]);
 
   const stopSimulation = () => {

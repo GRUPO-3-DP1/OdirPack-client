@@ -28,7 +28,7 @@ function usePedidos(): UsePedidosReturn {
     try {
       const data = await getPedidos();
       setPedidos(data);
-      console.log('Pedidos fetched successfully.');
+      //console.log('Pedidos fetched successfully.');
     } catch (err) {
       setError(`Failed to fetch pedidos: ${(err as Error).message}`);
     } finally {
@@ -41,7 +41,7 @@ function usePedidos(): UsePedidosReturn {
     setError(null);
     try {
       await crearPedido(pedidoData);
-      console.log('Pedido created successfully.');
+      //console.log('Pedido created successfully.');
       await fetchPedidos();
     } catch (err) {
       setError(`Failed to create pedido: ${(err as Error).message}`);

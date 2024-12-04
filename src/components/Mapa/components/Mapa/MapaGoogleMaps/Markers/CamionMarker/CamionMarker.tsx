@@ -27,6 +27,8 @@ const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ocupacion = 'alta',
       ? calculateRotation(camion.currentRoute.origin, camion.currentRoute.destination)
       : 0;
 
+  //console.log(camion);
+
   return (
     <>
       <AdvancedMarker
