@@ -38,13 +38,13 @@ const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ocupacion = 'alta',
         <div
           className={styles.iconWrapper}
         >
-          {camion.averia?.isAveria ? (
+          {camion.currentAveria ? (
             // Ícono de camión averiado
             <AveriaIcon
               size="large"
             />
           ) : (
-            // Ícono estándar para camión sin avería
+            // Ícono de camión
             <CamionIcon
               mainColor={espacio}
               size="large"
