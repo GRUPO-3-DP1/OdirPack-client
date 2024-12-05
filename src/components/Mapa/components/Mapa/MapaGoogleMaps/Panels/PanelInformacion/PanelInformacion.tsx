@@ -33,6 +33,9 @@ import { Oficina } from '../../../../../../../context/Simulacion/simulationTypes
 import { Vehicle as Camion } from '../../../../../../../context/Simulacion/simulationTypes';
 import { Order } from '../../../../../../../context/Simulacion/simulationTypes';
 import oficinas from '../../../../../../../data/oficinas';
+import { calculateTrucksInMotion } from '../../../../../../../utils/calculateTrucksInMotion';
+import { calculateOrdersDelivered } from '../../../../../../../utils/calculateOrdersDelivered';
+import { calculateOrdersPending } from '../../../../../../../utils/calculateOrdersPending';
 
 type ScheduledVehicle = {
   vehicle: Camion;
@@ -81,8 +84,11 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   const elapsedTime = currentTime.getTime() - startTime.getTime();
   const progressPercentage = Math.floor((elapsedTime / totalTime) * 100);
 
-  const fleetSaturation = totalTrucks;
-  const trucksInMaintenance = fleetSaturation - trucksInMotion;
+  const fleetSaturation = state.vehicles.length;
+  const camionesEnMovimiento = calculateTrucksInMotion(state.vehicles);
+  const camionesEnMantenimiento = fleetSaturation - camionesEnMovimiento;
+  const pedidosEntregados = calculateOrdersDelivered(state.vehicles,currentTime);
+  const pedidosPendientes = calculateOrdersPending(state.vehicles,currentTime);
 
   // Obtener pedidos válidos en la oficina seleccionada y rango de tiempo
   /*const pedidosEnOficina = state.vehicles
@@ -107,6 +113,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     return estaEnRango ? total + (pedido.cantidad || 0) : total;
   }, 0);
 
+  // Lista de Vehiculos en Oficina
   const scheduledVehicles: ScheduledVehicle[] = state.vehicles.flatMap((vehicle) => {
     const seenVehicles = new Set<string>(); // Almacenamos las combinaciones ya procesadas
   
@@ -182,32 +189,38 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     destinoToSegmentIndex[tramo.destino.codigo] = index;
   });
 
+  // Pedidos que está cargando un camion
   const currentTramoLoad = (() => {
     if (selectedCamion && selectedCamion.ruta && selectedCamion.ruta.pedidos) {
       const pedidos = selectedCamion.ruta.pedidos;
       const currentTime = state.currentTime;
-
       const pedidosEnCamion = pedidos.filter((pedido) => {
         const fechaRecogida = pedido.fechaRecogida ? new Date(pedido.fechaRecogida) : null;
         const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
-
         if (fechaRecogida && fechaLlegada) {
           return fechaRecogida <= currentTime && fechaLlegada > currentTime;
-        } else {
-          return false;
+        } else if (fechaRecogida && !fechaLlegada) {
+          // Si no hay fecha de llegada, verificamos si el vehículo está en avería
+          const averia = selectedCamion.averia;
+          if (averia && averia.fechaRegistro && averia.fechaReparacion) {
+            const fechaInicioAveria = new Date(averia.fechaRegistro);
+            return (
+              fechaRecogida <= currentTime &&
+              currentTime < fechaInicioAveria
+            );
+          }
         }
+        return false;
       });
-
       const totalCantidad = pedidosEnCamion.reduce((total, pedido) => total + (pedido.cantidad || 0), 0);
-
       return totalCantidad;
     }
     return 0;
-  })();
+  })();  
 
   const getTipoCamion = (capacidadCarga: number) => {
-    if (capacidadCarga === 10) return 'C';
-    if (capacidadCarga === 20) return 'B';
+    if (capacidadCarga === 30) return 'C';
+    if (capacidadCarga === 45) return 'B';
     return 'A';
   };
 
@@ -348,8 +361,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
       };
     });
   }
-
-
 
   return (
     <MapControl position={ControlPosition.TOP_RIGHT}>
@@ -1178,7 +1189,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                       ✅ Entregados:
                     </Typography>
                     <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                      {ordersDelivered}
+                      {pedidosEntregados}
                     </Typography>
                   </Box>
                   <Box display="flex">
@@ -1186,7 +1197,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                       ⏳ Pendientes:
                     </Typography>
                     <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                      {ordersPending}
+                      {pedidosPendientes}
                     </Typography>
                   </Box>
                 </Box>
@@ -1212,7 +1223,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                       🔄 Movimiento:
                     </Typography>
                     <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                      {trucksInMotion}
+                      {camionesEnMovimiento}
                     </Typography>
                   </Box>
                   <Box display="flex">
@@ -1220,7 +1231,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                       🛠️ Mantenimiento:
                     </Typography>
                     <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                      {trucksInMaintenance}
+                      {camionesEnMantenimiento}
                     </Typography>
                   </Box>
                 </Box>
