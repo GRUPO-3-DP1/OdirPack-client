@@ -9,6 +9,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { ArchivosProvider } from './context/Archivos/ArchivosContext';
 import { APIProvider } from '@vis.gl/react-google-maps';
 import { SelectionProvider } from './context/Buscador/SelectionProvider';
+import { OperacionProvider } from './context/OperacionDia/OperacionContext';
 
 const customTheme = createTheme({
   palette: {
@@ -52,16 +53,18 @@ const App: React.FC = () => {
   }, []);
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <ArchivosProvider>
-        <SelectionProvider>
-          <ThemeProvider theme={customTheme}>
-            <CssBaseline />
-            <APIProvider apiKey="AIzaSyBwA7pyze0XndTMMLOhspsQdFq8Xj52_eY">
-              <RouterProvider router={router} />
-            </APIProvider>
-          </ThemeProvider>
-        </SelectionProvider>
-      </ArchivosProvider>
+      <OperacionProvider>
+        <ArchivosProvider>
+          <SelectionProvider>
+            <ThemeProvider theme={customTheme}>
+              <CssBaseline />
+              <APIProvider apiKey="AIzaSyBwA7pyze0XndTMMLOhspsQdFq8Xj52_eY">
+                <RouterProvider router={router} />
+              </APIProvider>
+            </ThemeProvider>
+          </SelectionProvider>
+        </ArchivosProvider>
+      </OperacionProvider>
     </LocalizationProvider>
   );
 };
