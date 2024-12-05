@@ -8,6 +8,15 @@ import { locationCoordinates } from '../../utils/locationCoordinates';
 import { useWebSocket } from '../../store/hooks/useWebSocket';
 import { Services } from '../../../config';
 
+//AGREGADO:
+import oficinas from '../../data/oficinas';
+import { convertUnplannedPedidosToOrders } from '../../utils/convertUnplannedPedidosToOrders';
+import { convertOffices } from '../../utils/convertOffices';
+import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
+import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
+import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
+import { Order } from './simulationTypes';
+
 export const SimulationContext = createContext<{
   state: SimulationState;
   dispatch: React.Dispatch<SimulationAction>;
@@ -63,6 +72,11 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
   }
 }
 
+const initialOffices = oficinas.map((office) => ({
+  ...office,
+  currentOrders: [],
+}));
+
 const initialState = {
   isPlaying: false,
   vehicles: [],
@@ -74,11 +88,11 @@ const initialState = {
   trucksInMotion: 0,
   trucksInMaintenance: 0,
   totalTrucks: 0,
-  totalOffices: 0,
+  totalOffices: oficinas.length,
   occupiedOffices: 0,
   ordersDelivered: 0,
   ordersPending: 0,
-  offices: [],
+  offices: initialOffices,
   unplannedOrders: [],
   processedOrderIds: [],
   operationType: 'semanal',
@@ -123,12 +137,39 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
         const newVehicles = convertSolutionToVehicles(newResponse);
 
+        // Procesar oficinas
+        const newOffices = convertOffices(newResponse.oficinas);
+
+        // Fusionar oficinas
+        const mergedOffices = state.offices.map((office) => {
+          const updatedOffice = newOffices.find((o) => o.ubigeo === office.ubigeo);
+          if (updatedOffice) {
+            return {
+              ...office,
+              ...updatedOffice,
+            };
+          }
+          return office;
+        });
+
+        dispatch({ type: 'SET_OFFICES', payload: mergedOffices });
+
+        // Procesar pedidos no planificados
+        const newUnplannedOrders = newResponse.pedidosNoPlanificados || [];
+
+        // Convertir pedidos no planificados a Order[]
+        const unplannedOrders: Order[] = convertUnplannedPedidosToOrders(newUnplannedOrders);
+        
         // Actualizar vehículos
         if (!state.vehicles || state.vehicles.length === 0) {
           dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
-          console.log('Vehículos actualizados:', state.vehicles);
+          //console.log('Vehículos actualizados:', state.vehicles);
 
           // Actualizar datos de simulación
+          // Actualizar 'totalTrucks'
+          dispatch({ type: 'SET_TOTAL_TRUCKS', payload: newVehicles.length });
+          // Actualizar 'occupiedOffices'
+          dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: calculateOccupiedOffices(newOffices) });
 
         } else {
           //console.log('Procesando');
@@ -170,9 +211,19 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
           // Actualizar el estado con la lista combinada de vehículos
           dispatch({ type: 'SET_VEHICLES', payload: [...updatedVehicles] });
-          console.log('Vehículos actualizados:', updatedVehicles);
+          //console.log('Vehículos actualizados:', updatedVehicles);
 
+          // Actualizar 'totalTrucks'
+          dispatch({ type: 'SET_TOTAL_TRUCKS', payload: updatedVehicles.length });
+          // Actualizar 'occupiedOffices'
+          dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: calculateOccupiedOffices(newOffices) });
         }
+
+        // Actualizar oficinas en el estado
+        dispatch({ type: 'SET_OFFICES', payload: newOffices });
+
+        // Actualizar pedidos no planificados en el estado
+        dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: unplannedOrders });
 
       } else {
         //console.log('Es la misma solución');
@@ -184,7 +235,15 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   }, [state.vehicles, indexActualProcess, lastProcessedSolution]);
 
   // Función para calcular oficinas ocupadas
-
+  const calculateOccupiedOffices = (offices: Oficina[]): number => {
+    let occupied = 0;
+    offices.forEach((office) => {
+      if ((office.horasStock ?? []).some((horaStock) => horaStock.stock > 0)) {
+        occupied += 1;
+      }
+    });
+    return occupied;
+  };
 
   const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
 
@@ -322,6 +381,73 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       });
 
       dispatch({ type: 'UPDATE_VEHICLE_POSITION', payload: updatedVehicles });
+
+      // Procesar llegadas de pedidos
+      const arrivedOrders: {
+        order: Order;
+        arrivalTime: Date;
+        ubigeoDestino: string;
+      }[] = [];
+
+      state.vehicles.forEach((vehicle) => {
+        vehicle.ruta.pedidos.forEach((pedido) => {
+          if (pedido.fechaLlegada) {
+            const arrivalTime = new Date(pedido.fechaLlegada);
+            if (arrivalTime <= newTime && !state.processedOrderIds.includes(pedido.idPedido)) {
+              if (!state.processedOrderIds.includes(pedido.idPedido)) {
+                // Pedido llega a la oficina
+                arrivedOrders.push({
+                  order: pedido,
+                  arrivalTime: arrivalTime,
+                  ubigeoDestino: pedido.ubigeoDestino,
+                });
+              }
+            }
+          }
+        });
+      });
+
+      // Actualizar processedOrderIds
+      const newProcessedOrderIds = [...state.processedOrderIds];
+      arrivedOrders.forEach((arrivedOrder) => {
+        newProcessedOrderIds.push(arrivedOrder.order.idPedido);
+      });
+
+      // Procesar salidas de pedidos
+      const updatedOffices = state.offices.map((office) => {
+
+        const updatedOffice = { ...office, currentOrders: [...(office.currentOrders ?? [])] };
+
+        // Agregar pedidos que llegan
+        arrivedOrders.forEach((arrivedOrder) => {
+          if (arrivedOrder.ubigeoDestino === office.ubigeo) {
+            updatedOffice.currentOrders.push({
+              order: arrivedOrder.order,
+              arrivalTime: arrivedOrder.arrivalTime,
+            });
+          }
+        });
+
+        // Remover pedidos que han estado más de 4 horas
+        updatedOffice.currentOrders = updatedOffice.currentOrders.filter((currentOrder) => {
+          const timeInOffice = newTime.getTime() - currentOrder.arrivalTime.getTime();
+          const fourHoursInMs = 4 * 60 * 60 * 1000;
+          return timeInOffice <= fourHoursInMs;
+        });
+
+        return updatedOffice;
+      });
+
+      
+      // Actualizar oficinas y processedOrderIds en el estado
+      dispatch({ type: 'SET_OFFICES', payload: updatedOffices });
+      dispatch({ type: 'SET_PROCESSED_ORDER_IDS', payload: newProcessedOrderIds });
+      // Actualizar 'trucksInMotion'
+      dispatch({ type: 'SET_TRUCKS_IN_MOTION', payload: calculateTrucksInMotion(updatedVehicles) });
+      // Actualizar 'ordersDelivered'
+      dispatch({ type: 'SET_ORDERS_DELIVERED', payload: calculateOrdersDelivered(updatedVehicles, newTime) });
+      // Actualizar 'ordersPending'
+      dispatch({ type: 'SET_ORDERS_PENDING', payload: calculateOrdersPending(updatedVehicles, newTime) });
 
     }, timeIncrement / state.speed);
 

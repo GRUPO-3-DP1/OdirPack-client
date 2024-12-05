@@ -56,6 +56,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   operationType,
 }) => {
   const { state, dispatch } = useData();
+  //console.log('Estado de la simulación:', state);
   const [tipoAveria, setTipoAveria] = useState<string>('');
   //const { registerAveria, loading, error } = useAveria();
 
@@ -419,7 +420,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
               >
                 <Typography variant="subtitle2" color="textPrimary">
-                  <b>Lista de pedidos Entregados</b>
+                  <b>Pedidos entregados</b>
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
@@ -499,7 +500,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
                 sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
               >
                 <Typography variant="subtitle2" color="textPrimary">
-                  <b>Lista de pedidos Actual</b>
+                  <b>Pedidos programados</b>
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
