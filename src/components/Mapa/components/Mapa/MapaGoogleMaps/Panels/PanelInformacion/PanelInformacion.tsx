@@ -38,7 +38,11 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     <MapControl position={ControlPosition.TOP_RIGHT}>
       <div className={styles.panel}>
         {selectedCamion ? (
-          <TruckView selectedCamion={selectedCamion} operationType={operationType} />
+          <TruckView
+            selectedCamion={selectedCamion}
+            operationType={operationType}
+            showRegisterAveria={false} // Muestra la sección "Registrar Avería"
+          />
         ) : selectedOficina ? (
           <OfficeView selectedOficina={selectedOficina} />
         ) : selectedPedido ? (
