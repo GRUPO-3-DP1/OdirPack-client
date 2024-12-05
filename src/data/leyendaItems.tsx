@@ -1,6 +1,7 @@
-import { BuildCircle, Home, ShowChart, Store } from "@mui/icons-material";
+import { Home, ShowChart, Store } from "@mui/icons-material";
 import { MarkerTypes } from "../context/MapMarker/mapMarkerTypes";
 import CamionIcon from "../components/Mapa/components/Mapa/MapaGoogleMaps/Markers/CamionMarker/CamionIcon/CamionIcon";
+import AveriaIcon from "../components/Mapa/components/Mapa/MapaGoogleMaps/Markers/CamionMarker/CamionIcon/AveriaIcon";
 
 export const leyendaItems: { icon: JSX.Element, text: string; name: MarkerTypes; }[] = [
   {
@@ -19,7 +20,7 @@ export const leyendaItems: { icon: JSX.Element, text: string; name: MarkerTypes;
     name: "oficinas"
   },
   {
-    icon: <BuildCircle sx={{ color: "red" }} fontSize='small' />,
+    icon: <AveriaIcon fontSize='small' />,
     text: "Camión averiado",
     name: "camionesAveriados"
   },

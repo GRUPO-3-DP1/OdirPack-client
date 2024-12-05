@@ -18,7 +18,7 @@ export type Order = {
   idCliente: string;
   fechaLlegada: string | null;
   fechaRecogida: string | null;
-  fechaSalida: string|null;
+  fechaSalida: string | null;
 };
 
 type Route = {
@@ -35,15 +35,6 @@ export type VehiclePosition = {
   progress: number;
   currentSegmentIndex: number;
 };
-
-/*export type Vehicle = {
-  idVehiculo: string;
-  capacidadCarga: number;
-  fechaLibre: string|null;
-  ruta: Route;
-  position: VehiclePosition;
-};*/
-
 
 export type Vehicle = {
   idVehiculo: string;
@@ -68,6 +59,7 @@ export type Vehicle = {
     duration: number; // Duración del mantenimiento en milisegundos
     officeUbigeo: string; // Ubigeo de la oficina donde está en mantenimiento
   };
+  currentAveria?: boolean;
   averia?: {
     isAveria: boolean;
     tipo: string;
@@ -77,7 +69,7 @@ export type Vehicle = {
     fechaReparacion: string;
     cargaReplanificada: boolean;
     almacenAsignado: string;
-  }
+  };
 };
 
 export type SimulationState = {
@@ -141,15 +133,12 @@ export type SimulationAction =
   | { type: 'UPDATE_VEHICLE_POSITION'; payload: Vehicle[]; }
   | { type: 'SET_CURRENT_TIME'; payload: Date; }
   | { type: 'SET_VEHICLES'; payload: Vehicle[]; }
-  //| { type: 'UPDATE_SIMULATION_DATA'; payload: Partial<SimulationState>; }
   | { type: 'SET_OFFICES'; payload: Oficina[]; }
   | { type: 'SET_UNPLANNED_ORDERS'; payload: Order[]; }
   | { type: 'SET_PROCESSED_ORDER_IDS'; payload: string[]; }
-  | { type: 'RESET_SIMULATION';}  // Acción para reiniciar el estado
-  | { type: 'SET_TOTAL_TRUCKS'; payload: number }
-  | { type: 'SET_OCCUPIED_OFFICES'; payload: number }
-  | { type: 'SET_TRUCKS_IN_MOTION'; payload: number }
-  | { type: 'SET_ORDERS_DELIVERED'; payload: number }
-  | { type: 'SET_ORDERS_PENDING'; payload: number };
-
-  
+  | { type: 'RESET_SIMULATION'; }  // Acción para reiniciar el estado
+  | { type: 'SET_TOTAL_TRUCKS'; payload: number; }
+  | { type: 'SET_OCCUPIED_OFFICES'; payload: number; }
+  | { type: 'SET_TRUCKS_IN_MOTION'; payload: number; }
+  | { type: 'SET_ORDERS_DELIVERED'; payload: number; }
+  | { type: 'SET_ORDERS_PENDING'; payload: number; };
