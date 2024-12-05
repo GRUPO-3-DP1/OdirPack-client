@@ -25,7 +25,6 @@ import duration from 'dayjs/plugin/duration';
 dayjs.extend(duration);
 import { Vehicle as Camion } from '../../../../context/Simulacion/simulationTypes';
 import oficinas from '../../../../data/oficinas';
-//import styles from './InformationPanel.module.css';
 
 interface TruckViewProps {
   selectedCamion: Camion;
@@ -391,7 +390,12 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
           </AccordionSummary>
           <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
             <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-              <InputLabel id="tipo-averia-label">Tipo de avería</InputLabel>
+              <InputLabel 
+                id="tipo-averia-label"
+                sx={{ fontSize: '14px' }}
+              >
+                Tipo de avería
+              </InputLabel>
               <Select
                 labelId="tipo-averia-label"
                 id="tipo-averia-select"
