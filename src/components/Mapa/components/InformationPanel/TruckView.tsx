@@ -1,7 +1,8 @@
 // TruckView.tsx
-import React, { useState } from 'react';
+//import React, { useState } from 'react';
+import React from 'react';
 import { useData } from '../../../../context/useData';
-import { createAveria } from '../../../../store/services/averia';
+//import { createAveria } from '../../../../store/services/averia';
 import {
   ExpandMore,
   LocalShipping,
@@ -14,11 +15,11 @@ import {
   AccordionSummary,
   Typography,
   Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Button,
+  // FormControl,
+  // InputLabel,
+  // Select,
+  // MenuItem,
+  // Button,
 } from '@mui/material';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
@@ -32,9 +33,11 @@ interface TruckViewProps {
   operationType: 'semanal' | 'colapso' | 'diaadia';
 }
 
-const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType }) => {
-  const { state, dispatch } = useData();
-  const [tipoAveria, setTipoAveria] = useState<string>('');
+//const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType }) => {
+const TruckView: React.FC<TruckViewProps> = ({ selectedCamion }) => {
+  //const { state, dispatch } = useData();
+  const { state } = useData();
+  //const [tipoAveria, setTipoAveria] = useState<string>('');
 
   // Función para obtener el tipo de camión
   const getTipoCamion = (capacidadCarga: number) => {
@@ -376,7 +379,7 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType }) 
       </Accordion>
 
       {/* Registrar Avería */}
-      <Accordion defaultExpanded disableGutters>
+      {/* <Accordion defaultExpanded disableGutters>
         <AccordionSummary
           expandIcon={<ExpandMore />}
           aria-controls="panel-averias-content"
@@ -460,7 +463,7 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType }) 
             Registrar
           </Button>
         </AccordionDetails>
-      </Accordion>
+      </Accordion> */}
     </>
   );
 };
