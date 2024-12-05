@@ -68,8 +68,6 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   }
 
   const {
-    trucksInMotion,
-    totalTrucks,
     ordersDelivered,
     ordersPending,
     startTime,
