@@ -15,6 +15,7 @@ export function convertPedidosToOrders(
       cantidad: pedido.cantidad,
       idCliente: pedido.idCliente,
       fechaLlegada: pedido.fechaLlegada,
+      fechaSalida: pedido.fechaSalida,
       fechaRecogida: fechaRecogida,
     };
   });
