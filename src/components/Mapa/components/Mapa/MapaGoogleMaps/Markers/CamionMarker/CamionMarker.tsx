@@ -5,7 +5,7 @@ import { Vehicle } from '../../../../../../../context/Simulacion/simulationTypes
 import Ruta from '../../../../Ruta/Ruta';
 import CamionIcon from './CamionIcon/CamionIcon';
 import { calculateRotation } from '../../../../../../../utils/calculateRotation';
-import { BuildCircle } from '@mui/icons-material';
+import AveriaIcon from './CamionIcon/AveriaIcon';
 
 type CamionMarkerProps = Omit<AdvancedMarkerProps, 'position'> & {
   camion: Vehicle;
@@ -40,12 +40,8 @@ const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ocupacion = 'alta',
         >
           {camion.averia?.isAveria ? (
             // Ícono de camión averiado
-            <BuildCircle
-              sx={{
-                color: 'red', // Rojo para representar avería
-                fontSize: '32px', // Tamaño ajustable
-                transform: `rotate(${rotation}deg)`,
-              }}
+            <AveriaIcon
+              size="large"
             />
           ) : (
             // Ícono estándar para camión sin avería
