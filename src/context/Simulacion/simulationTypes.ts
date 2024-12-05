@@ -18,6 +18,7 @@ export type Order = {
   idCliente: string;
   fechaLlegada: string | null;
   fechaRecogida: string | null;
+  fechaSalida: string|null;
 };
 
 type Route = {

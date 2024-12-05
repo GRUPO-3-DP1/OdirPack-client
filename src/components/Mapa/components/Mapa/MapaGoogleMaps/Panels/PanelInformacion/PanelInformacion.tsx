@@ -171,7 +171,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   // Obtener pedidos actuales que entregará
   const pedidosDelCamionActual = selectedCamion?.ruta?.pedidos
   .filter((pedido) => {
-    const fechaSalidaAlmacen = pedido.fechaRecogida ? new Date(pedido.fechaRecogida) : null;
+    const fechaSalidaAlmacen = pedido.fechaSalida ? new Date(pedido.fechaSalida) : null;
     const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
     return fechaSalidaAlmacen && fechaSalidaAlmacen <= state.currentTime &&
           (!fechaLlegada || fechaLlegada > state.currentTime);
@@ -193,17 +193,17 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
       const pedidos = selectedCamion.ruta.pedidos;
       const currentTime = state.currentTime;
       const pedidosEnCamion = pedidos.filter((pedido) => {
-        const fechaRecogida = pedido.fechaRecogida ? new Date(pedido.fechaRecogida) : null;
+        const fechaSalida = pedido.fechaSalida ? new Date(pedido.fechaSalida) : null;
         const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
-        if (fechaRecogida && fechaLlegada) {
-          return fechaRecogida <= currentTime && fechaLlegada > currentTime;
-        } else if (fechaRecogida && !fechaLlegada) {
+        if (fechaSalida && fechaLlegada) {
+          return fechaSalida <= currentTime && fechaLlegada > currentTime;
+        } else if (fechaSalida && !fechaLlegada) {
           // Si no hay fecha de llegada, verificamos si el vehículo está en avería
           const averia = selectedCamion.averia;
           if (averia && averia.fechaRegistro && averia.fechaReparacion) {
             const fechaInicioAveria = new Date(averia.fechaRegistro);
             return (
-              fechaRecogida <= currentTime &&
+              fechaSalida <= currentTime &&
               currentTime < fechaInicioAveria
             );
           }

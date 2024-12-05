@@ -14,6 +14,7 @@ export type PedidoAlgorithmResponse = {
     ubigeoDestino: string; // Código del ubigeo de destino
     fechaRegistro: string;
     fechaLlegada: string|null;
+    fechaSalida: string|null;
     fechaPlazoMaximo: string;
     cantidad: number;
     idCliente: string;
