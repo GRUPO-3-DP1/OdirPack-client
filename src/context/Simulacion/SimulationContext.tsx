@@ -1,4 +1,3 @@
-//SimulationContext.tsx
 import React, { createContext, useReducer, useEffect, useState } from 'react';
 import { SimulationAction, SimulationState, Vehicle, Oficina } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
@@ -7,8 +6,6 @@ import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles
 import { locationCoordinates } from '../../utils/locationCoordinates';
 import { useWebSocket } from '../../store/hooks/useWebSocket';
 import { Services } from '../../../config';
-
-//AGREGADO:
 import oficinas from '../../data/oficinas';
 import { convertUnplannedPedidosToOrders } from '../../utils/convertUnplannedPedidosToOrders';
 import { convertOffices } from '../../utils/convertOffices';
@@ -16,6 +13,9 @@ import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
 import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
 import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
 import { Order } from './simulationTypes';
+import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
+
+const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
 
 export const SimulationContext = createContext<{
   state: SimulationState;
@@ -159,7 +159,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
         // Convertir pedidos no planificados a Order[]
         const unplannedOrders: Order[] = convertUnplannedPedidosToOrders(newUnplannedOrders);
-        
+
         // Actualizar vehículos
         if (!state.vehicles || state.vehicles.length === 0) {
           dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
@@ -234,19 +234,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     }
   }, [state.vehicles, indexActualProcess, lastProcessedSolution]);
 
-  // Función para calcular oficinas ocupadas
-  const calculateOccupiedOffices = (offices: Oficina[]): number => {
-    let occupied = 0;
-    offices.forEach((office) => {
-      if ((office.horasStock ?? []).some((horaStock) => horaStock.stock > 0)) {
-        occupied += 1;
-      }
-    });
-    return occupied;
-  };
-
-  const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
-
   useEffect(() => {
     if (!state.isPlaying) return;
 
@@ -278,8 +265,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           // Verificar si el vehículo tiene una avería
           if (vehicle.averia?.isAveria) {
             // El vehículo tiene una avería y está en mantenimiento
-            const maintenanceStartTime = new Date (vehicle.averia.fechaRegistro);
-            const maintenanceEndTime = new Date (vehicle.averia.fechaReparacion); // 1 hora en milisegundos
+            const maintenanceStartTime = new Date(vehicle.averia.fechaRegistro);
+            const maintenanceEndTime = new Date(vehicle.averia.fechaReparacion); // 1 hora en milisegundos
 
             // Si el tiempo actual está dentro del periodo de mantenimiento
             if (newTime >= maintenanceStartTime && newTime < maintenanceEndTime) {
@@ -291,9 +278,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                   duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
                   officeUbigeo: vehicle.averia.almacenAsignado,
                 },
+                currentAveria: true,
                 position: {
                   ...vehicle.position,
-                  currentSegmentIndex: -1,
+                  //currentSegmentIndex: -1,
                 },
               };
             }
@@ -314,6 +302,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                     duration: maintenanceDuration,
                     officeUbigeo: ruta.tramos[i].destino.codigo,
                   },
+                  currentAveria: false,
                   position: {
                     ...vehicle.position,
                     currentSegmentIndex: -1,
@@ -451,7 +440,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         return updatedOffice;
       });
 
-      
+
       // Actualizar oficinas y processedOrderIds en el estado
       dispatch({ type: 'SET_OFFICES', payload: updatedOffices });
       dispatch({ type: 'SET_PROCESSED_ORDER_IDS', payload: newProcessedOrderIds });

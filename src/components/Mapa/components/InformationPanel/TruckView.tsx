@@ -7,6 +7,9 @@ import {
   LocalShipping,
   CheckCircle,
   PendingActions,
+  ErrorOutline,
+  Schedule,
+  ExpandLess,
 } from '@mui/icons-material';
 import {
   Accordion,
@@ -35,6 +38,7 @@ interface TruckViewProps {
 const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, showRegisterAveria = true }) => {
   const { state, dispatch } = useData();
   const [tipoAveria, setTipoAveria] = useState<string>('');
+  const [showPastSegments, setShowPastSegments] = useState(true);
 
   // Función para obtener el tipo de camión
   const getTipoCamion = (capacidadCarga: number) => {
@@ -371,6 +375,133 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                 El camión no tiene pedidos programados.
               </Typography>
             )}
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Nueva sección: Ruta del camión */}
+      <Accordion disableGutters>
+        <AccordionSummary
+          expandIcon={<ExpandMore />}
+          aria-controls="ruta-camion-content"
+          id="ruta-camion-header"
+          sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+        >
+          <Typography variant="subtitle2" color="textPrimary">
+            <b>Ruta del camión</b>
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+          <Box sx={{ maxHeight: '300px', overflowY: 'auto', padding: '8px' }}>
+            {/* Botón para mostrar/ocultar tramos pasados */}
+            {selectedCamion.position.currentSegmentIndex > 0 && (
+              <Button
+                startIcon={showPastSegments ? <ExpandLess /> : <ExpandMore />}
+                onClick={() => setShowPastSegments(!showPastSegments)}
+                sx={{ mb: 1, fontSize: '0.875rem' }}
+                size="small"
+              >
+                {showPastSegments ? 'Ocultar tramos pasados' : 'Mostrar tramos pasados'}
+              </Button>
+            )}
+
+            {selectedCamion.ruta.tramos && selectedCamion.ruta.tramos.map((tramo, index) => {
+              const origenOficina = oficinas.find((office) => office.ubigeo === tramo.origen.codigo);
+              const destinoOficina = oficinas.find((office) => office.ubigeo === tramo.destino.codigo);
+              const fechaSalida = selectedCamion.ruta.fechasSalida[index];
+              const fechaLlegada = selectedCamion.ruta.fechasLlegada[index];
+              
+              const currentTime = state.currentTime;
+              const isPast = fechaLlegada && new Date(fechaLlegada) < currentTime;
+              const isCurrent = selectedCamion.position.currentSegmentIndex === index;
+              const isFuture = index > selectedCamion.position.currentSegmentIndex;
+
+              // Para mostrar que está en mantenimiento en la oficina - se retresa 
+              /* // Verificar si el camión está en mantenimiento operativo en la oficina
+              const isInMaintenance = selectedCamion.maintenance?.inMaintenance && 
+                                     selectedCamion.maintenance.officeUbigeo === tramo.destino.codigo &&
+                                     currentTime >= new Date(fechaLlegada);
+
+              // Calcular el tiempo restante de mantenimiento si está en mantenimiento
+              let remainingMaintenanceTime = '';
+              if (isInMaintenance && selectedCamion.maintenance) {
+                const maintenanceEndTime = new Date(selectedCamion.maintenance.startTime.getTime() + selectedCamion.maintenance.duration);
+                const remainingTime = maintenanceEndTime.getTime() - currentTime.getTime();
+                const remainingMinutes = Math.ceil(remainingTime / (1000 * 60));
+                remainingMaintenanceTime = `${remainingMinutes} min restantes`;
+              } */
+
+              // Verificar si este es el tramo específico donde ocurre la avería
+              const hasBreakdown = selectedCamion.averia?.isAveria && 
+                                   new Date(selectedCamion.averia.fechaRegistro) <= currentTime &&
+                                   tramo.origen.codigo === selectedCamion.averia.ubiInicio &&
+                                   tramo.destino.codigo === selectedCamion.averia.ubiFin;
+
+              // Si es un tramo pasado y están ocultos, no lo mostramos
+              if (isPast && !showPastSegments) return null;
+
+              let backgroundColor = '#f5f5f5'; // gris para tramos pasados
+              let IconComponent = CheckCircle;
+              let iconColor = '#9e9e9e';
+              let statusText = '';
+
+              if (hasBreakdown) {
+                backgroundColor = '#ffebee';
+                IconComponent = ErrorOutline;
+                iconColor = '#f44336';
+                statusText = 'Averiado';
+              } else if (isCurrent) {
+                backgroundColor = '#e8f5e9';
+                IconComponent = LocalShipping;
+                iconColor = '#4caf50';
+                statusText = 'En tránsito';
+              } else if (isFuture) {
+                backgroundColor = '#fff';
+                IconComponent = Schedule;
+                iconColor = '#2196f3';
+                statusText = 'Programado';
+              } else {
+                statusText = 'Completado';
+              }
+
+              return (
+                <Box
+                  key={index}
+                  sx={{
+                    backgroundColor,
+                    padding: '8px',
+                    borderRadius: '4px',
+                    marginBottom: '8px',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    border: isFuture ? '1px dashed #bdbdbd' : 'none',
+                  }}
+                >
+                  <IconComponent sx={{ color: iconColor, marginRight: '8px', marginTop: '4px' }} />
+                  <Box>
+                    <Typography variant="body2" color="textSecondary">
+                      <b>Tramo {index + 1}</b> - {statusText}
+                    </Typography>
+                    {origenOficina && destinoOficina && (
+                      <>
+                        <Typography variant="body2" color="textSecondary">
+                          <b>Origen:</b> {origenOficina.ubigeo} - {origenOficina.provincia}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          <b>Destino:</b> {destinoOficina.ubigeo} - {destinoOficina.provincia}
+                        </Typography>
+                      </>
+                    )}
+                    <Typography variant="body2" color="textSecondary">
+                      <b>Fecha Salida:</b> {fechaSalida ? dayjs(fechaSalida).format('DD/MM/YYYY, hh:mm A') : 'No disponible'}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      <b>Fecha Llegada:</b> {fechaLlegada ? dayjs(fechaLlegada).format('DD/MM/YYYY, hh:mm A') : 'No disponible'}
+                    </Typography>
+                  </Box>
+                </Box>
+              );
+            })}
           </Box>
         </AccordionDetails>
       </Accordion>

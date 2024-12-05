@@ -14,7 +14,6 @@ import Pedidos from '../pages/Pedidos/Layout';
 import Configuracion from '../pages/Configuracion/Layout';
 import React from "react";
 import { SimulationProvider } from "../context/Simulacion/SimulationContext";
-import { OperacionProvider } from "../context/OperacionDia/OperacionContext.tsx";
 
 type Route = {
   path: string;
@@ -29,9 +28,7 @@ const routes: Route[] = [
     name: 'Operaciones día a día',
     icon: <CellTowerOutlined />,
     element: (
-      <OperacionProvider>
-        <Operaciones />
-      </OperacionProvider>
+      <Operaciones />
     )
   },
   {
