@@ -9,6 +9,7 @@ export function convertUnplannedPedidosToOrders(pedidos: PedidoAlgorithmResponse
     fechaRegistro: pedido.fechaRegistro,
     cantidad: pedido.cantidad,
     idCliente: pedido.idCliente,
+    fechaSalida: null,
     fechaLlegada: null,      // No tienen fecha de llegada aún
     fechaRecogida: null,     // No tienen fecha de recogida aún
   }));
