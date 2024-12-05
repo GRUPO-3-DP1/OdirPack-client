@@ -52,10 +52,7 @@ export const convertSolutionToVehicles = (solution: ResponseAlgorithm): Vehicle[
 
       // Asignar fechaLlegada a cada pedido
       const pedidos: Order[] = convertPedidosToOrders(
-        vehicleItem.ruta.pedidos,
-        tramoDestinoFechaMap,
-        tramoOrigenFechaMap,
-        vehicleItem.ruta.fechaInicio
+        vehicleItem.ruta.pedidos
       );
 
       // Verificar si el vehículo está en la lista de averías
