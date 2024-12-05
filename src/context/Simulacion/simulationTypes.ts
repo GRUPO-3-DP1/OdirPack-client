@@ -18,6 +18,7 @@ export type Order = {
   idCliente: string;
   fechaLlegada: string | null;
   fechaRecogida: string | null;
+  fechaSalida: string|null;
 };
 
 type Route = {
@@ -46,6 +47,7 @@ export type VehiclePosition = {
 
 export type Vehicle = {
   idVehiculo: string;
+  almacenOrigen: string;
   capacidadCarga: number;
   fechaLibre: string | null;
   ruta: Route;
@@ -72,8 +74,9 @@ export type Vehicle = {
     fechaRegistro: string;
     ubiInicio: string;
     ubiFin: string;
-    fechaReparacion: string | null;
+    fechaReparacion: string;
     cargaReplanificada: boolean;
+    almacenAsignado: string;
   }
 };
 

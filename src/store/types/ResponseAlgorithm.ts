@@ -14,6 +14,7 @@ export type PedidoAlgorithmResponse = {
     ubigeoDestino: string; // Código del ubigeo de destino
     fechaRegistro: string;
     fechaLlegada: string|null;
+    fechaSalida: string|null;
     fechaPlazoMaximo: string;
     cantidad: number;
     idCliente: string;
@@ -31,6 +32,7 @@ export type Ruta = {
 
 export type VehiculoAlgorithmResponse = {
     idVehiculo: string;
+    almacenOrigen: string;
     capacidadCarga: number;
     isAveriado: boolean;
     fechaLibre: string | null;
@@ -54,6 +56,7 @@ export type OficinaAlgorithmResponse = {
 
 export type VehiculoAveriadoAlgorithmResponse = {
     idVehiculo: string; // ID del vehículo averiado
+    almacenAsignado: string;
     tipoAveria: string; // Tipo de avería ("SINIESTRO", "FUERTE", "MODERADA")
     tramoInicio: string; // Código del Ubigeo de inicio del tramo
     tramoFin: string; // Código del Ubigeo de fin del tramo
