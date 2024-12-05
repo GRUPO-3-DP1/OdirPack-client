@@ -416,8 +416,27 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
               const isPast = fechaLlegada && new Date(fechaLlegada) < currentTime;
               const isCurrent = selectedCamion.position.currentSegmentIndex === index;
               const isFuture = index > selectedCamion.position.currentSegmentIndex;
+
+              // Para mostrar que está en mantenimiento en la oficina - se retresa 
+              /* // Verificar si el camión está en mantenimiento operativo en la oficina
+              const isInMaintenance = selectedCamion.maintenance?.inMaintenance && 
+                                     selectedCamion.maintenance.officeUbigeo === tramo.destino.codigo &&
+                                     currentTime >= new Date(fechaLlegada);
+
+              // Calcular el tiempo restante de mantenimiento si está en mantenimiento
+              let remainingMaintenanceTime = '';
+              if (isInMaintenance && selectedCamion.maintenance) {
+                const maintenanceEndTime = new Date(selectedCamion.maintenance.startTime.getTime() + selectedCamion.maintenance.duration);
+                const remainingTime = maintenanceEndTime.getTime() - currentTime.getTime();
+                const remainingMinutes = Math.ceil(remainingTime / (1000 * 60));
+                remainingMaintenanceTime = `${remainingMinutes} min restantes`;
+              } */
+
+              // Verificar si este es el tramo específico donde ocurre la avería
               const hasBreakdown = selectedCamion.averia?.isAveria && 
-                                 selectedCamion.position.currentSegmentIndex === index;
+                                   new Date(selectedCamion.averia.fechaRegistro) <= currentTime &&
+                                   tramo.origen.codigo === selectedCamion.averia.ubiInicio &&
+                                   tramo.destino.codigo === selectedCamion.averia.ubiFin;
 
               // Si es un tramo pasado y están ocultos, no lo mostramos
               if (isPast && !showPastSegments) return null;
@@ -425,19 +444,25 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
               let backgroundColor = '#f5f5f5'; // gris para tramos pasados
               let IconComponent = CheckCircle;
               let iconColor = '#9e9e9e';
+              let statusText = '';
 
               if (hasBreakdown) {
                 backgroundColor = '#ffebee';
                 IconComponent = ErrorOutline;
                 iconColor = '#f44336';
+                statusText = 'Averiado';
               } else if (isCurrent) {
                 backgroundColor = '#e8f5e9';
                 IconComponent = LocalShipping;
                 iconColor = '#4caf50';
+                statusText = 'En tránsito';
               } else if (isFuture) {
                 backgroundColor = '#fff';
                 IconComponent = Schedule;
                 iconColor = '#2196f3';
+                statusText = 'Programado';
+              } else {
+                statusText = 'Completado';
               }
 
               return (
@@ -456,7 +481,7 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                   <IconComponent sx={{ color: iconColor, marginRight: '8px', marginTop: '4px' }} />
                   <Box>
                     <Typography variant="body2" color="textSecondary">
-                      <b>Tramo {index + 1}</b>
+                      <b>Tramo {index + 1}</b> - {statusText}
                     </Typography>
                     {origenOficina && destinoOficina && (
                       <>

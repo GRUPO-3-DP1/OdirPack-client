@@ -28,6 +28,8 @@ type ScheduledVehicle = {
   vehicle: Camion;
   arrivalTime: Date;
   deliveringOrders: Order[];
+  isArriving: boolean;
+  isDeparting: boolean;
 };
 
 const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
@@ -47,28 +49,35 @@ const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
 
   const maxCapacity = selectedOficina?.almacen || 0;
 
-  // Obtener camiones programados que llegarán a esta oficina
+  // Obtener camiones programados que llegarán o saldrán de esta ubicación
   const scheduledVehicles: ScheduledVehicle[] = state.vehicles
     .flatMap((vehicle) => {
-      if (!vehicle.ruta || !vehicle.ruta.tramos || !vehicle.ruta.fechasLlegada) return [];
+      if (!vehicle.ruta || !vehicle.ruta.tramos || !vehicle.ruta.fechasLlegada || !vehicle.ruta.fechasSalida) return [];
+      
       return vehicle.ruta.tramos
         .map((tramo, index) => {
-          if (
-            tramo?.destino?.codigo &&
-            selectedOficina?.ubigeo &&
-            tramo.destino.codigo === selectedOficina.ubigeo
-          ) {
-            const arrivalTimeStr = vehicle.ruta.fechasLlegada[index];
-            const arrivalTime = arrivalTimeStr ? new Date(arrivalTimeStr) : null;
-            if (arrivalTime && arrivalTime >= state.currentTime) {
-              return {
-                vehicle,
-                arrivalTime,
-                deliveringOrders: vehicle.ruta.pedidos.filter(
-                  (pedido) => pedido.ubigeoDestino === selectedOficina.ubigeo
-                ),
-              };
-            }
+          const isDestination = tramo?.destino?.codigo === selectedOficina.ubigeo;
+          const isOrigin = tramo?.origen?.codigo === selectedOficina.ubigeo;
+          
+          // Solo procesar si es destino o si es origen y es un almacén
+          if (!(isDestination || (isOrigin && selectedOficina.isAlmacen))) return null;
+
+          const timeStr = isDestination 
+            ? vehicle.ruta.fechasLlegada[index]
+            : vehicle.ruta.fechasSalida[index];
+          
+          const scheduledTime = timeStr ? new Date(timeStr) : null;
+          
+          if (scheduledTime && scheduledTime >= state.currentTime) {
+            return {
+              vehicle,
+              arrivalTime: scheduledTime,
+              deliveringOrders: vehicle.ruta.pedidos.filter(
+                (pedido) => pedido.ubigeoDestino === selectedOficina.ubigeo
+              ),
+              isArriving: isDestination,
+              isDeparting: isOrigin
+            };
           }
           return null;
         })
@@ -98,10 +107,10 @@ const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <div>
             <Typography variant="subtitle1" color="textPrimary">
-              <b>Información de la oficina</b>
+              <b>Información de {selectedOficina.isAlmacen ? 'Almacén' : 'Oficina'}</b>
             </Typography>
             <Typography variant="body2" color="textSecondary">
-              <b>Oficina:</b>{' '}
+              <b>{selectedOficina.isAlmacen ? 'Almacén' : 'Oficina'}:</b>{' '}
               <Typography component="span" variant="body2" color="textPrimary">
                 {selectedOficina.departamento}, {selectedOficina.provincia}
               </Typography>
@@ -129,7 +138,7 @@ const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
           sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
         >
           <Typography variant="subtitle2" color="textPrimary">
-            <b>Detalles de oficina</b>
+            <b>Detalles de {selectedOficina.isAlmacen ? 'Almacén' : 'Oficina'}</b>
           </Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
@@ -205,34 +214,39 @@ const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
             {/* Camiones programados */}
             {scheduledVehicles.length > 0 && (
               <>
-                {scheduledVehicles.map(({ vehicle, arrivalTime, deliveringOrders }) => (
+                {scheduledVehicles.map(({ vehicle, arrivalTime, deliveringOrders, isArriving, isDeparting }) => (
                   <Box
-                    key={vehicle.idVehiculo}
+                    key={`${vehicle.idVehiculo}-${arrivalTime.getTime()}`}
                     sx={{
-                      backgroundColor: '#e3f2fd', // Azul claro para programado
+                      backgroundColor: isDeparting ? '#e3f2fd' : '#f5f5f5', // Azul claro para salidas
                       padding: '8px',
                       borderRadius: '4px',
                       marginBottom: '8px',
                     }}
                   >
                     <Box display="flex" alignItems="center">
-                      <LocalShipping sx={{ color: '#2196f3', marginRight: '8px' }} />{' '}
-                      {/* Ícono de camión en azul */}
+                      <LocalShipping 
+                        sx={{ 
+                          color: isDeparting ? '#1976d2' : '#2196f3', 
+                          marginRight: '8px',
+                          transform: isDeparting ? 'scaleX(-1)' : 'none' // Girar el icono para salidas
+                        }} 
+                      />
                       <Typography variant="subtitle1" color="textPrimary">
                         <b>Camión {vehicle.idVehiculo}</b>
                       </Typography>
                     </Box>
                     <Typography variant="body2" color="textSecondary">
-                      <b>Estado:</b> Programado
+                      <b>Estado:</b> {isDeparting ? 'Programado para salir' : 'Programado para llegar'}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
-                      <b>Hora de llegada:</b>{' '}
+                      <b>{isDeparting ? 'Hora de salida' : 'Hora de llegada'}:</b>{' '}
                       {dayjs(arrivalTime).format('DD/MM/YYYY, hh:mm A')}
                     </Typography>
-                    {deliveringOrders.length > 0 ? (
+                    {isArriving && deliveringOrders.length > 0 ? (
                       <>
                         <Typography variant="body2" color="textSecondary">
-                          <b>Pedidos:</b>
+                          <b>Pedidos a entregar:</b>
                         </Typography>
                         <ul>
                           {deliveringOrders.map((pedido: Order) => (
