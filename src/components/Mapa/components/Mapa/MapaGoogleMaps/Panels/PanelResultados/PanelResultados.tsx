@@ -10,6 +10,7 @@ import duration from 'dayjs/plugin/duration';
 import { useData } from '../../../../../../../context/useData';
 import { Order } from '../../../../../../../context/Simulacion/simulationTypes';
 import { Visibility } from '@mui/icons-material';
+import DetalleResultados from './DetalleResultados'; 
 
 dayjs.extend(duration);
 
@@ -37,6 +38,10 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true, onClose 
   // Estados locales para tiempo real
   const [simulationStartTime, setSimulationStartTime] = useState<Date | null>(null);
   const [simulationEndTime, setSimulationEndTime] = useState<Date | null>(null);
+  // Add state for controlling visibility
+  const [showDetalle, setShowDetalle] = useState(false);
+
+
 
   useEffect(() => {
     if (!simulationStartTime) {
@@ -111,7 +116,7 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true, onClose 
   const fechaFin = dayjs(endTime).format('DD/MM/YYYY, hh:mm A');
 
   const handleVerDetalle = () => {
-    // Por ahora no hace nada
+    setShowDetalle(true);
   };
 
   const handleClose = () => {
@@ -122,7 +127,7 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true, onClose 
 
   return (
     <MapControl position={ControlPosition.TOP_CENTER}>
-      <div className={styles.panel}>
+      <div className={styles.panelRestult}>
         <Box sx={{ padding: '16px', position: 'relative' }}>
           {/* Título centrado y botón de cerrar */}
           <Typography
@@ -238,6 +243,13 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true, onClose 
               Detalle
             </Button>
           </Box>
+          {/* Add DetalleResultados */}
+          {showDetalle && (
+            <DetalleResultados 
+              onClose={() => setShowDetalle(false)}
+              // Add any other required props
+            />
+          )}
         </Box>
       </div>
     </MapControl>
