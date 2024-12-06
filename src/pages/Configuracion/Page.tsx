@@ -51,12 +51,17 @@ const Page: React.FC = () => {
     const isLoading = loadingMes[mes] ?? false;
 
     return (
-      <Box key={mes}>
-        <Typography variant="h6">{mes}</Typography>
+      <Box
+        display="flex"
+        justifyContent={'space-between'}
+        gap={5}
+        key={mes}
+      >
+        <Typography variant="subtitle1">{mes}</Typography>
 
         <div className={styles.monthContainer}>
           {isLoading ? (
-            <CircularProgress />
+            <CircularProgress size={20} />
           ) : archivo ? (
             <Chip
               variant="outlined"
@@ -64,6 +69,7 @@ const Page: React.FC = () => {
               onDelete={() => handleDelete(mes)}
               color="primary"
               className={styles.button}
+              size="small"
             />
           ) : (
             <Button
@@ -71,6 +77,7 @@ const Page: React.FC = () => {
               variant="contained"
               startIcon={<CloudUpload />}
               className={styles.button}
+              size="small"
             >
               Subir Archivo
               <VisuallyHiddenInput
@@ -94,15 +101,18 @@ const Page: React.FC = () => {
   }
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ height: '100%', overflow: 'auto' }}>
       <h3>Simulacion - Pedidos</h3>
       <Box
-        display="grid"
-        gridTemplateColumns="repeat(3, 1fr)"
+        display="flex"
+        flexDirection="column"
         gap={3}
-        sx={{ marginTop: '20px' }}
       >
-        {Object.values(Mes).map((mes) => renderChip(mes))}
+        {Object.values(Mes).map((mes) => (
+          <Box key={mes} display="flex" flexDirection="row" gap={3} width="100%">
+            {renderChip(mes)}
+          </Box>
+        ))}
       </Box>
     </div>
   );
