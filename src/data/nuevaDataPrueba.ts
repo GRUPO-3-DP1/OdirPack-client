@@ -1,4 +1,4 @@
-export const dataPrueba = {
+export const nuevaDataPrueba = {
   pedidos: [
     {
       idPedido: "PED-0001",

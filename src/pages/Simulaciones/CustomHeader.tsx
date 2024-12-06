@@ -1,5 +1,5 @@
 //CustomHeader.tsx  
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../../components/Header/Header';
 import {
   DatePicker,
@@ -20,8 +20,10 @@ import { useData } from '../../context/useData';
 import dayjs, { Dayjs } from 'dayjs';
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
-import { dataPrueba } from '../../data/nuevaDataPrueba';
+import { nuevaDataPrueba } from '../../data/nuevaDataPrueba';
 import { useSelection } from '../../context/Buscador/useSelection';
+import useArchivos from '../../store/hooks/useArchivos';
+import { mapearContenidoAArchivos } from '../../utils/mapearContenidoAArchivos';
 
 const CustomHeader: React.FC = () => {
 
@@ -35,6 +37,11 @@ const CustomHeader: React.FC = () => {
   const { state: simulationState, dispatch, userId, stopSimulation } = useData();
   const { setSelectedOficina, setSelectedCamion, setSelectedPedido } = useSelection();
 
+  const { simulacion, fetchSimulacion } = useArchivos();
+
+  useEffect(() => {
+    fetchSimulacion();
+  }, [fetchSimulacion]);
 
   const handleChange = (event: SelectChangeEvent) => {
     setTipo(event.target.value);
@@ -43,10 +50,10 @@ const CustomHeader: React.FC = () => {
   const startSimulation = async () => {
     if (selectedDate && selectedTime && tipo) {
       const startTime = new Date(
-        selectedDate.year(), 
-        selectedDate.month(), 
-        selectedDate.date(), 
-        selectedTime.hour(), 
+        selectedDate.year(),
+        selectedDate.month(),
+        selectedDate.date(),
+        selectedTime.hour(),
         selectedTime.minute()
       );
 
@@ -63,8 +70,8 @@ const CustomHeader: React.FC = () => {
         return;
       }
 
-      dispatch({ 
-        type: 'START_SIMULATION', 
+      dispatch({
+        type: 'START_SIMULATION',
         payload: { startTime, endTime, operationType: tipo },
       });
 
@@ -75,17 +82,53 @@ const CustomHeader: React.FC = () => {
 
   const handleIniciarSimulacion = async () => {
     try {
-      const response = await axios.post(
-        `${ServicesProperties.BaseUrl}/simulacion/iniciar?userId=${userId}`, dataPrueba,
-        { headers: ServicesProperties.Headers }
-      );
-      console.log('Simulación iniciada, respuesta del servidor:', response.data);
+
+      if (selectedDate && selectedTime && tipo) {
+        const startTime = new Date(
+          selectedDate.year(),
+          selectedDate.month(),
+          selectedDate.date(),
+          selectedTime.hour(),
+          selectedTime.minute()
+        );
+
+        let endTime: Date;
+
+        if (tipo === 'semanal') {
+          console.log('MSJ: Iniciando simulación semanal');
+          endTime = new Date(startTime.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 días después
+        } else if (tipo === 'colapso') {
+          console.log('MSJ: Iniciando simulación colapso');
+          endTime = new Date(startTime.getTime() + 365 * 24 * 60 * 60 * 1000);
+        } else {
+          console.log('Emergencia, no se escogio ni semanal ni coplapso pero igual quiere ejecutarse');
+          return;
+        }
+
+        const pedidos = mapearContenidoAArchivos(simulacion, startTime, endTime);
+
+        const formattedStartTime = dayjs(startTime).format('YYYY-MM-DDTHH:mm:ss');
+
+        const dataPrueba = {
+          ...nuevaDataPrueba,
+          pedidos,
+          fechaInicio: formattedStartTime,
+        };
+
+        console.log("Pedidos", pedidos);
+
+        const response = await axios.post(
+          `${ServicesProperties.BaseUrl}/simulacion/iniciar?userId=${userId}`, dataPrueba,
+          { headers: ServicesProperties.Headers }
+        );
+        console.log('Simulación iniciada, respuesta del servidor:', response.data);
+      }
     } catch (error) {
       console.error('Error al iniciar la simulación:', error);
     }
   };
 
-  const getDynamicBackground = (value: Dayjs | string | null) => (value ? '#E6F0FB' : '#FAFAFA'); 
+  const getDynamicBackground = (value: Dayjs | string | null) => (value ? '#E6F0FB' : '#FAFAFA');
 
   // Actualizar todas las referencias a state por simulationState
   const handleSearch = () => {
@@ -125,8 +168,8 @@ const CustomHeader: React.FC = () => {
       ...simulationState.unplannedOrders,
       ...simulationState.vehicles.flatMap(vehicle => vehicle.ruta?.pedidos || [])
     ];
-    
-    const order = allOrders.find((order) => 
+
+    const order = allOrders.find((order) =>
       order.idPedido.toUpperCase() === query
     );
     if (order) {
@@ -149,14 +192,14 @@ const CustomHeader: React.FC = () => {
             value={selectedDate}
             onChange={(newValue) => setSelectedDate(newValue)}
             disabled={simulationState.isPlaying}
-            format="DD/MM/YYYY" 
+            format="DD/MM/YYYY"
             slotProps={{
               textField: {
                 size: 'small',
                 placeholder: 'Fecha',
-                sx: { 
+                sx: {
                   width: '149px',
-                  backgroundColor: getDynamicBackground(selectedDate),  
+                  backgroundColor: getDynamicBackground(selectedDate),
                 },
                 disabled: simulationState.isPlaying,
               },
@@ -172,7 +215,7 @@ const CustomHeader: React.FC = () => {
               textField: {
                 size: 'small',
                 placeholder: 'Hora',
-                sx: { 
+                sx: {
                   width: '135px',
                   backgroundColor: getDynamicBackground(selectedTime),
                 },
@@ -239,7 +282,7 @@ const CustomHeader: React.FC = () => {
             }}
           >
             {simulationState.isPlaying ? <Stop /> : <PlayArrow />}
-          </Button>        
+          </Button>
         </Box>
         {/* Contenedor para el buscador */}
         <Box display="flex" alignItems="center" justifyContent="flex-start" gap={2}>
@@ -248,7 +291,7 @@ const CustomHeader: React.FC = () => {
             placeholder="Ingrese el código del Pedido, Camión u Oficina"
             value={searchCode}
             onChange={(e) => setSearchCode(e.target.value)}
-            sx={{ 
+            sx={{
               width: 486,
               backgroundColor: getDynamicBackground(searchCode),
             }}
