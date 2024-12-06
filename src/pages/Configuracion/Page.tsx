@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './page.module.css';
 import { Chip, styled, Box, Typography, Button, CircularProgress } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
@@ -19,7 +19,8 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 const Page: React.FC = () => {
-  const { simulacion, loading, error, fetchSimulacion, uploadFile, deleteFile } = useArchivos();
+  const { simulacion, error, fetchSimulacion, uploadFile, deleteFile } = useArchivos();
+  const [loadingMes, setLoadingMes] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchSimulacion();
@@ -27,36 +28,48 @@ const Page: React.FC = () => {
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, mes: Mes) => {
     if (event.target.files) {
+      setLoadingMes((prev) => ({ ...prev, [mes]: true }));
       const files = Array.from(event.target.files);
       for (const file of files) {
         await uploadFile(mes, file); // Esperar a que se complete la subida
       }
       await fetchSimulacion(); // Refrescar la información después de subir archivos
+      setLoadingMes((prev) => ({ ...prev, [mes]: false }));
     }
   };
 
   const handleDelete = async (mes: Mes) => {
+    setLoadingMes((prev) => ({ ...prev, [mes]: true }));
     await deleteFile(mes); // Esperar a que se complete la eliminación
     await fetchSimulacion(); // Refrescar la información después de eliminar un archivo
+    setLoadingMes((prev) => ({ ...prev, [mes]: false }));
   };
 
   const renderChip = (mes: Mes) => {
     const mesKey = mes.toLowerCase() as keyof PedidosSimulacion;
-
     const archivo = simulacion[mesKey];
+    const isLoading = loadingMes[mes] ?? false;
 
     return (
-      <Box key={mes}>
-        <Typography variant="h6">{mes}</Typography>
+      <Box
+        display="flex"
+        justifyContent={'space-between'}
+        gap={5}
+        key={mes}
+      >
+        <Typography variant="subtitle1">{mes}</Typography>
 
         <div className={styles.monthContainer}>
-          {archivo ? (
+          {isLoading ? (
+            <CircularProgress size={20} />
+          ) : archivo ? (
             <Chip
               variant="outlined"
               label={archivo.nombre}
               onDelete={() => handleDelete(mes)}
               color="primary"
               className={styles.button}
+              size="small"
             />
           ) : (
             <Button
@@ -64,6 +77,7 @@ const Page: React.FC = () => {
               variant="contained"
               startIcon={<CloudUpload />}
               className={styles.button}
+              size="small"
             >
               Subir Archivo
               <VisuallyHiddenInput
@@ -78,15 +92,6 @@ const Page: React.FC = () => {
     );
   };
 
-  if (loading) {
-    return (
-      <div className={styles.container}>
-        <CircularProgress />
-        <Typography variant="h6" sx={{ marginTop: '10px' }}>Cargando simulación...</Typography>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className={styles.container}>
@@ -96,15 +101,18 @@ const Page: React.FC = () => {
   }
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ height: '100%', overflow: 'auto' }}>
       <h3>Simulacion - Pedidos</h3>
       <Box
-        display="grid"
-        gridTemplateColumns="repeat(3, 1fr)"
+        display="flex"
+        flexDirection="column"
         gap={3}
-        sx={{ marginTop: '20px' }}
       >
-        {Object.values(Mes).map((mes) => renderChip(mes))}
+        {Object.values(Mes).map((mes) => (
+          <Box key={mes} display="flex" flexDirection="row" gap={3} width="100%">
+            {renderChip(mes)}
+          </Box>
+        ))}
       </Box>
     </div>
   );

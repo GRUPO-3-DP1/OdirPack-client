@@ -270,6 +270,68 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
             // Si el tiempo actual está dentro del periodo de mantenimiento
             if (newTime >= maintenanceStartTime && newTime < maintenanceEndTime) {
+              const finishStopTime = new Date(maintenanceStartTime.getTime() + 2 * 60 * 60 * 1000); // 2 horas en milisegundos
+
+              //Entra en averia
+              switch (vehicle.averia.tipo) {
+                case 'MODERADA':
+                  break;
+                case 'FUERTE':
+                  // Lógica para avería fuerte
+                  if (newTime > finishStopTime) {
+                    return {
+                      ...vehicle,
+                      maintenance: {
+                        inMaintenance: true,
+                        startTime: maintenanceStartTime,
+                        duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
+                        officeUbigeo: vehicle.averia.almacenAsignado,
+                      },
+                      position: {
+                        ...vehicle.position,
+                        currentSegmentIndex: -1,
+                      },
+                    };
+                  } else {
+                    return {
+                      ...vehicle,
+                      maintenance: {
+                        inMaintenance: true,
+                        startTime: maintenanceStartTime,
+                        duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
+                        officeUbigeo: vehicle.averia.almacenAsignado,
+                      },
+                    };
+                  }
+                case 'SINIESTRO':
+                  // Lógica para siniestro
+                  if (newTime > finishStopTime) {
+                    return {
+                      ...vehicle,
+                      maintenance: {
+                        inMaintenance: true,
+                        startTime: maintenanceStartTime,
+                        duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
+                        officeUbigeo: vehicle.averia.almacenAsignado,
+                      },
+                      position: {
+                        ...vehicle.position,
+                        currentSegmentIndex: -1,
+                      },
+                    };
+                  } else {
+                    return {
+                      ...vehicle,
+                      maintenance: {
+                        inMaintenance: true,
+                        startTime: maintenanceStartTime,
+                        duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
+                        officeUbigeo: vehicle.averia.almacenAsignado,
+                      },
+                    };
+                  }
+              }
+
               return {
                 ...vehicle,
                 maintenance: {
@@ -281,7 +343,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                 currentAveria: true,
                 position: {
                   ...vehicle.position,
-                  //currentSegmentIndex: -1,
                 },
               };
             }
