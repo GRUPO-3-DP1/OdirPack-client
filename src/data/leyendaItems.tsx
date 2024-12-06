@@ -20,7 +20,7 @@ export const leyendaItems: { icon: JSX.Element, text: string; name: MarkerTypes;
     name: "oficinas"
   },
   {
-    icon: <AveriaIcon fontSize='small' />,
+    icon: <AveriaIcon style={{ width: '20px', height: '20px' }} />,
     text: "Camión averiado",
     name: "camionesAveriados"
   },

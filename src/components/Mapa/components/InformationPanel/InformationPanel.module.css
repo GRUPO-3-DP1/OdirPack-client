@@ -46,3 +46,66 @@
   align-items: center;
   justify-content: center;
 }  
+
+.infoContainer {
+  background-color: #f5f5f5;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.flexRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.iconSpacing {
+  margin-bottom: 0.5rem;
+}
+
+/* Para accordions */
+.accordionSummary {
+  min-height: 0 !important;
+  padding: 0 16px !important;
+  margin: 0 !important;
+}
+
+/* Para el contenido de AccordionDetails cuando necesites padding */
+.accordionDetailsBox {
+  padding: 8px 16px;
+  padding-top: 0;
+}
+
+/* Caja con scroll, bordes y fondo */
+.scrollableBox {
+  max-height: 140px;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+/* Para la caja con la ruta del camión */
+.routeBox {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+/* Segmentos de la ruta */
+.routeSegment {
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Botón para mostrar/ocultar tramos pasados */
+.toggleButton {
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  text-transform: none; 
+}

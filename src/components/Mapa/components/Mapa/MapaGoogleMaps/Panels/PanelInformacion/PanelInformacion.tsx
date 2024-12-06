@@ -33,7 +33,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   if (!show) {
     return null;
   }
- 
+  //console.log('selectedCamion:', selectedCamion);
   return (
     <MapControl position={ControlPosition.TOP_RIGHT}>
       <div className={styles.panel}>

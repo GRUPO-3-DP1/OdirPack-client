@@ -28,6 +28,7 @@ import duration from 'dayjs/plugin/duration';
 dayjs.extend(duration);
 import { Vehicle as Camion } from '../../../../context/Simulacion/simulationTypes';
 import oficinas from '../../../../data/oficinas';
+import styles from './InformationPanel.module.css';
 
 interface TruckViewProps {
   selectedCamion: Camion;
@@ -104,15 +105,30 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
       const pedidos = selectedCamion.ruta.pedidos;
       const currentTime = state.currentTime;
 
+      // const pedidosEnCamion = pedidos.filter((pedido) => {
+      //   const fechaRecogida = pedido.fechaRecogida ? new Date(pedido.fechaRecogida) : null;
+      //   const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+        
+      //   if (fechaRecogida && fechaLlegada) {
+      //     return fechaRecogida <= currentTime && fechaLlegada > currentTime;
+      //   } else {
+      //     return false;
+      //   }
+      // });
       const pedidosEnCamion = pedidos.filter((pedido) => {
-        const fechaRecogida = pedido.fechaRecogida ? new Date(pedido.fechaRecogida) : null;
-        const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
-
+        // Get dates from selectedCamion.ruta.fechasSalida and fechasLlegada arrays
+        const index = pedidos.indexOf(pedido);
+        const fechaRecogida = selectedCamion.ruta.fechasSalida[index] 
+          ? new Date(selectedCamion.ruta.fechasSalida[index]) 
+          : null;
+        const fechaLlegada = selectedCamion.ruta.fechasLlegada[index]
+          ? new Date(selectedCamion.ruta.fechasLlegada[index])
+          : null;
+  
         if (fechaRecogida && fechaLlegada) {
           return fechaRecogida <= currentTime && fechaLlegada > currentTime;
-        } else {
-          return false;
         }
+        return false;
       });
 
       const totalCantidad = pedidosEnCamion.reduce((total, pedido) => total + (pedido.cantidad || 0), 0);
@@ -148,15 +164,8 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
   return (
     <>
       {/* Información principal del camión */}
-      <Box
-        sx={{
-          backgroundColor: '#f5f5f5',
-          padding: '8px',
-          borderRadius: '4px',
-          marginBottom: '8px',
-        }}
-      >
-        <Box display="flex" justifyContent="space-between" alignItems="center">
+      <Box className={styles.infoContainer}>
+        <Box className={styles.flexRow}>
           <div>
             <Typography variant="subtitle1" color="textPrimary">
               <b>Información del camión</b>
@@ -186,20 +195,15 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
           expandIcon={<ExpandMore />}
           aria-controls="panel2-content"
           id="panel2-header"
-          sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+          className={styles.accordionSummary}
         >
           <Typography variant="subtitle2" color="textPrimary">
             <b>Detalles de camión</b>
           </Typography>
         </AccordionSummary>
-        <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
+        <AccordionDetails className={styles.accordionDetailsBox}>
           <Box>
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              sx={{ mb: 1 }}
-            >
+            <Box display="flex" justifyContent="space-between" alignItems="center">
               <Box display="flex">
                 <Typography variant="body2" color="textSecondary">
                   Tipo camión:
@@ -208,8 +212,6 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                   {getTipoCamion(selectedCamion.capacidadCarga)}
                 </Typography>
               </Box>
-            </Box>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
               <Box display="flex">
                 <Typography variant="body2" color="textSecondary">
                   Velocidad máxima:
@@ -218,15 +220,22 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                   {getMaxSpeedForCamion(selectedCamion)} Km/h
                 </Typography>
               </Box>
+            </Box>
+            {/* <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              sx={{ mb: 1 }}
+            >
               <Box display="flex">
                 <Typography variant="body2" color="textSecondary">
-                  Capacidad de carga:
+                  Estado:
                 </Typography>
                 <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                  {selectedCamion.capacidadCarga}
+                  {getTipoCamion(selectedCamion.capacidadCarga)}
                 </Typography>
               </Box>
-            </Box>
+            </Box> */}
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -237,23 +246,14 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
           expandIcon={<ExpandMore />}
           aria-controls="lista-pedidos-content"
           id="lista-pedidos-header"
-          sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+          className={styles.accordionSummary}
         >
           <Typography variant="subtitle2" color="textPrimary">
             <b>Pedidos entregados</b>
           </Typography>
         </AccordionSummary>
-        <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-          <Box
-            sx={{
-              maxHeight: '140px',
-              overflowY: 'auto',
-              padding: '8px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              backgroundColor: '#f9f9f9',
-            }}
-          >
+        <AccordionDetails className={styles.accordionDetailsBox}>
+          <Box className={styles.routeBox}>
             {pedidosDelCamion && pedidosDelCamion.length > 0 ? (
               pedidosDelCamion.map((pedido) => {
                 const isEntregado = pedido.estado === 'Entregado';
@@ -262,6 +262,8 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                 const IconComponent = isEntregado ? CheckCircle : PendingActions;
 
                 const destinoOficina = oficinas.find((office) => office.ubigeo === pedido.ubigeoDestino);
+                const origenOficina = pedido.ubigeoOrigen ? oficinas.find((office) => office.ubigeo === pedido.ubigeoOrigen) : null;
+
 
                 return (
                   <Box
@@ -271,28 +273,37 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                       padding: '8px',
                       borderRadius: '4px',
                       marginBottom: '8px',
+                      display: 'flex',
+                      alignItems: 'flex-start',
                     }}
                   >
-                    <Box display="flex" alignItems="center">
-                      <IconComponent sx={{ color: iconColor, marginRight: '8px' }} />
-                      <Typography variant="subtitle1" color="textPrimary">
-                        <b>Pedido {pedido.idPedido}</b>
+                    <IconComponent sx={{ color: iconColor, marginRight: '8px', marginTop: '4px' }} />
+                    <Box>
+                      <Typography variant="body2" color="textPrimary">
+                        <b>{pedido.idPedido}</b>
                       </Typography>
-                    </Box>
-                    <Typography variant="body2" color="textSecondary">
-                      <b>Estado:</b> {pedido.estado}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      <b>Cantidad:</b> {pedido.cantidad} unidades
-                    </Typography>
-                    {destinoOficina && (
                       <Typography variant="body2" color="textSecondary">
-                        <b>Destino:</b> {destinoOficina.departamento}, {destinoOficina.provincia}
+                        <b>Cantidad:</b> {pedido.cantidad} unidades
                       </Typography>
-                    )}
-                    <Typography variant="body2" color="textSecondary">
-                      <b>Hora de entrega:</b> {dayjs(pedido.fechaLlegada).format('DD/MM/YYYY, hh:mm A')}
-                    </Typography>
+                      {origenOficina && (
+                        <Typography variant="body2" color="textSecondary">
+                          <b>Origen:</b> {origenOficina.departamento}, {origenOficina.provincia}
+                        </Typography>
+                      )}
+                      {destinoOficina && (
+                        <Typography variant="body2" color="textSecondary">
+                          <b>Destino:</b> {destinoOficina.departamento}, {destinoOficina.provincia}
+                        </Typography>
+                      )}
+                      <Typography variant="body2" color="textSecondary">
+                        <b>Registro:</b> {dayjs(pedido.fechaRegistro).format('DD/MM/YYYY, hh:mm A')}
+                      </Typography>
+                      {isEntregado && (
+                        <Typography variant="body2" color="textSecondary">
+                          <b>Entrega:</b> {dayjs(pedido.fechaLlegada).format('DD/MM/YYYY, hh:mm A')}
+                        </Typography>
+                      )}
+                    </Box>
                   </Box>
                 );
               })
@@ -311,23 +322,14 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
           expandIcon={<ExpandMore />}
           aria-controls="lista-pedidos-content"
           id="lista-pedidos-header"
-          sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+          className={styles.accordionSummary}
         >
           <Typography variant="subtitle2" color="textPrimary">
             <b>Pedidos programados</b>
           </Typography>
         </AccordionSummary>
-        <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-          <Box
-            sx={{
-              maxHeight: '140px',
-              overflowY: 'auto',
-              padding: '8px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              backgroundColor: '#f9f9f9',
-            }}
-          >
+        <AccordionDetails className={styles.accordionDetailsBox}>
+          <Box className={styles.routeBox}>
             {pedidosDelCamionActual && pedidosDelCamionActual.length > 0 ? (
               pedidosDelCamionActual.map((pedido) => {
                 const isEntregado = pedido.estado === 'Entregado';
@@ -336,6 +338,7 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                 const IconComponent = isEntregado ? CheckCircle : PendingActions;
 
                 const destinoOficina = oficinas.find((office) => office.ubigeo === pedido.ubigeoDestino);
+                const origenOficina = pedido.ubigeoOrigen ? oficinas.find((office) => office.ubigeo === pedido.ubigeoOrigen) : null;
 
                 return (
                   <Box
@@ -345,28 +348,38 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                       padding: '8px',
                       borderRadius: '4px',
                       marginBottom: '8px',
+                      display: 'flex', // Flexbox para alineación horizontal
+                      alignItems: 'flex-start', // Alinear ítems al inicio verticalmente
                     }}
                   >
-                    <Box display="flex" alignItems="center">
-                      <IconComponent sx={{ color: iconColor, marginRight: '8px' }} />
-                      <Typography variant="subtitle1" color="textPrimary">
-                        <b>Pedido {pedido.idPedido}</b>
+                    {/* Icono alineado con el texto */}
+                    <IconComponent sx={{ color: iconColor, marginRight: '8px', marginTop: '4px' }} />
+                    <Box>
+                      <Typography variant="body2" color="textPrimary">
+                        <b>{pedido.idPedido}</b>
                       </Typography>
-                    </Box>
-                    <Typography variant="body2" color="textSecondary">
-                      <b>Estado:</b> {pedido.estado}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      <b>Cantidad:</b> {pedido.cantidad} unidades
-                    </Typography>
-                    {destinoOficina && (
                       <Typography variant="body2" color="textSecondary">
-                        <b>Destino:</b> {destinoOficina.departamento}, {destinoOficina.provincia}
+                        <b>Cantidad:</b> {pedido.cantidad} unidades
                       </Typography>
-                    )}
-                    <Typography variant="body2" color="textSecondary">
-                      <b>Fecha Registro:</b> {dayjs(pedido.fechaRegistro).format('DD/MM/YYYY, hh:mm A')}
-                    </Typography>
+                      {origenOficina && (
+                        <Typography variant="body2" color="textSecondary">
+                          <b>Origen:</b> {origenOficina.departamento}, {origenOficina.provincia}
+                        </Typography>
+                      )}
+                      {destinoOficina && (
+                        <Typography variant="body2" color="textSecondary">
+                          <b>Destino:</b> {destinoOficina.departamento}, {destinoOficina.provincia}
+                        </Typography>
+                      )}
+                      <Typography variant="body2" color="textSecondary">
+                        <b>Registro:</b> {dayjs(pedido.fechaRegistro).format('DD/MM/YYYY, hh:mm A')}
+                      </Typography>
+                      {!isEntregado && (
+                        <Typography variant="body2" color="textSecondary">
+                          <b>Plazo máximo:</b> {dayjs(pedido.fechaLlegada).format('DD/MM/YYYY, hh:mm A')}
+                        </Typography>
+                      )}
+                    </Box>
                   </Box>
                 );
               })
@@ -379,26 +392,26 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
         </AccordionDetails>
       </Accordion>
 
-      {/* Nueva sección: Ruta del camión */}
+      {/* Ruta del camión */}
       <Accordion disableGutters>
         <AccordionSummary
           expandIcon={<ExpandMore />}
           aria-controls="ruta-camion-content"
           id="ruta-camion-header"
-          sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
+          className={styles.accordionSummary}
         >
           <Typography variant="subtitle2" color="textPrimary">
             <b>Ruta del camión</b>
           </Typography>
         </AccordionSummary>
-        <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-          <Box sx={{ maxHeight: '300px', overflowY: 'auto', padding: '8px' }}>
+        <AccordionDetails className={styles.accordionDetailsBox}>
+          <Box className={styles.routeBox}>
             {/* Botón para mostrar/ocultar tramos pasados */}
             {selectedCamion.position.currentSegmentIndex > 0 && (
               <Button
                 startIcon={showPastSegments ? <ExpandLess /> : <ExpandMore />}
                 onClick={() => setShowPastSegments(!showPastSegments)}
-                sx={{ mb: 1, fontSize: '0.875rem' }}
+                className={styles.toggleButton}
                 size="small"
               >
                 {showPastSegments ? 'Ocultar tramos pasados' : 'Mostrar tramos pasados'}
@@ -479,8 +492,8 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                 >
                   <IconComponent sx={{ color: iconColor, marginRight: '8px', marginTop: '4px' }} />
                   <Box>
-                    <Typography variant="body2" color="textSecondary">
-                      <b>Tramo {index + 1}</b> - {statusText}
+                    <Typography variant="body2" color="textPrimary">
+                      <b>Tramo {index + 1}</b>&nbsp;-&nbsp;{statusText}
                     </Typography>
                     {origenOficina && destinoOficina && (
                       <>
@@ -493,10 +506,10 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                       </>
                     )}
                     <Typography variant="body2" color="textSecondary">
-                      <b>Fecha Salida:</b> {fechaSalida ? dayjs(fechaSalida).format('DD/MM/YYYY, hh:mm A') : 'No disponible'}
+                      <b>Salida:</b> {fechaSalida ? dayjs(fechaSalida).format('DD/MM/YYYY, hh:mm A') : 'No disponible'}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
-                      <b>Fecha Llegada:</b> {fechaLlegada ? dayjs(fechaLlegada).format('DD/MM/YYYY, hh:mm A') : 'No disponible'}
+                      <b>Llegada:</b> {fechaLlegada ? dayjs(fechaLlegada).format('DD/MM/YYYY, hh:mm A') : 'No disponible'}
                     </Typography>
                   </Box>
                 </Box>
@@ -508,7 +521,7 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
 
       {/* Registrar Avería */}
       {showRegisterAveria && (
-        <Accordion defaultExpanded disableGutters>
+        <Accordion disableGutters>
           <AccordionSummary
             expandIcon={<ExpandMore />}
             aria-controls="panel-averias-content"

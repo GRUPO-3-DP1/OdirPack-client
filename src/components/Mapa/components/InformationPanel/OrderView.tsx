@@ -16,6 +16,7 @@ import {
 import dayjs from 'dayjs';
 import { Order, Oficina } from '../../../../context/Simulacion/simulationTypes';
 import oficinas from '../../../../data/oficinas';
+import styles from './InformationPanel.module.css';
 
 interface OrderViewProps {
   selectedPedido: Order;
@@ -185,33 +186,24 @@ const OrderView: React.FC<OrderViewProps> = ({ selectedPedido }) => {
             sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
           >
             <Typography variant="subtitle2" color="textPrimary">
-              <b>Oficinas en la ruta</b>
+              <b>Ruta del pedido</b>
             </Typography>
           </AccordionSummary>
           <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
-            <Box
-              sx={{
-                maxHeight: '300px',
-                overflowY: 'auto',
-                padding: '8px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                backgroundColor: '#f9f9f9',
-              }}
-            >
+            <Box className={styles.routeBox}>
               {officeVisits.map((visit, index) => {
                 const { office, status, arrivalTime, departureTime, unidadesEntregadas } = visit;
 
                 let cardColor = '';
                 switch (status) {
                   case 'Programado':
-                    cardColor = '#E0E0E0'; // Gris claro
+                    cardColor = '#F5F5F5'; // Gris más claro y suave
                     break;
                   case 'Visitado':
-                    cardColor = '#90CAF9'; // Azul claro
+                    cardColor = '#DCEEFF'; // Azul claro más apagado
                     break;
                   case 'Entregado':
-                    cardColor = '#81C784'; // Verde claro
+                    cardColor = '#D4EFD9'; // Verde claro más tenue
                     break;
                   default:
                     cardColor = '#FFFFFF'; // Blanco por defecto
@@ -225,30 +217,30 @@ const OrderView: React.FC<OrderViewProps> = ({ selectedPedido }) => {
                       padding: '8px',
                       borderRadius: '4px',
                       marginBottom: '8px',
+                      display: 'flex', // Alinear ítems horizontalmente
+                      alignItems: 'flex-start', // Alinear verticalmente al inicio
                     }}
                   >
-                    <Box display="flex" alignItems="center">
-                      <Business sx={{ color: '#616161', marginRight: '8px' }} />
-                      <Typography variant="subtitle1" color="textPrimary">
+                    {/* Ícono alineado a la izquierda */}
+                    <Business sx={{ color: '#616161', marginRight: '8px', marginTop: '4px' }} />
+                    <Box>
+                      <Typography variant="body2" color="textPrimary">
                         <b>
-                          {office.departamento}, {office.provincia}
+                          {office.departamento}, {office.provincia}&nbsp;-&nbsp;{status}
                         </b>
                       </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        <b>Llegada:</b>{' '}
+                        {arrivalTime ? dayjs(arrivalTime).format('DD/MM/YYYY, hh:mm A') : 'N/A'}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        <b>Salida:</b>{' '}
+                        {departureTime ? dayjs(departureTime).format('DD/MM/YYYY, hh:mm A') : 'N/A'}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        <b>Unidades entregadas:</b> {unidadesEntregadas}
+                      </Typography>
                     </Box>
-                    <Typography variant="body2" color="textSecondary">
-                      <b>Estado:</b> {status}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      <b>Hora de llegada:</b>{' '}
-                      {arrivalTime ? dayjs(arrivalTime).format('DD/MM/YYYY, hh:mm A') : 'N/A'}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      <b>Hora de salida:</b>{' '}
-                      {departureTime ? dayjs(departureTime).format('DD/MM/YYYY, hh:mm A') : 'N/A'}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      <b>Unidades entregadas:</b> {unidadesEntregadas}
-                    </Typography>
                   </Box>
                 );
               })}
