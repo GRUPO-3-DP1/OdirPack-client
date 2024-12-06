@@ -433,7 +433,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         // Remover pedidos que han estado más de 4 horas
         updatedOffice.currentOrders = updatedOffice.currentOrders.filter((currentOrder) => {
           const timeInOffice = newTime.getTime() - currentOrder.arrivalTime.getTime();
-          const fourHoursInMs = 4 * 60 * 60 * 1000;
+          const fourHoursInMs = 1 * 60 * 60 * 1000;
           return timeInOffice <= fourHoursInMs;
         });
 

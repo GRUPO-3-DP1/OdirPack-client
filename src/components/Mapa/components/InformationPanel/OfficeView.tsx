@@ -94,7 +94,12 @@ const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
   );
 
   return (
-    <>
+    <Box
+      sx={{
+        maxHeight: '80vh', // Altura máxima para limitar el scroll
+        overflowY: 'auto', // Habilita scroll vertical
+      }}
+    >
       {/* Información de la oficina seleccionada */}
       <Box
         sx={{
@@ -272,11 +277,16 @@ const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
             {maintenanceVehicles.length > 0 && (
               <>
                 {maintenanceVehicles.map((vehicle: Camion) => {
-                  const timeRemainingMs =
+                  const timeRemainingMs = Math.max(
+                    0,
                     vehicle.maintenance!.startTime.getTime() +
                     vehicle.maintenance!.duration -
-                    state.currentTime.getTime();
-
+                    state.currentTime.getTime()
+                  );
+                  // Skip rendering if no time remaining
+                  if (timeRemainingMs === 0) {
+                    return null;
+                  }
                   const timeRemainingDuration = dayjs.duration(timeRemainingMs);
                   const hours = Math.floor(timeRemainingDuration.asHours());
                   const minutes = timeRemainingDuration.minutes();
@@ -346,7 +356,7 @@ const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
           </Box>
         </AccordionDetails>
       </Accordion>
-    </>
+    </Box>
   );
 };
 

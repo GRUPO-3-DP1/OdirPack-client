@@ -82,7 +82,12 @@ const OrderView: React.FC<OrderViewProps> = ({ selectedPedido }) => {
   }
 
   return (
-    <>
+    <Box
+      sx={{
+        maxHeight: '80vh', // Altura máxima para limitar el scroll
+        overflowY: 'auto', // Habilita scroll vertical
+      }}
+    >
       {/* Información del pedido */}
       <Box
         sx={{
@@ -248,7 +253,7 @@ const OrderView: React.FC<OrderViewProps> = ({ selectedPedido }) => {
           </AccordionDetails>
         </Accordion>
       )}
-    </>
+    </Box>
   );
 };
 

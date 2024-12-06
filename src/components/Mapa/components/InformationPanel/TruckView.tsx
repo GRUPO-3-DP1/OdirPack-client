@@ -162,7 +162,12 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
     });
 
   return (
-    <>
+    <Box
+      sx={{
+        maxHeight: '80vh', // Altura máxima para limitar el scroll
+        overflowY: 'auto', // Habilita scroll vertical
+      }}
+    >
       {/* Información principal del camión */}
       <Box className={styles.infoContainer}>
         <Box className={styles.flexRow}>
@@ -623,7 +628,7 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
           </AccordionDetails>
         </Accordion>
       )}
-    </>
+    </Box>
   );
 };
 
