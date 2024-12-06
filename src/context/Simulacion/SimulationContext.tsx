@@ -82,9 +82,9 @@ const initialState = {
   vehicles: [],
   speed: 50, //50 por defecto
   ends: false,
-  startTime: new Date('2024-10-21T00:00:00Z'),
-  currentTime: new Date('2024-10-21T00:00:00Z'),
-  endTime: new Date('2024-10-28T00:00:00Z'),
+  startTime: new Date('2024-12-21T00:00:00Z'),
+  currentTime: new Date('2024-12-21T00:00:00Z'),
+  endTime: new Date('2024-12-28T00:00:00Z'),
   trucksInMotion: 0,
   trucksInMaintenance: 0,
   totalTrucks: 0,
