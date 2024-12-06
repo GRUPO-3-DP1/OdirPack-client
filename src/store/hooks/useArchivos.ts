@@ -14,20 +14,7 @@ type UseArchivosReturn = {
 };
 
 function useArchivos(): UseArchivosReturn {
-  const [simulacion, setSimulacion] = useState<PedidosSimulacion>({
-    enero: null,
-    febrero: null,
-    marzo: null,
-    abril: null,
-    mayo: null,
-    junio: null,
-    julio: null,
-    agosto: null,
-    septiembre: null,
-    octubre: null,
-    noviembre: null,
-    diciembre: null,
-  });
+  const [simulacion, setSimulacion] = useState<PedidosSimulacion>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,23 +25,15 @@ function useArchivos(): UseArchivosReturn {
     try {
       const data: PedidosSimulacion = await obtenerSimulacion();
 
-      // Verifica que 'data' tiene la estructura de 'PedidosSimulacion'
+      // Verifica que 'data' tiene la estructura correcta
       if (data && typeof data === 'object') {
-
-        const simulacionData: PedidosSimulacion = {
-          enero: data.enero ? mapToArchivo(data.enero) : null,
-          febrero: data.febrero ? mapToArchivo(data.febrero) : null,
-          marzo: data.marzo ? mapToArchivo(data.marzo) : null,
-          abril: data.abril ? mapToArchivo(data.abril) : null,
-          mayo: data.mayo ? mapToArchivo(data.mayo) : null,
-          junio: data.junio ? mapToArchivo(data.junio) : null,
-          julio: data.julio ? mapToArchivo(data.julio) : null,
-          agosto: data.agosto ? mapToArchivo(data.agosto) : null,
-          septiembre: data.septiembre ? mapToArchivo(data.septiembre) : null,
-          octubre: data.octubre ? mapToArchivo(data.octubre) : null,
-          noviembre: data.noviembre ? mapToArchivo(data.noviembre) : null,
-          diciembre: data.diciembre ? mapToArchivo(data.diciembre) : null,
-        };
+        const simulacionData: PedidosSimulacion = Object.entries(data).reduce(
+          (acc, [mes, archivo]) => ({
+            ...acc,
+            [mes]: archivo ? mapToArchivo(archivo as Archivo) : null,
+          }),
+          {}
+        );
 
         setSimulacion(simulacionData);
       } else {
@@ -68,15 +47,13 @@ function useArchivos(): UseArchivosReturn {
   }, []);
 
   // Función para mapear el archivo
-  const mapToArchivo = (archivoData: Archivo): Archivo => {
-    return {
-      id: archivoData.id,
-      nombre: archivoData.nombre,
-      tipoArchivo: archivoData.tipoArchivo,
-      contenido: archivoData.contenido,
-      fechaCreacion: archivoData.fechaCreacion,
-    };
-  };
+  const mapToArchivo = (archivoData: Archivo): Archivo => ({
+    id: archivoData.id,
+    nombre: archivoData.nombre,
+    tipoArchivo: archivoData.tipoArchivo,
+    contenido: archivoData.contenido,
+    fechaCreacion: archivoData.fechaCreacion,
+  });
 
   // Subir archivo
   const uploadFile = useCallback(async (mes: Mes, file: File) => {
