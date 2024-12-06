@@ -11,9 +11,10 @@ type CamionMarkerProps = Omit<AdvancedMarkerProps, 'position'> & {
   camion: Vehicle;
   ocupacion?: 'baja' | 'media' | 'alta';
   showRoute?: boolean;
+  showAveriado?: boolean;
 };
 
-const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ocupacion = 'alta', showRoute = true, ...markerProps }) => {
+const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ocupacion = 'alta', showRoute = true, showAveriado = true, ...markerProps }) => {
   if (camion.position.currentSegmentIndex == -1) return null;
 
   const espacio = {
@@ -40,7 +41,7 @@ const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ocupacion = 'alta',
         >
           {camion.currentAveria ? (
             // Ícono de camión averiado
-            <AveriaIcon
+            showAveriado && <AveriaIcon
               size="large"
             />
           ) : (

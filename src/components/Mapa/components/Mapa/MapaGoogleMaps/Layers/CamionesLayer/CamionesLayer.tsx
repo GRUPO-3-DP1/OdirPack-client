@@ -63,6 +63,7 @@ const CamionesLayer: React.FC<CamionesLayerProps> = ({ onCamionClick }) => {
               onCamionClick(vehicle);
             }}
             showRoute={visibility.tramos}
+            showAveriado={visibility.camionesAveriados}
             ocupacion={ocupacion}
           />
         );
