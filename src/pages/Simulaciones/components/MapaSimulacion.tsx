@@ -73,7 +73,7 @@ const MapaSimulacion: React.FC<MapaProps> = React.memo(({ alwaysShowInfoPanel = 
 
       {/*<PanelResultados show={state.ends} />*/}
       {showResumen && (
-        <PanelResultados show={true} onClose={handleCloseResumen} />
+        <PanelResultados show={false} onClose={handleCloseResumen} />
       )}
 
       {/* Layers de marcadores */}
