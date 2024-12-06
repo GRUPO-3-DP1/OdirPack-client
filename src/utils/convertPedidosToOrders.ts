@@ -17,6 +17,7 @@ export function convertPedidosToOrders(
       fechaLlegada: pedido.fechaLlegada,
       fechaSalida: pedido.fechaSalida,
       fechaRecogida: fechaRecogida,
+      isReplanificado: pedido.isReplanificado || false,
     };
   });
 }

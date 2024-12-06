@@ -19,6 +19,7 @@ export type Order = {
   fechaLlegada: string | null;
   fechaRecogida: string | null;
   fechaSalida: string | null;
+  isReplanificado: boolean;
 };
 
 type Route = {

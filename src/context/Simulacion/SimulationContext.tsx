@@ -136,6 +136,9 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         setLastProcessedSolution(newSolutionString);
 
         const newVehicles = convertSolutionToVehicles(newResponse);
+        /*console.log("Pedidos replanificados:", newVehicles.map(v => 
+          v.ruta.pedidos.filter(p => p.isReplanificado)
+        ));*/
 
         // Procesar oficinas
         const newOffices = convertOffices(newResponse.oficinas);
@@ -252,6 +255,12 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       dispatch({ type: 'SET_CURRENT_TIME', payload: newTime });
 
       const updatedVehicles = state.vehicles.map((vehicle) => {
+        /*console.log("Pedidos del vehículo:", vehicle.idVehiculo, 
+          vehicle.ruta.pedidos.map(p => ({
+            id: p.idPedido,
+            isReplanificado: p.isReplanificado
+          }))
+        );*/
         const { ruta } = vehicle;
         const startTime = new Date(ruta.fechaInicio);
         const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);

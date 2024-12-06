@@ -19,6 +19,7 @@ export type PedidoAlgorithmResponse = {
     cantidad: number;
     idCliente: string;
     estado: string;
+    isReplanificado: boolean;
 };
 
 export type Ruta = {

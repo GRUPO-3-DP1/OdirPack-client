@@ -10,6 +10,7 @@ import {
   ErrorOutline,
   Schedule,
   ExpandLess,
+  SwapHoriz,
 } from '@mui/icons-material';
 import {
   Accordion,
@@ -26,14 +27,14 @@ import {
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 dayjs.extend(duration);
-import { Vehicle as Camion } from '../../../../context/Simulacion/simulationTypes';
+import { Vehicle as Camion, Order } from '../../../../context/Simulacion/simulationTypes';
 import oficinas from '../../../../data/oficinas';
 import styles from './InformationPanel.module.css';
 
 interface TruckViewProps {
   selectedCamion: Camion;
   operationType: 'semanal' | 'colapso' | 'diaadia';
-  showRegisterAveria?: boolean; 
+  showRegisterAveria?: boolean;
 }
 
 const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, showRegisterAveria = true }) => {
@@ -108,7 +109,7 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
       // const pedidosEnCamion = pedidos.filter((pedido) => {
       //   const fechaRecogida = pedido.fechaRecogida ? new Date(pedido.fechaRecogida) : null;
       //   const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
-        
+
       //   if (fechaRecogida && fechaLlegada) {
       //     return fechaRecogida <= currentTime && fechaLlegada > currentTime;
       //   } else {
@@ -118,13 +119,13 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
       const pedidosEnCamion = pedidos.filter((pedido) => {
         // Get dates from selectedCamion.ruta.fechasSalida and fechasLlegada arrays
         const index = pedidos.indexOf(pedido);
-        const fechaRecogida = selectedCamion.ruta.fechasSalida[index] 
-          ? new Date(selectedCamion.ruta.fechasSalida[index]) 
+        const fechaRecogida = selectedCamion.ruta.fechasSalida[index]
+          ? new Date(selectedCamion.ruta.fechasSalida[index])
           : null;
         const fechaLlegada = selectedCamion.ruta.fechasLlegada[index]
           ? new Date(selectedCamion.ruta.fechasLlegada[index])
           : null;
-  
+
         if (fechaRecogida && fechaLlegada) {
           return fechaRecogida <= currentTime && fechaLlegada > currentTime;
         }
@@ -141,6 +142,11 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
   // Pedidos entregados por el camión
   const pedidosDelCamion = selectedCamion?.ruta?.pedidos
     .filter((pedido) => {
+      // Si el camión está averiado y el pedido fue replanificado, no mostrarlo como entregado
+      if (selectedCamion.averia?.isAveria && pedido.isReplanificado) {
+        return false;
+      }
+
       const fechaRegistro = pedido.fechaRegistro ? new Date(pedido.fechaRegistro) : null;
       const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
       return fechaRegistro && fechaRegistro <= state.currentTime && fechaLlegada && fechaLlegada <= state.currentTime;
@@ -160,6 +166,27 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
     .map((pedido) => {
       return { ...pedido, estado: 'Pendiente' };
     });
+
+  // Función para determinar el estado de los pedidos
+  const getPedidosStatus = (pedido: Order) => {
+    // Si es el camión averiado
+    if (selectedCamion.averia?.isAveria) {
+      const fechaAveria = new Date(selectedCamion.averia.fechaRegistro);
+      
+      // Si estamos después de la fecha de avería y el pedido fue replanificado
+      if (state.currentTime >= fechaAveria && pedido.isReplanificado) {
+        // Encontrar el camión que recibió el pedido
+        const nuevoCamion = state.vehicles.find(v => 
+          v.idVehiculo !== selectedCamion.idVehiculo && 
+          v.ruta.pedidos.some(p => p.idPedido === pedido.idPedido)
+        );
+        return `Replanificado a ${nuevoCamion?.idVehiculo || 'otro camión'}`;
+      }
+    }
+
+    // Para cualquier otro caso
+    return 'Pendiente';
+  };
 
   return (
     <>
@@ -331,58 +358,72 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
         <AccordionDetails className={styles.accordionDetailsBox}>
           <Box className={styles.routeBox}>
             {pedidosDelCamionActual && pedidosDelCamionActual.length > 0 ? (
-              pedidosDelCamionActual.map((pedido) => {
-                const isEntregado = pedido.estado === 'Entregado';
-                const cardColor = isEntregado ? '#e8f5e9' : '#fffde7';
-                const iconColor = isEntregado ? '#66bb6a' : '#ffeb3b';
-                const IconComponent = isEntregado ? CheckCircle : PendingActions;
+              pedidosDelCamionActual
+                .filter(pedido => getPedidosStatus(pedido) !== null)
+                .map((pedido) => {
+                  const pedidoStatus = getPedidosStatus(pedido);
+                  let cardColor = '#fffde7'; // amarillo claro
+                  let iconColor = '#ffeb3b';
+                  let IconComponent = PendingActions;
 
-                const destinoOficina = oficinas.find((office) => office.ubigeo === pedido.ubigeoDestino);
-                const origenOficina = pedido.ubigeoOrigen ? oficinas.find((office) => office.ubigeo === pedido.ubigeoOrigen) : null;
+                  if (pedidoStatus.includes('Replanificado')) {
+                    cardColor = '#ffebee'; // rojo claro
+                    iconColor = '#f44336';
+                    IconComponent = SwapHoriz; // Ícono de transferencia
+                  } else if (pedidoStatus === 'En espera de replanificación') {
+                    cardColor = '#fff3e0'; // naranja claro
+                    iconColor = '#ff9800';
+                    IconComponent = ErrorOutline;
+                  }
 
-                return (
-                  <Box
-                    key={pedido.idPedido}
-                    sx={{
-                      backgroundColor: cardColor,
-                      padding: '8px',
-                      borderRadius: '4px',
-                      marginBottom: '8px',
-                      display: 'flex', // Flexbox para alineación horizontal
-                      alignItems: 'flex-start', // Alinear ítems al inicio verticalmente
-                    }}
-                  >
-                    {/* Icono alineado con el texto */}
-                    <IconComponent sx={{ color: iconColor, marginRight: '8px', marginTop: '4px' }} />
-                    <Box>
-                      <Typography variant="body2" color="textPrimary">
-                        <b>{pedido.idPedido}</b>
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        <b>Cantidad:</b> {pedido.cantidad} unidades
-                      </Typography>
-                      {origenOficina && (
-                        <Typography variant="body2" color="textSecondary">
-                          <b>Origen:</b> {origenOficina.departamento}, {origenOficina.provincia}
+                  const destinoOficina = oficinas.find((office) => office.ubigeo === pedido.ubigeoDestino);
+                  const origenOficina = pedido.ubigeoOrigen ? oficinas.find((office) => office.ubigeo === pedido.ubigeoOrigen) : null;
+
+                  return (
+                    <Box
+                      key={pedido.idPedido}
+                      sx={{
+                        backgroundColor: cardColor,
+                        padding: '8px',
+                        borderRadius: '4px',
+                        marginBottom: '8px',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                      }}
+                    >
+                      <IconComponent sx={{ color: iconColor, marginRight: '8px', marginTop: '4px' }} />
+                      <Box>
+                        <Typography variant="body2" color="textPrimary">
+                          <b>{pedido.idPedido}</b>
                         </Typography>
-                      )}
-                      {destinoOficina && (
                         <Typography variant="body2" color="textSecondary">
-                          <b>Destino:</b> {destinoOficina.departamento}, {destinoOficina.provincia}
+                          <b>Estado:</b> {pedidoStatus}
                         </Typography>
-                      )}
-                      <Typography variant="body2" color="textSecondary">
-                        <b>Registro:</b> {dayjs(pedido.fechaRegistro).format('DD/MM/YYYY, hh:mm A')}
-                      </Typography>
-                      {!isEntregado && (
                         <Typography variant="body2" color="textSecondary">
-                          <b>Plazo máximo:</b> {dayjs(pedido.fechaLlegada).format('DD/MM/YYYY, hh:mm A')}
+                          <b>Cantidad:</b> {pedido.cantidad} unidades
                         </Typography>
-                      )}
+                        {origenOficina && (
+                          <Typography variant="body2" color="textSecondary">
+                            <b>Origen:</b> {origenOficina.departamento}, {origenOficina.provincia}
+                          </Typography>
+                        )}
+                        {destinoOficina && (
+                          <Typography variant="body2" color="textSecondary">
+                            <b>Destino:</b> {destinoOficina.departamento}, {destinoOficina.provincia}
+                          </Typography>
+                        )}
+                        <Typography variant="body2" color="textSecondary">
+                          <b>Registro:</b> {dayjs(pedido.fechaRegistro).format('DD/MM/YYYY, hh:mm A')}
+                        </Typography>
+                        {!pedidoStatus.includes('Entregado') && (
+                          <Typography variant="body2" color="textSecondary">
+                            <b>Plazo máximo:</b> {dayjs(pedido.fechaLlegada).format('DD/MM/YYYY, hh:mm A')}
+                          </Typography>
+                        )}
+                      </Box>
                     </Box>
-                  </Box>
-                );
-              })
+                  );
+                })
             ) : (
               <Typography variant="body2" color="textSecondary">
                 El camión no tiene pedidos programados.
@@ -423,7 +464,7 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
               const destinoOficina = oficinas.find((office) => office.ubigeo === tramo.destino.codigo);
               const fechaSalida = selectedCamion.ruta.fechasSalida[index];
               const fechaLlegada = selectedCamion.ruta.fechasLlegada[index];
-              
+
               const currentTime = state.currentTime;
               const isPast = fechaLlegada && new Date(fechaLlegada) < currentTime;
               const isCurrent = selectedCamion.position.currentSegmentIndex === index;
@@ -445,10 +486,10 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
               } */
 
               // Verificar si este es el tramo específico donde ocurre la avería
-              const hasBreakdown = selectedCamion.averia?.isAveria && 
-                                   new Date(selectedCamion.averia.fechaRegistro) <= currentTime &&
-                                   tramo.origen.codigo === selectedCamion.averia.ubiInicio &&
-                                   tramo.destino.codigo === selectedCamion.averia.ubiFin;
+              const hasBreakdown = selectedCamion.averia?.isAveria &&
+                new Date(selectedCamion.averia.fechaRegistro) <= currentTime &&
+                tramo.origen.codigo === selectedCamion.averia.ubiInicio &&
+                tramo.destino.codigo === selectedCamion.averia.ubiFin;
 
               // Si es un tramo pasado y están ocultos, no lo mostramos
               if (isPast && !showPastSegments) return null;
@@ -534,7 +575,7 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
           </AccordionSummary>
           <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
             <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-              <InputLabel 
+              <InputLabel
                 id="tipo-averia-label"
                 sx={{ fontSize: '14px' }}
               >
