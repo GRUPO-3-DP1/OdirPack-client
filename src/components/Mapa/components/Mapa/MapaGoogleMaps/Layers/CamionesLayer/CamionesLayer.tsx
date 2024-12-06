@@ -16,20 +16,24 @@ const CamionesLayer: React.FC<CamionesLayerProps> = ({ onCamionClick }) => {
   return (
     <>
       {state.vehicles.map((vehicle) => {
+        // Carga actual del camión
         const currentTramoLoad = (() => {
           if (vehicle && vehicle.ruta && vehicle.ruta.pedidos) {
             const pedidos = vehicle.ruta.pedidos;
             const currentTime = state.currentTime;
-
             const pedidosEnCamion = pedidos.filter((pedido) => {
-              const fechaRecogida = pedido.fechaRecogida ? new Date(pedido.fechaRecogida) : null;
-              const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+              const index = pedidos.indexOf(pedido);
+              const fechaRecogida = vehicle.ruta.fechasSalida[index]
+                ? new Date(vehicle.ruta.fechasSalida[index])
+                : null;
+              const fechaLlegada = vehicle.ruta.fechasLlegada[index]
+                ? new Date(vehicle.ruta.fechasLlegada[index])
+                : null;
 
               if (fechaRecogida && fechaLlegada) {
                 return fechaRecogida <= currentTime && fechaLlegada > currentTime;
-              } else {
-                return false;
               }
+              return false;
             });
 
             const totalCantidad = pedidosEnCamion.reduce((total, pedido) => total + (pedido.cantidad || 0), 0);
@@ -63,6 +67,7 @@ const CamionesLayer: React.FC<CamionesLayerProps> = ({ onCamionClick }) => {
               onCamionClick(vehicle);
             }}
             showRoute={visibility.tramos}
+            showAveriado={visibility.camionesAveriados}
             ocupacion={ocupacion}
           />
         );

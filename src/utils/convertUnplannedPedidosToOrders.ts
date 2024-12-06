@@ -12,5 +12,6 @@ export function convertUnplannedPedidosToOrders(pedidos: PedidoAlgorithmResponse
     fechaSalida: null,
     fechaLlegada: null,      // No tienen fecha de llegada aún
     fechaRecogida: null,     // No tienen fecha de recogida aún
+    isReplanificado: false,
   }));
 }

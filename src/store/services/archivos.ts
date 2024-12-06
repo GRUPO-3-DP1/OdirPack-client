@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
-import { Mes } from '../types/Mes';
 import { Archivo } from '../types/Archivo';
 import { PedidosSimulacion } from '../types/PedidosSimulacion';
+import { Mes } from '../types/Mes';
 
 // Función para subir un archivo
 async function subirArchivo(mes: Mes, file: File): Promise<Archivo> {
@@ -11,7 +11,7 @@ async function subirArchivo(mes: Mes, file: File): Promise<Archivo> {
     const formData = new FormData();
     formData.append('file', file);
 
-    // Hacer la petición PUT al endpoint de la API para registrar un archivo en un mes específico
+    // Hacer la petición PUT al endpoint de la API
     const response = await axios.put(
       `${ServicesProperties.BaseUrl}/pedidos-simulacion/${mes}`,
       formData,
@@ -23,7 +23,7 @@ async function subirArchivo(mes: Mes, file: File): Promise<Archivo> {
       }
     );
 
-    return response.data.data;
+    return response.data;
   } catch (error) {
     console.error('Error subiendo el archivo:', error);
     throw new Error('Error al subir el archivo');
@@ -33,7 +33,6 @@ async function subirArchivo(mes: Mes, file: File): Promise<Archivo> {
 // Función para eliminar un archivo por mes
 async function eliminarArchivo(mes: Mes): Promise<void> {
   try {
-    // Hacer la petición DELETE al endpoint de la API para eliminar el archivo de un mes específico
     await axios.delete(
       `${ServicesProperties.BaseUrl}/pedidos-simulacion/${mes}`,
       {
@@ -46,7 +45,7 @@ async function eliminarArchivo(mes: Mes): Promise<void> {
   }
 }
 
-// Función para obtener la simulación (los archivos de cada mes)
+// Función para obtener la simulación
 async function obtenerSimulacion(): Promise<PedidosSimulacion> {
   try {
     const response = await axios.get(`${ServicesProperties.BaseUrl}/pedidos-simulacion`, {
