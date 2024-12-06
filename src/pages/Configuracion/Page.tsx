@@ -4,7 +4,6 @@ import { Chip, styled, Box, Typography, Button, CircularProgress } from '@mui/ma
 import { CloudUpload } from '@mui/icons-material';
 import { Mes } from '../../store/types/Mes';
 import useArchivos from '../../store/hooks/useArchivos';
-import { PedidosSimulacion } from '../../store/types/PedidosSimulacion';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -26,28 +25,30 @@ const Page: React.FC = () => {
     fetchSimulacion();
   }, [fetchSimulacion]);
 
+  // Manejar subida de archivo
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, mes: Mes) => {
     if (event.target.files) {
       setLoadingMes((prev) => ({ ...prev, [mes]: true }));
       const files = Array.from(event.target.files);
       for (const file of files) {
-        await uploadFile(mes, file); // Esperar a que se complete la subida
+        await uploadFile(mes, file);
       }
-      await fetchSimulacion(); // Refrescar la información después de subir archivos
+      await fetchSimulacion();
       setLoadingMes((prev) => ({ ...prev, [mes]: false }));
     }
   };
 
+  // Manejar eliminación de archivo
   const handleDelete = async (mes: Mes) => {
     setLoadingMes((prev) => ({ ...prev, [mes]: true }));
-    await deleteFile(mes); // Esperar a que se complete la eliminación
-    await fetchSimulacion(); // Refrescar la información después de eliminar un archivo
+    await deleteFile(mes);
+    await fetchSimulacion();
     setLoadingMes((prev) => ({ ...prev, [mes]: false }));
   };
 
+  // Renderizar chip dinámicamente
   const renderChip = (mes: Mes) => {
-    const mesKey = mes.toLowerCase() as keyof PedidosSimulacion;
-    const archivo = simulacion[mesKey];
+    const archivo = simulacion["archivo" + mes];
     const isLoading = loadingMes[mes] ?? false;
 
     return (
