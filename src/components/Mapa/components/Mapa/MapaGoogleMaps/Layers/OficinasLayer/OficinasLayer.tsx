@@ -14,8 +14,6 @@ const OficinasLayer: React.FC<OficinasLayerProps> = ({ onOficinaClick }) => {
   const { state } = useData();
   const { visibility } = useMapMarker();
 
-  if (!visibility.oficinas) return null;
-
   const mergedOffices = oficinas.map((oficina) => {
     const stateOffice = state.offices.find((o) => o.ubigeo === oficina.ubigeo);
     return stateOffice ? { ...oficina, ...stateOffice } : oficina;
@@ -24,7 +22,6 @@ const OficinasLayer: React.FC<OficinasLayerProps> = ({ onOficinaClick }) => {
   return (
     <>
       {
-        visibility.oficinas &&
         mergedOffices.map((oficina, index) => {
 
           // Si es un almacén y la visibilidad de almacenes está desactivada, no lo renderizamos
