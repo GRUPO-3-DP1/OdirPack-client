@@ -4,7 +4,7 @@ import OficinaMarker from "../../Markers/OficinaMarker/OficinaMarker";
 import { useMapMarker } from "../../../../../../../context/MapMarker/useMapMarker";
 import { Oficina, Order } from "../../../../../../../context/Simulacion/simulationTypes";
 import { useData } from '../../../../../../../context/useData';
-
+import { AdvancedMarker } from "@vis.gl/react-google-maps";
 
 interface OficinasLayerProps {
   onOficinaClick: (oficina: Oficina) => void;
@@ -13,6 +13,54 @@ interface OficinasLayerProps {
 const OficinasLayer: React.FC<OficinasLayerProps> = ({ onOficinaClick }) => {
   const { state } = useData();
   const { visibility } = useMapMarker();
+
+  if (!visibility.oficinas && !visibility.almacenes) {
+    return (
+      <>
+        {oficinas.map((oficina, index) => {
+          return (
+            <AdvancedMarker
+              key={index}
+              position={{ lat: oficina.latitud, lng: oficina.longitud }}
+            >
+              {
+                oficina.isAlmacen ? (
+                  <div
+                    style={{
+                      width: 10,
+                      height: 10,
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      background: '#FFFFFF',
+                      border: '4px solid #000000',
+                      borderRadius: '50%',
+                      transform: 'translate(-50%, -50%)'
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: 5,
+                      height: 5,
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      background: '#1dbe80',
+                      border: '2px solid #0e6443',
+                      borderRadius: '50%',
+                      transform: 'translate(-50%, -50%)'
+                    }}
+                  />
+                )
+              }
+            </AdvancedMarker>
+
+          );
+        })}
+      </>
+    );
+  }
 
   const mergedOffices = oficinas.map((oficina) => {
     const stateOffice = state.offices.find((o) => o.ubigeo === oficina.ubigeo);

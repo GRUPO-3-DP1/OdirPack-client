@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './page.module.css';
 import { Chip, styled, Box, Typography, Button, CircularProgress } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
@@ -19,7 +19,8 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 const Page: React.FC = () => {
-  const { simulacion, loading, error, fetchSimulacion, uploadFile, deleteFile } = useArchivos();
+  const { simulacion, error, fetchSimulacion, uploadFile, deleteFile } = useArchivos();
+  const [loadingMes, setLoadingMes] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchSimulacion();
@@ -27,30 +28,36 @@ const Page: React.FC = () => {
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, mes: Mes) => {
     if (event.target.files) {
+      setLoadingMes((prev) => ({ ...prev, [mes]: true }));
       const files = Array.from(event.target.files);
       for (const file of files) {
         await uploadFile(mes, file); // Esperar a que se complete la subida
       }
       await fetchSimulacion(); // Refrescar la información después de subir archivos
+      setLoadingMes((prev) => ({ ...prev, [mes]: false }));
     }
   };
 
   const handleDelete = async (mes: Mes) => {
+    setLoadingMes((prev) => ({ ...prev, [mes]: true }));
     await deleteFile(mes); // Esperar a que se complete la eliminación
     await fetchSimulacion(); // Refrescar la información después de eliminar un archivo
+    setLoadingMes((prev) => ({ ...prev, [mes]: false }));
   };
 
   const renderChip = (mes: Mes) => {
     const mesKey = mes.toLowerCase() as keyof PedidosSimulacion;
-
     const archivo = simulacion[mesKey];
+    const isLoading = loadingMes[mes] ?? false;
 
     return (
       <Box key={mes}>
         <Typography variant="h6">{mes}</Typography>
 
         <div className={styles.monthContainer}>
-          {archivo ? (
+          {isLoading ? (
+            <CircularProgress />
+          ) : archivo ? (
             <Chip
               variant="outlined"
               label={archivo.nombre}
@@ -77,15 +84,6 @@ const Page: React.FC = () => {
       </Box>
     );
   };
-
-  if (loading) {
-    return (
-      <div className={styles.container}>
-        <CircularProgress />
-        <Typography variant="h6" sx={{ marginTop: '10px' }}>Cargando simulación...</Typography>
-      </div>
-    );
-  }
 
   if (error) {
     return (
