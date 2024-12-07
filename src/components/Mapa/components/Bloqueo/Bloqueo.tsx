@@ -1,5 +1,5 @@
 import { useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 type Coordinates = {
   lat: number;
@@ -12,24 +12,26 @@ type BloqueoProps = {
 };
 
 const Bloqueo: React.FC<BloqueoProps> = ({ inicio, fin }) => {
-
   const map = useMap();
-
   const maps = useMapsLibrary("maps");
 
-  if (!maps) {
-    return null;
-  }
+  useEffect(() => {
+    if (!maps) return;
 
-  const flightPath = new maps.Polyline({
-    path: [inicio, fin],
-    geodesic: false,
-    strokeColor: "#FF0000",
-    strokeOpacity: 1.0,
-    strokeWeight: 0.2,
-  });
+    const path = new maps.Polyline({
+      path: [inicio, fin],
+      geodesic: false,
+      strokeColor: "#1414b8",
+      strokeOpacity: 1.0,
+      strokeWeight: 1.0,
+    });
 
-  flightPath.setMap(map);
+    path.setMap(map);
+
+    return () => {
+      path.setMap(null);
+    };
+  }, [inicio, fin, map, maps]);
 
   return null;
 };

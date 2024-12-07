@@ -4,6 +4,7 @@ import { Chip, styled, Box, Typography, Button, CircularProgress, Snackbar, Aler
 import { CloudUpload } from '@mui/icons-material';
 import { Mes } from '../../store/types/Mes';
 import useArchivos from '../../store/hooks/useArchivos';
+import FileUploader from './components/FileUploader';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -157,6 +158,7 @@ const Page: React.FC = () => {
           {snackbar}
         </Alert>
       </Snackbar>
+      <FileUploader />
     </div>
   );
 };
