@@ -1,0 +1,25 @@
+.container {
+  width: 50%;
+  height: 100%;
+  padding: 30px;
+  padding-top: 10px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.bloque {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.archivos {
+  display: flex;
+  justify-content: end;
+  align-items: end;
+
+  gap: 2px;
+
+  flex-direction: column;
+}

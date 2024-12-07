@@ -111,6 +111,9 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   const [userId, setUserId] = useState<string>('');
   const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]);
 
+  const [lastProcessedSolution, setLastProcessedSolution] = useState<string | null>(null);
+  const [indexActualProcess, setIndexActualProcess] = useState(0);
+
   const { isConnected, closeWebSocket, reconnect } = useWebSocket({
     url: `${Services.WebUrl}/conexion-websocket`,
     onMessage: (data) => {
@@ -130,8 +133,14 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     },
   });
 
-  const [lastProcessedSolution, setLastProcessedSolution] = useState<string | null>(null);
-  const [indexActualProcess, setIndexActualProcess] = useState(0);
+  useEffect(() => {
+    // Acción que se ejecuta solo al iniciar el componente
+    console.log('Componente SimulationProvider montado');
+
+    return () => {
+      console.log('Componente SimulationProvider desmontado');
+    };
+  }, []);
 
   useEffect(() => {
     if (indexActualProcess < solutions.length) {

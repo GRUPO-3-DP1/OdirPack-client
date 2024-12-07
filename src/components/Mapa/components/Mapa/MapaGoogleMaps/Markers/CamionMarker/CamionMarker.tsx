@@ -9,15 +9,16 @@ import AveriaIcon from './CamionIcon/AveriaIcon';
 
 type CamionMarkerProps = Omit<AdvancedMarkerProps, 'position'> & {
   camion: Vehicle;
-  ocupacion?: 'baja' | 'media' | 'alta';
+  ocupacion?: 'baja' | 'media' | 'alta' | 'vacio';
   showRoute?: boolean;
   showAveriado?: boolean;
 };
 
-const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ocupacion = 'alta', showRoute = true, showAveriado = true, ...markerProps }) => {
+const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ocupacion = 'vacio', showRoute = true, showAveriado = true, ...markerProps }) => {
   if (camion.position.currentSegmentIndex == -1) return null;
 
   const espacio = {
+    vacio: '#FFFFFF',
     baja: '#34A853',
     media: '#FBBC05',
     alta: '#EA4335',
