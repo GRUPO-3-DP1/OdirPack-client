@@ -12,6 +12,7 @@ import { convertOffices } from '../../utils/convertOffices';
 import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
 import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
 import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
+import { extractAllRutas } from '../../utils/extractAllRutas';
 import { Order } from './simulationTypes';
 import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
 
@@ -65,6 +66,8 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, unplannedOrders: action.payload };
     case 'SET_PROCESSED_ORDER_IDS':
       return { ...state, processedOrderIds: action.payload };
+    case 'ADD_HISTORY_ENTRY':
+      return { ...state, simulationHistory: [...state.simulationHistory, action.payload], };
     case 'RESET_SIMULATION':  // Resetea el estado a los valores iniciales
       return { ...initialState };
     default:
@@ -96,6 +99,7 @@ const initialState = {
   unplannedOrders: [],
   processedOrderIds: [],
   operationType: 'semanal',
+  simulationHistory: [],
 };
 
 export function SimulationProvider({ children }: { children: React.ReactNode; }) {
@@ -255,12 +259,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       dispatch({ type: 'SET_CURRENT_TIME', payload: newTime });
 
       const updatedVehicles = state.vehicles.map((vehicle) => {
-        /*console.log("Pedidos del vehículo:", vehicle.idVehiculo, 
-          vehicle.ruta.pedidos.map(p => ({
-            id: p.idPedido,
-            isReplanificado: p.isReplanificado
-          }))
-        );*/
         const { ruta } = vehicle;
         const startTime = new Date(ruta.fechaInicio);
         const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
@@ -520,7 +518,18 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       dispatch({ type: 'SET_ORDERS_DELIVERED', payload: calculateOrdersDelivered(updatedVehicles, newTime) });
       // Actualizar 'ordersPending'
       dispatch({ type: 'SET_ORDERS_PENDING', payload: calculateOrdersPending(updatedVehicles, newTime) });
-
+      // Luego de actualizar vehículos, etc, extraer data actual
+      if (solutions.length > 0) {
+        const { pedidos, camiones } = extractAllRutas(solutions); 
+        dispatch({
+          type: 'ADD_HISTORY_ENTRY',
+          payload: {
+            timestamp: newTime,
+            pedidos,
+            camiones
+          }
+        });
+      }
     }, timeIncrement / state.speed);
 
     return () => clearInterval(updateInterval);

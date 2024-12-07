@@ -92,6 +92,11 @@ export type SimulationState = {
   unplannedOrders: Order[];      // Añadir pedidos no planificados
   processedOrderIds: string[];
   operationType: string;
+  simulationHistory: {
+    timestamp: Date;
+    pedidos: OrderRow[];
+    camiones: TruckRow[];
+  }[];
 };
 
 export type HoraStock = {
@@ -127,6 +132,50 @@ export type Pedido = {
   estado: string;
 };
 
+export type SectionTruckRow = {
+  horaAveria: string;
+  inicio: string;
+  fin: string;
+  origen: string;
+  destino: string;
+  estado: string;
+}
+
+export type TruckRow = {
+  id: number;
+  ruta: string;
+  camion: string;
+  inicio: string;
+  fin: string;
+  origen: string;
+  destino: string;
+  averia: boolean;
+  estado: string; // "Completado", "Averiado", "En tránsito"
+  tramosDetalle?: SectionTruckRow[];
+}
+
+export type SectionOrderRow = {
+  inicio: string;
+  fin: string;
+  origen: string;
+  destino: string;
+  estado: string; // "Retrasado", "Entregado", "En tránsito"
+  camion?: string;
+}
+
+export type OrderRow = {
+  id: number;
+  ruta: string;
+  pedido: string;
+  inicio: string;
+  fin: string;
+  origen: string;
+  destino: string;
+  paquetes: number;
+  estado: string; // "Retrasado", "Entregado", "En tránsito"
+  tramosDetalle?: SectionOrderRow[];
+}
+
 export type SimulationAction =
   | { type: 'START_SIMULATION'; payload: { startTime: Date; endTime: Date; operationType: 'semanal' | 'colapso' | 'diaadia'; }; }
   | { type: 'STOP_SIMULATION'; }
@@ -142,4 +191,5 @@ export type SimulationAction =
   | { type: 'SET_OCCUPIED_OFFICES'; payload: number; }
   | { type: 'SET_TRUCKS_IN_MOTION'; payload: number; }
   | { type: 'SET_ORDERS_DELIVERED'; payload: number; }
-  | { type: 'SET_ORDERS_PENDING'; payload: number; };
+  | { type: 'SET_ORDERS_PENDING'; payload: number; }
+  | { type: 'ADD_HISTORY_ENTRY'; payload: { timestamp: Date; pedidos: OrderRow[]; camiones: TruckRow[] }; };

@@ -97,6 +97,11 @@ const DetalleResultados: React.FC<DetalleResultadosProps> = ({ show = true, onCl
       PaperProps={{
         sx: { borderRadius: 2 }
       }}
+      slotProps={{
+        backdrop: {
+          invisible: true
+        }
+      }}
     >
       <DialogTitle sx={{ textAlign: 'center', position: 'relative', fontWeight: 'bold' }}>
         {mostrarTramos ? (
@@ -112,7 +117,7 @@ const DetalleResultados: React.FC<DetalleResultadosProps> = ({ show = true, onCl
             <Typography variant="h5" sx={{ fontWeight: 'bold' }}>Tramos</Typography>
           </Stack>
         ) : (
-          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>Detalle de Resultados</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>Plan de transporte</Typography>
         )}
 
         <IconButton

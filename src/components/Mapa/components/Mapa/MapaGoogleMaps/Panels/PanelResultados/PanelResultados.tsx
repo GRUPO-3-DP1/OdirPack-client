@@ -3,14 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import { ControlPosition, MapControl } from '@vis.gl/react-google-maps';
 import styles from './PanelResultados.module.css';
-import { Box, Typography, Button, IconButton, Divider } from '@mui/material';
+import { Box, Typography, Button, IconButton, Divider, Dialog } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { useData } from '../../../../../../../context/useData';
 import { Order } from '../../../../../../../context/Simulacion/simulationTypes';
 import { Visibility } from '@mui/icons-material';
-import DetalleResultados from './DetalleResultados'; 
+//import DetalleResultados from './DetalleResultados'; 
+import ResultPanel from '../../../../ResultsPanel/ResultPanel';
 
 dayjs.extend(duration);
 
@@ -240,15 +241,26 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true, onClose 
               }}
             >
               <Visibility sx={{ fontSize: 20 }} />
-              Detalle
+              Planes de transporte
             </Button>
           </Box>
           {/* Add DetalleResultados */}
           {showDetalle && (
-            <DetalleResultados 
+            // <DetalleResultados 
+            //   onClose={() => setShowDetalle(false)}
+            //   // Add any other required props
+            // />
+            <Dialog
+              open={showDetalle}
               onClose={() => setShowDetalle(false)}
-              // Add any other required props
-            />
+              fullWidth
+              maxWidth="lg"
+              PaperProps={{
+                sx: { borderRadius: 2 },
+              }}
+            >
+              <ResultPanel />
+            </Dialog>
           )}
         </Box>
       </div>
