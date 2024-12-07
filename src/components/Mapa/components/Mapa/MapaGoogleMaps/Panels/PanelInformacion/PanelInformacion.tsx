@@ -41,7 +41,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
           <TruckView
             selectedCamion={selectedCamion}
             operationType={operationType}
-            showRegisterAveria={true} // Muestra la sección "Registrar Avería"
+            showRegisterAveria={false} // Muestra la sección "Registrar Avería"
           />
         ) : selectedOficina ? (
           <OfficeView selectedOficina={selectedOficina} />
