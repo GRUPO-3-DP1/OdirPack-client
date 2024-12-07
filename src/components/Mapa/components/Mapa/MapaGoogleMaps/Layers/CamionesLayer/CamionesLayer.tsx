@@ -48,8 +48,10 @@ const CamionesLayer: React.FC<CamionesLayerProps> = ({ onCamionClick }) => {
 
         const occupancyRate = currentLoad / maxCapacity;
 
-        let ocupacion: 'baja' | 'media' | 'alta' = 'baja';
-        if (occupancyRate >= 0.8) {
+        let ocupacion: 'baja' | 'media' | 'alta' | 'vacio' = 'vacio';
+        if (occupancyRate === 0) {
+          ocupacion = 'vacio';
+        } else if (occupancyRate >= 0.8) {
           ocupacion = 'alta';
         } else if (occupancyRate >= 0.5) {
           ocupacion = 'media';
