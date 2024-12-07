@@ -21,7 +21,7 @@ const Bloqueo: React.FC<BloqueoProps> = ({ inicio, fin }) => {
     const path = new maps.Polyline({
       path: [inicio, fin],
       geodesic: false,
-      strokeColor: "#1414b8",
+      strokeColor: "#A52019",
       strokeOpacity: 1.0,
       strokeWeight: 1.0,
     });
