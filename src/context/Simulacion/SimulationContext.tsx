@@ -49,6 +49,8 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, currentTime: action.payload };
     case 'SET_VEHICLES':
       return { ...state, vehicles: action.payload };
+    case 'SET_CURRENT_BLOQUEOS':
+      return { ...state, currentBloqueos: action.payload };
     case 'SET_TOTAL_TRUCKS':
       return { ...state, totalTrucks: action.payload };
     case 'SET_OCCUPIED_OFFICES':
@@ -77,14 +79,21 @@ const initialOffices = oficinas.map((office) => ({
   currentOrders: [],
 }));
 
-const initialState = {
+const initialState: SimulationState = {
   isPlaying: false,
-  vehicles: [],
+  //
   speed: 50, //50 por defecto
-  ends: false,
   startTime: new Date('2024-10-21T00:00:00Z'),
   currentTime: new Date('2024-10-21T00:00:00Z'),
   endTime: new Date('2024-10-28T00:00:00Z'),
+  ends: false,
+  //
+  currentBloqueos: [],
+  vehicles: [],
+  offices: initialOffices,
+  unplannedOrders: [],
+  processedOrderIds: [],
+  //
   trucksInMotion: 0,
   trucksInMaintenance: 0,
   totalTrucks: 0,
@@ -92,9 +101,7 @@ const initialState = {
   occupiedOffices: 0,
   ordersDelivered: 0,
   ordersPending: 0,
-  offices: initialOffices,
-  unplannedOrders: [],
-  processedOrderIds: [],
+  //
   operationType: 'semanal',
 };
 
@@ -248,7 +255,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         state.ends = true;
         state.vehicles = [];
         dispatch({ type: 'RESET_SIMULATION' });
-        //console.log('Ya pasó la fecha límite');
         return;
       }
 
@@ -510,7 +516,13 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         return updatedOffice;
       });
 
+      //Actualizar bloqueos actuales
+      // const updatedBloqueos = state.currentBloqueos.filter((bloqueo) => {
+      //   const bloqueoEndTime = new Date(bloqueo.fechaFin);
+      //   return bloqueoEndTime > newTime;
+      // });
 
+      // dispatch({ type: 'SET_CURRENT_BLOQUEOS', payload: updatedBloqueos });
       // Actualizar oficinas y processedOrderIds en el estado
       dispatch({ type: 'SET_OFFICES', payload: updatedOffices });
       dispatch({ type: 'SET_PROCESSED_ORDER_IDS', payload: newProcessedOrderIds });
