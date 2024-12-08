@@ -19,14 +19,20 @@ interface MapaProps {
 
 const MapaSimulacion: React.FC<MapaProps> = React.memo(({ alwaysShowInfoPanel = false, operationType }) => {
   const { state } = useData();
-  const [showResumen, setShowResumen] = useState(true);
+  const [showResumen, setShowResumen] = useState(false);
 
   const handleCloseResumen = () => {
     setShowResumen(false);
   };
 
   useEffect(() => {
+    console.log('Estado de simulación:', {
+      ends: state.ends,
+      operationType,
+      showResumen,
+    });
     if (state.ends) {
+      console.log('Simulación terminada, mostrando resumen');
       setShowResumen(true);
     }
   }, [state.ends]);
@@ -73,7 +79,7 @@ const MapaSimulacion: React.FC<MapaProps> = React.memo(({ alwaysShowInfoPanel = 
 
       {/*<PanelResultados show={state.ends} />*/}
       {showResumen && (
-        <PanelResultados show={false} onClose={handleCloseResumen} />
+        <PanelResultados show={true} onClose={handleCloseResumen} />
       )}
 
       {/* Layers de marcadores */}

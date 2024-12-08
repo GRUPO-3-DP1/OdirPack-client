@@ -12,6 +12,7 @@ import { convertOffices } from '../../utils/convertOffices';
 import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
 import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
 import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
+import { extractAllRutas } from '../../utils/extractAllRutas';
 import { Order } from './simulationTypes';
 import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
 import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
@@ -42,9 +43,16 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
         endTime: action.payload.endTime,
         operationType: action.payload.operationType,
         ends: false,
+        executionStartTime: new Date(), // Se establece la hora de inicio real
+        executionEndTime: null          // Se reinicia la hora de fin
       };
     case 'STOP_SIMULATION':
-      return { ...state, isPlaying: false };
+      return { 
+        ...state, 
+        isPlaying: false, 
+        ends: true,
+        executionEndTime: new Date() 
+      };
     case 'SET_COLAPSO':
       return { ...state, colapso: action.payload };
     case 'SET_SPEED':
@@ -73,8 +81,14 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, unplannedOrders: action.payload };
     case 'SET_PROCESSED_ORDER_IDS':
       return { ...state, processedOrderIds: action.payload };
+    case 'ADD_HISTORY_ENTRY':
+      return { ...state, simulationHistory: [...state.simulationHistory, action.payload], };
     case 'RESET_SIMULATION':  // Resetea el estado a los valores iniciales
       return { ...initialState };
+    case 'SET_EXECUTION_START_TIME':
+        return { ...state, executionStartTime: action.payload };
+    case 'SET_EXECUTION_END_TIME':
+        return { ...state, executionEndTime: action.payload };
     default:
       return state;
   }
@@ -110,11 +124,14 @@ const initialState: SimulationState = {
   ordersPending: 0,
   //
   operationType: 'semanal',
+  simulationHistory: [],
+  executionStartTime: null,
+  executionEndTime: null,
 };
 
 export function SimulationProvider({ children }: { children: React.ReactNode; }) {
   const [state, dispatch] = useReducer(simulationReducer, initialState);
-
+  const [finalDataExtracted, setFinalDataExtracted] = useState(false);
   const [userId, setUserId] = useState<string>('');
   const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]);
 
@@ -123,9 +140,11 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
   const { bloqueosSimulacion, fetchBloqueosSimulacion } = useBloqueosSimulacion();
 
-  const { isConnected, closeWebSocket, reconnect } = useWebSocket({
+  //const { isConnected, closeWebSocket, reconnect } = useWebSocket({
+  const { isConnected, closeWebSocket } = useWebSocket({
     url: `${Services.WebUrl}/conexion-websocket`,
     onMessage: (data) => {
+      if (state.ends) return;
       if (data.userId) {
         setUserId(data.userId);
       } else {
@@ -270,6 +289,23 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   }, [state.vehicles, indexActualProcess, lastProcessedSolution]);
 
   useEffect(() => {
+    if (state.ends && solutions.length > 0 && !finalDataExtracted) {
+      console.log("Extrayendo data final SE EJECUTO");
+      closeWebSocket();
+      const { pedidos, camiones } = extractAllRutas(state.vehicles);
+      dispatch({
+        type: 'ADD_HISTORY_ENTRY',
+        payload: {
+          timestamp: state.currentTime,
+          pedidos,
+          camiones
+        }
+      });
+      setFinalDataExtracted(true);
+    }
+  }, [state.ends]);
+
+  useEffect(() => {
     if (!state.isPlaying) return;
 
     const updateInterval = setInterval(() => {
@@ -277,24 +313,18 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
       if (newTime >= state.endTime) {
         clearInterval(updateInterval);
-        state.ends = true;
-        state.vehicles = [];
+        dispatch({ type: 'STOP_SIMULATION' });
+        //dispatch({ type: 'RESET_SIMULATION' });
+        //console.log('Ya pasó la fecha límite');
         if (state.colapso) {
           alert('Colapso');
         }
-        dispatch({ type: 'RESET_SIMULATION' });
         return;
       }
 
       dispatch({ type: 'SET_CURRENT_TIME', payload: newTime });
 
       const updatedVehicles = state.vehicles.map((vehicle) => {
-        /*console.log("Pedidos del vehículo:", vehicle.idVehiculo, 
-          vehicle.ruta.pedidos.map(p => ({
-            id: p.idPedido,
-            isReplanificado: p.isReplanificado
-          }))
-        );*/
         const { ruta } = vehicle;
         const startTime = new Date(ruta.fechaInicio);
         const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
@@ -560,7 +590,18 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       dispatch({ type: 'SET_ORDERS_DELIVERED', payload: calculateOrdersDelivered(updatedVehicles, newTime) });
       // Actualizar 'ordersPending'
       dispatch({ type: 'SET_ORDERS_PENDING', payload: calculateOrdersPending(updatedVehicles, newTime) });
-
+      // Luego de actualizar vehículos, etc, extraer data actual
+      // if (solutions.length > 0) {
+      //   const { pedidos, camiones } = extractAllRutas(solutions); 
+      //   dispatch({
+      //     type: 'ADD_HISTORY_ENTRY',
+      //     payload: {
+      //       timestamp: newTime,
+      //       pedidos,
+      //       camiones
+      //     }
+      //   });
+      // }
     }, timeIncrement / state.speed);
 
     return () => clearInterval(updateInterval);
@@ -579,7 +620,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     setLastProcessedSolution(null);
 
     if (isConnected) {
-      reconnect();
+      //reconnect();
       closeWebSocket();
     }
   };

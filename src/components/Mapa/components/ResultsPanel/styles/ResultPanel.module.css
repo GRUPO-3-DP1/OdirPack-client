@@ -1,0 +1,23 @@
+/*ResultPanel.module.css*/
+
+/* Colores de estado pedidos */
+.row-entregado {
+  background-color: #d4edda !important;
+}
+
+.row-retrasado {
+  background-color: #f8d7da !important;
+}
+
+.row-transito {
+  background-color: #fff3cd !important;
+}
+
+/* Colores de estado camiones */
+.row-completado {
+  background-color: #d4edda !important;
+}
+
+.row-averiado {
+  background-color: #f8d7da !important;
+}
