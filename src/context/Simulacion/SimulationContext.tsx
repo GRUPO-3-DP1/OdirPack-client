@@ -53,6 +53,8 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
         ends: true,
         executionEndTime: new Date() 
       };
+    case 'SET_COLAPSO':
+      return { ...state, colapso: action.payload };
     case 'SET_SPEED':
       return { ...state, speed: action.payload };
     case 'UPDATE_VEHICLE_POSITION':
@@ -105,6 +107,7 @@ const initialState: SimulationState = {
   currentTime: new Date('2024-10-21T00:00:00Z'),
   endTime: new Date('2026-12-28T00:00:00Z'),
   ends: false,
+  colapso: false,
   //
   currentBloqueos: [],
   vehicles: [],
@@ -171,6 +174,12 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   useEffect(() => {
     if (indexActualProcess < solutions.length) {
       const newResponse = solutions[indexActualProcess];
+
+      if (newResponse.yaNoPlanificar && newResponse.pedidosNoPlanificados.length > 0) {
+        //Colapso
+        dispatch({ type: 'SET_COLAPSO', payload: true });
+        dispatch({ type: 'STOP_SIMULATION' });
+      }
 
       const newSolutionString = JSON.stringify(newResponse.solucion);
 
@@ -307,6 +316,9 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         dispatch({ type: 'STOP_SIMULATION' });
         //dispatch({ type: 'RESET_SIMULATION' });
         //console.log('Ya pasó la fecha límite');
+        if (state.colapso) {
+          alert('Colapso');
+        }
         return;
       }
 
