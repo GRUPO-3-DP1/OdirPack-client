@@ -3,9 +3,9 @@ import { AdvancedMarker, AdvancedMarkerProps } from '@vis.gl/react-google-maps';
 import styles from './CamionMarker.module.css';
 import { Vehicle } from '../../../../../../../context/Simulacion/simulationTypes';
 import Ruta from '../../../../Ruta/Ruta';
-import CamionIcon from './CamionIcon/CamionIcon';
+import CamionIcon from './Icons/CamionIcon';
 import { calculateRotation } from '../../../../../../../utils/calculateRotation';
-import AveriaIcon from './CamionIcon/AveriaIcon';
+import AveriaIcon from './Icons/AveriaIcon';
 
 type CamionMarkerProps = Omit<AdvancedMarkerProps, 'position'> & {
   camion: Vehicle;
@@ -43,13 +43,13 @@ const CamionMarker: React.FC<CamionMarkerProps> = ({ camion, ocupacion = 'vacio'
           {camion.currentAveria ? (
             // Ícono de camión averiado
             showAveriado && <AveriaIcon
-              size="large"
+              size="small"
             />
           ) : (
             // Ícono de camión
             <CamionIcon
               mainColor={espacio}
-              size="large"
+              size="small"
               style={{ transform: `rotate(${rotation}deg)` }}
             />
           )}

@@ -9,7 +9,7 @@ const initialVisibilityState: VisibilityState = {
   oficinas: true,
   camionesAveriados: true,
   tramos: true,
-  tramosBloqueados: false,
+  tramosBloqueados: true,
 };
 
 export const MapMarkersProvider: React.FC<{ children: React.ReactNode; }> = ({ children }) => {

@@ -1,6 +1,6 @@
 import React, { SVGProps } from 'react';
 
-type IconSize = 'small' | 'medium' | 'large';
+type IconSize = 'tiny' | 'small' | 'medium' | 'large';
 
 interface IconComponentProps extends SVGProps<SVGSVGElement> {
   mainColor?: string;
@@ -9,6 +9,7 @@ interface IconComponentProps extends SVGProps<SVGSVGElement> {
 }
 
 const sizeMap: Record<IconSize, { width: string; height: string; }> = {
+  tiny: { width: '12px', height: '12px' },
   small: { width: '16px', height: '16px' },
   medium: { width: '24px', height: '24px' },
   large: { width: '32px', height: '32px' }
