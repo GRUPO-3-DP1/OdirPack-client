@@ -64,7 +64,8 @@ const TruckTable: React.FC<TruckTableProps> = ({ data, onShowTramos }) => {
     return CAMION_ESTADOS_CLASSES[params.row.estado] || '';
   };
 
-  const rows = data.map((d,i)=>({...d, id:i}));
+  //const rows = data.map((d,i)=>({...d, id:i}));
+  const rows = data; // sin reasignar id
 
   return (
     <>

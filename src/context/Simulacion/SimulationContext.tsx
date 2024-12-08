@@ -108,7 +108,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   const [userId, setUserId] = useState<string>('');
   const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]);
 
-  const { isConnected, closeWebSocket, reconnect } = useWebSocket({
+  //const { isConnected, closeWebSocket, reconnect } = useWebSocket({
+  const { isConnected, closeWebSocket } = useWebSocket({
     url: `${Services.WebUrl}/conexion-websocket`,
     onMessage: (data) => {
       if (state.ends) return;
@@ -244,6 +245,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
   useEffect(() => {
     if (state.ends && solutions.length > 0 && !finalDataExtracted) {
+      console.log("Extrayendo data final SE EJECUTO");
+      closeWebSocket();
       const { pedidos, camiones } = extractAllRutas(solutions);
       dispatch({
         type: 'ADD_HISTORY_ENTRY',
@@ -255,7 +258,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       });
       setFinalDataExtracted(true);
     }
-  }, [state.ends, finalDataExtracted]);
+  }, [state.ends]);
 
   useEffect(() => {
     if (!state.isPlaying) return;
@@ -563,7 +566,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     setLastProcessedSolution(null);
 
     if (isConnected) {
-      reconnect();
+      //reconnect();
       closeWebSocket();
     }
   };

@@ -10,10 +10,24 @@ import {
 import {
   DataGrid,
   GridColDef,
-  GridRowClassNameParams,
+  GridRenderCellParams ,
+  GridRowParams,
 } from '@mui/x-data-grid';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { esES } from '@mui/x-data-grid/locales';
+
+const getRowClassName = (params: GridRowParams<TruckSection>): string => {
+  switch (params.row.estado?.toLowerCase()) {
+    case 'completado':
+      return 'row-completado';
+    case 'averiado':
+      return 'row-averiado';
+    case 'en transito':
+      return 'row-transito';
+    default:
+      return '';
+  }
+};
 
 // Definimos la interfaz para cada tramo
 interface TruckSection {
@@ -51,20 +65,20 @@ const TruckSectionModal: React.FC<TruckSectionModalProps> = ({ open, onClose, tr
       headerName: 'Hora de avería',
       flex: 1,
       sortable: true,
-      valueGetter: (params: GridRowClassNameParams<TruckSection>) => {
-        return params.row.horaAveria || 'Sin avería';
+      valueGetter: (params: GridRenderCellParams <TruckSection>) => {
+        return params.row?.horaAveria || 'Sin avería';
       },
     },
   ];
 
-  const getRowClassName = (params: GridRowClassNameParams<TruckSection>) => {
-    switch (params.row.estado) {
-      case 'Completado': return 'row-completado';
-      case 'Averiado': return 'row-averiado';
-      case 'En tránsito': return 'row-transito';
-      default: return '';
-    }
-  };
+  // const getRowClassName = (params: GridRenderCellParams <TruckSection>) => {
+  //   switch (params.row?.estado) {
+  //     case 'Completado': return 'row-completado';
+  //     case 'Averiado': return 'row-averiado';
+  //     case 'En tránsito': return 'row-transito';
+  //     default: return '';
+  //   }
+  // };
 
   const rows: TruckSection[] = tramos.map((t, i) => ({ id: i, ...t }));
 
