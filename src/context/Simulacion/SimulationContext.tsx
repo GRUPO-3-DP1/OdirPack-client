@@ -294,7 +294,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
             // Si el tiempo actual está dentro del periodo de mantenimiento
             if (newTime >= maintenanceStartTime && newTime < maintenanceEndTime) {
-              const finishStopTime = new Date(maintenanceStartTime.getTime() + 2 * 60 * 60 * 1000); // 2 horas en milisegundos
+              const finishStopTime = new Date(maintenanceStartTime.getTime() + 5 * 60 * 60 * 1000); // 5 horas en milisegundos
 
               //Entra en averia
               switch (vehicle.averia.tipo) {
@@ -313,7 +313,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                       },
                       position: {
                         ...vehicle.position,
-                        currentSegmentIndex: -1,
+                        //currentSegmentIndex: -1,
                       },
                     };
                   } else {
@@ -340,7 +340,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                       },
                       position: {
                         ...vehicle.position,
-                        currentSegmentIndex: -1,
+                        //currentSegmentIndex: -1,
                       },
                     };
                   } else {
