@@ -141,6 +141,7 @@ export type Pedido = {
 };
 
 export type SimulationAction =
+  | { type: 'SET_START_TIME'; payload: { startTime: Date; endTime: Date; }; }
   | { type: 'START_SIMULATION'; payload: { startTime: Date; endTime: Date; operationType: 'semanal' | 'colapso' | 'diaadia'; }; }
   | { type: 'STOP_SIMULATION'; }
   | { type: 'SET_SPEED'; payload: number; }
