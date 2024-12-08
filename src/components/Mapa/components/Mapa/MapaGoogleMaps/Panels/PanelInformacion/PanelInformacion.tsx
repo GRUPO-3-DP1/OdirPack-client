@@ -13,6 +13,7 @@ import TruckView from '../../../../InformationPanel/TruckView';
 import OfficeView from '../../../../InformationPanel/OfficeView';
 import OrderView from '../../../../InformationPanel/OrderView';
 import SimulationView from '../../../../InformationPanel/SimulationView';
+import StatusView from '../../../../InformationPanel/StatusView';
 
 interface PanelInformacionProps {
   show: boolean;
@@ -33,23 +34,25 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   if (!show) {
     return null;
   }
-  //console.log('selectedCamion:', selectedCamion);
   return (
     <MapControl position={ControlPosition.TOP_RIGHT}>
       <div className={styles.panel}>
-        {selectedCamion ? (
-          <TruckView
-            selectedCamion={selectedCamion}
-            operationType={operationType}
-            showRegisterAveria={false} // Muestra la sección "Registrar Avería"
-          />
-        ) : selectedOficina ? (
-          <OfficeView selectedOficina={selectedOficina} />
-        ) : selectedPedido ? (
-          <OrderView selectedPedido={selectedPedido} />
-        ) : (
-        <SimulationView operationType={operationType} />
-      )}
+        <StatusView />
+        <div>
+          {selectedCamion ? (
+            <TruckView
+              selectedCamion={selectedCamion}
+              operationType={operationType}
+              showRegisterAveria={false} // Muestra la sección "Registrar Avería"
+            />
+          ) : selectedOficina ? (
+            <OfficeView selectedOficina={selectedOficina} />
+          ) : selectedPedido ? (
+            <OrderView selectedPedido={selectedPedido} />
+          ) : (
+            <SimulationView operationType={operationType} />
+          )}
+        </div>
       </div>
     </MapControl>
   );

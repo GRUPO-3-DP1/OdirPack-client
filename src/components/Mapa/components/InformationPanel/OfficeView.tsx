@@ -42,9 +42,9 @@ const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
   const currentLoad =
     officeData && officeData.currentOrders
       ? officeData.currentOrders.reduce(
-          (total, currentOrder) => total + (currentOrder.order.cantidad || 0),
-          0
-        )
+        (total, currentOrder) => total + (currentOrder.order.cantidad || 0),
+        0
+      )
       : 'Ilimitado';
 
   const maxCapacity = selectedOficina?.almacen || 0;
@@ -53,21 +53,21 @@ const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
   const scheduledVehicles: ScheduledVehicle[] = state.vehicles
     .flatMap((vehicle) => {
       if (!vehicle.ruta || !vehicle.ruta.tramos || !vehicle.ruta.fechasLlegada || !vehicle.ruta.fechasSalida) return [];
-      
+
       return vehicle.ruta.tramos
         .map((tramo, index) => {
           const isDestination = tramo?.destino?.codigo === selectedOficina.ubigeo;
           const isOrigin = tramo?.origen?.codigo === selectedOficina.ubigeo;
-          
+
           // Solo procesar si es destino o si es origen y es un almacén
           if (!(isDestination || (isOrigin && selectedOficina.isAlmacen))) return null;
 
-          const timeStr = isDestination 
+          const timeStr = isDestination
             ? vehicle.ruta.fechasLlegada[index]
             : vehicle.ruta.fechasSalida[index];
-          
+
           const scheduledTime = timeStr ? new Date(timeStr) : null;
-          
+
           if (scheduledTime && scheduledTime >= state.currentTime) {
             return {
               vehicle,
@@ -87,7 +87,7 @@ const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
 
   // Obtener camiones en mantenimiento en la oficina seleccionada
   const maintenanceVehicles = state.vehicles.filter(
-    (vehicle): vehicle is Camion & { maintenance: NonNullable<Camion['maintenance']> } =>
+    (vehicle): vehicle is Camion & { maintenance: NonNullable<Camion['maintenance']>; } =>
       vehicle.maintenance !== undefined &&
       vehicle.maintenance.inMaintenance &&
       vehicle.maintenance.officeUbigeo === selectedOficina?.ubigeo
@@ -105,8 +105,7 @@ const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
         sx={{
           backgroundColor: '#f5f5f5',
           padding: '8px',
-          borderRadius: '4px',
-          marginBottom: '8px',
+          borderRadius: '4px 4px 0 0',
         }}
       >
         <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -230,12 +229,12 @@ const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
                     }}
                   >
                     <Box display="flex" alignItems="center">
-                      <LocalShipping 
-                        sx={{ 
-                          color: isDeparting ? '#1976d2' : '#2196f3', 
+                      <LocalShipping
+                        sx={{
+                          color: isDeparting ? '#1976d2' : '#2196f3',
                           marginRight: '8px',
                           transform: isDeparting ? 'scaleX(-1)' : 'none' // Girar el icono para salidas
-                        }} 
+                        }}
                       />
                       <Typography variant="subtitle1" color="textPrimary">
                         <b>Camión {vehicle.idVehiculo}</b>

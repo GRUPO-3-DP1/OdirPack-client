@@ -6,7 +6,6 @@ import PanelLeyenda from '../../../components/Mapa/components/Mapa/MapaGoogleMap
 import PanelInformacion from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelInformacion/PanelInformacion';
 import PanelResultados from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelResultados/PanelResultados';
 import { Oficina } from '../../../context/Simulacion/simulationTypes';
-//import { Order } from '../../../context/Simulacion/simulationTypes';
 import Mapa from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Mapa';
 import OficinasLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Layers/OficinasLayer/OficinasLayer';
 import CamionesLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Layers/CamionesLayer/CamionesLayer';
@@ -44,7 +43,7 @@ const MapaSimulacion: React.FC<MapaProps> = React.memo(({ alwaysShowInfoPanel = 
     setSelectedCamion,
     selectedPedido,
     setSelectedPedido,
-  } = useSelection(); 
+  } = useSelection();
 
   const handleOficinaClick = (oficina: Oficina) => {
     setSelectedOficina(oficina);
@@ -73,7 +72,7 @@ const MapaSimulacion: React.FC<MapaProps> = React.memo(({ alwaysShowInfoPanel = 
         show={alwaysShowInfoPanel || state.isPlaying}
         selectedOficina={selectedOficina}
         selectedCamion={selectedCamion}
-        selectedPedido={selectedPedido} 
+        selectedPedido={selectedPedido}
         operationType={operationType}
       />
 
