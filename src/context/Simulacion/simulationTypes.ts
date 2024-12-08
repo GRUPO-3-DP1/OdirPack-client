@@ -89,6 +89,7 @@ export type SimulationState = {
   currentTime: Date;
   endTime: Date;
   ends: boolean;
+  colapso: boolean;
   //
   currentBloqueos: Bloqueo[];
   vehicles: Vehicle[];
@@ -195,6 +196,7 @@ export type SimulationAction =
   | { type: 'SET_START_TIME'; payload: { startTime: Date; endTime: Date; }; }
   | { type: 'START_SIMULATION'; payload: { startTime: Date; endTime: Date; operationType: 'semanal' | 'colapso' | 'diaadia'; }; }
   | { type: 'STOP_SIMULATION'; }
+  | { type: 'SET_COLAPSO'; payload: boolean; }
   | { type: 'SET_SPEED'; payload: number; }
   | { type: 'UPDATE_VEHICLE_POSITION'; payload: Vehicle[]; }
   | { type: 'SET_CURRENT_TIME'; payload: Date; }
