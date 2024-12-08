@@ -18,7 +18,7 @@ import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
 import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
 import { mapearBloqueosDesdeArchivos } from '../../utils/mapearBloqueosDeArchivos';
 
-const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
+const timeIncrement = 3000;// Avanzar un segundo de simulación por intervalo
 
 export const SimulationContext = createContext<{
   state: SimulationState;
@@ -391,18 +391,22 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                       },
                       position: {
                         ...vehicle.position,
-                      },
+                        currentSegmentIndex: -1,
+                      }
                     };
                   } else {
                     return {
                       ...vehicle,
-                      currentAveria: false,
+                      currentAveria: true,
                       maintenance: {
                         inMaintenance: true,
                         startTime: maintenanceStartTime,
                         duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
                         officeUbigeo: vehicle.averia.almacenAsignado,
                       },
+                      position: {
+                        ...vehicle.position,
+                      }
                     };
                   }
                 case 'SINIESTRO':
@@ -419,18 +423,22 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                       currentAveria: true,
                       position: {
                         ...vehicle.position,
-                      },
+                        currentSegmentIndex: -1,
+                      }
                     };
                   } else {
                     return {
                       ...vehicle,
-                      currentAveria: false,
+                      currentAveria: true,
                       maintenance: {
                         inMaintenance: true,
                         startTime: maintenanceStartTime,
                         duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
                         officeUbigeo: vehicle.averia.almacenAsignado,
                       },
+                      position: {
+                        ...vehicle.position,
+                      }
                     };
                   }
               }

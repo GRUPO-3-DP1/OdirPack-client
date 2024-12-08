@@ -3,7 +3,7 @@ import { useData } from '../../context/useData';
 import dayjs from 'dayjs';
 import durationPlugin from 'dayjs/plugin/duration';
 import styles from './SimulationTimeDisplay.module.css';
-import { Divider } from '@mui/material';
+import { Divider, Typography } from '@mui/material';
 dayjs.extend(durationPlugin);
 
 interface SimulationTimeDisplayProps {
@@ -85,16 +85,32 @@ const SimulationTimeDisplay: React.FC<SimulationTimeDisplayProps> = ({ className
 
   return (
     <div className={`${className} ${styles.simulationTimeDisplay}`}>
-      <div>
-        <span><strong>Tiempo real:</strong></span>
-        <span><strong>Fecha y hora:&nbsp;</strong>{realTime}</span>
-        <span><strong>Tiempo transcurrido:&nbsp;</strong>{executionTimeDisplay}</span>
+      <div className={styles.tiempo}>
+        <Typography variant="subtitle1" color="textPrimary">
+          <b>
+            Tiempo real:
+          </b>
+        </Typography>
+        <Typography variant="text" color="textPrimary">
+          <span><strong>Fecha y hora:&nbsp;</strong>{realTime}</span>
+        </Typography>
+        <Typography variant="text" color="textPrimary">
+          <span><strong>Tiempo transcurrido:&nbsp;</strong>{executionTimeDisplay}</span>
+        </Typography>
       </div>
       <Divider orientation="vertical" flexItem />
-      <div>
-        <span><strong>Simulación:</strong></span>
-        <span><strong>Fecha y hora:&nbsp;</strong>{simulationDateTimeDisplay}</span>
-        <span><strong>Tiempo transcurrido:&nbsp;</strong>{simulationTimeDisplay}</span>
+      <div className={styles.tiempo}>
+        <Typography variant="subtitle1" color="textPrimary">
+          <b>
+            Simulación:
+          </b>
+        </Typography>
+        <Typography variant="text" color="textPrimary">
+          <span><strong>Fecha y hora:&nbsp;</strong>{simulationDateTimeDisplay}</span>
+        </Typography>
+        <Typography variant="text" color="textPrimary">
+          <span><strong>Tiempo transcurrido:&nbsp;</strong>{simulationTimeDisplay}</span>
+        </Typography>
       </div>
     </div>
   );
