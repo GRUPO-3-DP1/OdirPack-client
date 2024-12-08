@@ -92,7 +92,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, disabled = false }) => 
         }}
         inputProps={{
           style: {
-            fontSize: '15.5px',
+            fontSize: '14px',
           },
         }}
       />
@@ -103,7 +103,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, disabled = false }) => 
         disabled={disabled}
         sx={{
           minWidth: '40px',
-          height: '40px',
+          height: '35px',
           padding: 0,
           display: 'flex',
           alignItems: 'center',

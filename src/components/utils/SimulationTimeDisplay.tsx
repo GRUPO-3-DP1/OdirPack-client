@@ -1,10 +1,9 @@
-// SimulationTimeDisplay.tsx
 import React, { useEffect, useState } from 'react';
 import { useData } from '../../context/useData';
 import dayjs from 'dayjs';
 import durationPlugin from 'dayjs/plugin/duration';
 import styles from './SimulationTimeDisplay.module.css';
-
+import { Divider } from '@mui/material';
 dayjs.extend(durationPlugin);
 
 interface SimulationTimeDisplayProps {
@@ -13,18 +12,17 @@ interface SimulationTimeDisplayProps {
 
 const SimulationTimeDisplay: React.FC<SimulationTimeDisplayProps> = ({ className }) => {
   const { state } = useData();
-
   const [executionStartTime, setExecutionStartTime] = useState<Date | null>(null);
   const [executionElapsedTime, setExecutionElapsedTime] = useState<number>(0);
+  const [realTime, setRealTime] = useState(dayjs().format('DD/MM/YYYY, hh:mm A'));
 
+  // Existing execution time useEffect
   useEffect(() => {
     let intervalId: number | null = null;
-
     if (state.isPlaying) {
       if (!executionStartTime) {
         setExecutionStartTime(new Date());
       }
-
       intervalId = window.setInterval(() => {
         setExecutionElapsedTime(Date.now() - (executionStartTime?.getTime() || Date.now()));
       }, 1000);
@@ -37,7 +35,6 @@ const SimulationTimeDisplay: React.FC<SimulationTimeDisplayProps> = ({ className
         clearInterval(intervalId);
       }
     }
-
     return () => {
       if (intervalId !== null) {
         clearInterval(intervalId);
@@ -45,11 +42,19 @@ const SimulationTimeDisplay: React.FC<SimulationTimeDisplayProps> = ({ className
     };
   }, [state.isPlaying, executionStartTime]);
 
+  // New useEffect for updating real-time
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setRealTime(dayjs().format('DD/MM/YYYY, hh:mm A'));
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   const formatExecutionTime = (milliseconds: number): string => {
     const timeDuration = dayjs.duration(milliseconds);
     const minutes = Math.floor(timeDuration.asMinutes());
     const seconds = timeDuration.seconds();
-
     return `${minutes}m ${seconds}s`;
   };
 
@@ -58,13 +63,11 @@ const SimulationTimeDisplay: React.FC<SimulationTimeDisplayProps> = ({ className
     const days = Math.floor(timeDuration.asDays());
     const hours = timeDuration.hours();
     const minutes = timeDuration.minutes();
-
     let formatted = '';
     if (days > 0) {
       formatted += `${days}d `;
     }
     formatted += `${hours}h ${minutes}m`;
-
     return formatted.trim();
   };
 
@@ -82,14 +85,17 @@ const SimulationTimeDisplay: React.FC<SimulationTimeDisplayProps> = ({ className
 
   return (
     <div className={`${className} ${styles.simulationTimeDisplay}`}>
-      {/* Agrupa Tiempo de ejecución y Tiempo en simulación en una fila */}
-      <div className={styles.simulationRow}>
-        <span><strong>Tiempo de ejecución:&nbsp;</strong>{executionTimeDisplay}</span>
-        <span><strong>Tiempo en simulación:&nbsp;</strong>{simulationTimeDisplay}</span>
+      <div>
+        <span><strong>Tiempo real:</strong></span>
+        <span><strong>Fecha y hora:&nbsp;</strong>{realTime}</span>
+        <span><strong>Tiempo transcurrido:&nbsp;</strong>{executionTimeDisplay}</span>
       </div>
-  
-      {/* Muestra Fecha y hora en simulación en una línea separada */}
-      <span><strong>Fecha y hora en simulación:&nbsp;</strong>{simulationDateTimeDisplay}</span>
+      <Divider orientation="vertical" flexItem />
+      <div>
+        <span><strong>Simulación:</strong></span>
+        <span><strong>Fecha y hora:&nbsp;</strong>{simulationDateTimeDisplay}</span>
+        <span><strong>Tiempo transcurrido:&nbsp;</strong>{simulationTimeDisplay}</span>
+      </div>
     </div>
   );
 };
