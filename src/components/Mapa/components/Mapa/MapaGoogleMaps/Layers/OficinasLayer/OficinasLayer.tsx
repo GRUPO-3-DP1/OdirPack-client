@@ -33,7 +33,7 @@ const OficinasLayer: React.FC<OficinasLayerProps> = ({ onOficinaClick }) => {
                       top: 0,
                       left: 0,
                       background: '#FFFFFF',
-                      border: '4px solid #000000',
+                      border: '3px solid #000000',
                       borderRadius: '50%',
                       transform: 'translate(-50%, -50%)'
                     }}
@@ -47,7 +47,7 @@ const OficinasLayer: React.FC<OficinasLayerProps> = ({ onOficinaClick }) => {
                       top: 0,
                       left: 0,
                       background: '#1dbe80',
-                      border: '2px solid #0e6443',
+                      border: '1px solid #0e6443',
                       borderRadius: '50%',
                       transform: 'translate(-50%, -50%)'
                     }}

@@ -172,12 +172,12 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
     // Si es el camión averiado
     if (selectedCamion.averia?.isAveria) {
       const fechaAveria = new Date(selectedCamion.averia.fechaRegistro);
-      
+
       // Si estamos después de la fecha de avería y el pedido fue replanificado
       if (state.currentTime >= fechaAveria && pedido.isReplanificado) {
         // Encontrar el camión que recibió el pedido
-        const nuevoCamion = state.vehicles.find(v => 
-          v.idVehiculo !== selectedCamion.idVehiculo && 
+        const nuevoCamion = state.vehicles.find(v =>
+          v.idVehiculo !== selectedCamion.idVehiculo &&
           v.ruta.pedidos.some(p => p.idPedido === pedido.idPedido)
         );
         return `Replanificado a ${nuevoCamion?.idVehiculo || 'otro camión'}`;

@@ -52,7 +52,7 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
 
     const currentLoad =
       oficina.currentOrders?.reduce(
-        (total: number, currentOrder: { order: Order; arrivalTime: Date }) =>
+        (total: number, currentOrder: { order: Order; arrivalTime: Date; }) =>
           total + (currentOrder.order.cantidad || 0),
         0
       ) || 0;
@@ -80,8 +80,7 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
         sx={{
           backgroundColor: '#f5f5f5',
           padding: '8px',
-          borderRadius: '4px',
-          marginBottom: '8px',
+          borderRadius: '4px 4px 0 0',
         }}
       >
         <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -97,8 +96,8 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
                 {operationType === 'semanal'
                   ? 'Semanal'
                   : operationType === 'colapso'
-                  ? 'Hasta el colapso'
-                  : 'Día a día'}
+                    ? 'Hasta el colapso'
+                    : 'Día a día'}
               </Typography>
             </Typography>
           </div>
