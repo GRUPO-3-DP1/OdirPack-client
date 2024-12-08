@@ -12,30 +12,23 @@ import {
   Select,
   Box,
   SelectChangeEvent,
-  TextField,
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 import { PlayArrow, Stop } from '@mui/icons-material';
 import { useData } from '../../context/useData';
 import dayjs, { Dayjs } from 'dayjs';
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
 import { nuevaDataPrueba } from '../../data/nuevaDataPrueba';
-import { useSelection } from '../../context/Buscador/useSelection';
 import usePedidosSimulacion from '../../store/hooks/usePedidosSimulacion';
 import { mapearPedidosDeArchivos } from '../../utils/mapearPedidosDeArchivos';
 
 const CustomHeader: React.FC = () => {
-
-  // Estados locales
-  const [searchCode, setSearchCode] = useState<string>('');
   const [tipo, setTipo] = useState("");
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-12-01')); //comentario para María: AQUÍ ESTÁ LA FECHA 
   const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2024-12-01T18:00')); //comentario para María: AQUÍ ESTÁ LA FECHA 
 
   // Hooks de contexto
   const { state: simulationState, dispatch, userId, stopSimulation } = useData();
-  const { setSelectedOficina, setSelectedCamion, setSelectedPedido } = useSelection();
 
   const { pedidosSimulacion, fetchPedidosSimulacion } = usePedidosSimulacion();
 
@@ -158,55 +151,6 @@ const CustomHeader: React.FC = () => {
 
   const getDynamicBackground = (value: Dayjs | string | null) => (value ? '#E6F0FB' : '#FAFAFA');
 
-  // Actualizar todas las referencias a state por simulationState
-  const handleSearch = () => {
-    const query = searchCode.trim();
-
-    setSelectedOficina(null);
-    setSelectedCamion(null);
-    setSelectedPedido(null);
-
-    // Buscar en oficinas
-    // const office = simulationState.offices.find((office) => office.ubigeo === query);
-    // if (office) {
-    //   setSelectedOficina(office);
-    //   return;
-    // }
-    if (query.includes(',')) {
-      const [departamento, provincia] = query.split(',').map(part => part.trim().toUpperCase());
-      const office = simulationState.offices.find((office) =>
-        office.departamento.toUpperCase() === departamento &&
-        office.provincia.toUpperCase() === provincia
-      );
-      if (office) {
-        setSelectedOficina(office);
-        return;
-      }
-    }
-
-    // Buscar en camiones
-    const truck = simulationState.vehicles.find((vehicle) => vehicle.idVehiculo === query);
-    if (truck) {
-      setSelectedCamion(truck);
-      return;
-    }
-
-    // Buscar en pedidos
-    const allOrders = [
-      ...simulationState.unplannedOrders,
-      ...simulationState.vehicles.flatMap(vehicle => vehicle.ruta?.pedidos || [])
-    ];
-
-    const order = allOrders.find((order) =>
-      order.idPedido.toUpperCase() === query
-    );
-    if (order) {
-      setSelectedPedido(order);
-      return;
-    }
-
-  };
-
   return (
     <Header isLoading={simulationState.isPlaying}>
       <Box
@@ -310,39 +254,6 @@ const CustomHeader: React.FC = () => {
             }}
           >
             {simulationState.isPlaying ? <Stop /> : <PlayArrow />}
-          </Button>
-        </Box>
-        {/* Contenedor para el buscador */}
-        <Box display="flex" alignItems="center" justifyContent="flex-start" gap={2}>
-          <TextField
-            size="small"
-            placeholder="Ingrese el código del Pedido, Camión u Oficina"
-            value={searchCode}
-            onChange={(e) => setSearchCode(e.target.value)}
-            sx={{
-              width: 486,
-              backgroundColor: getDynamicBackground(searchCode),
-            }}
-            inputProps={{
-              style: {
-                fontSize: '15.5px', // Ajusta el tamaño del texto
-              },
-            }}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSearch}
-            sx={{
-              minWidth: '40px', // Establece el tamaño mínimo para que sea un cuadrado
-              height: '40px', // Asegura que sea un cuadrado
-              padding: 0, // Sin padding adicional
-              display: 'flex', // Para centrar el ícono
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <SearchIcon />
           </Button>
         </Box>
       </Box>
