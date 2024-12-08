@@ -7,8 +7,8 @@
   align-items: center;
   justify-content: space-between;
   /* Alinea todo a la izquierda */
-  gap: 5px;
   /* Espaciado entre filas */
+  font: 'Public Sans', sans-serif;
 }
 
 .simulationRow {
@@ -22,7 +22,6 @@
   display: flex;
 }
 
-.separator {
-  margin-left: 10px;
-  /* Ajusta el espaciado entre títulos y valores si es necesario */
+.tiempo {
+  min-width: 186px;
 }

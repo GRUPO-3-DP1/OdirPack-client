@@ -11,6 +11,22 @@ import { APIProvider } from '@vis.gl/react-google-maps';
 import { SelectionProvider } from './context/Buscador/SelectionProvider';
 import { OperacionProvider } from './context/OperacionDia/OperacionContext';
 
+declare module '@mui/material/styles' {
+  interface TypographyVariants {
+    text: React.CSSProperties;
+  }
+
+  interface TypographyVariantsOptions {
+    text?: React.CSSProperties;
+  }
+}
+
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    text: true;
+  }
+}
+
 const customTheme = createTheme({
   palette: {
     mode: 'light',
@@ -30,7 +46,21 @@ const customTheme = createTheme({
   typography: {
     fontFamily: [
       "Public Sans"
-    ].join(',')
+    ].join(','),
+    text: {
+      fontFamily: "Public Sans",
+      fontSize: "11px",
+      fontWeight: 400,
+    },
+  },
+  components: {
+    MuiTypography: {
+      defaultProps: {
+        variantMapping: {
+          text: 'body2',
+        },
+      },
+    },
   },
 });
 
