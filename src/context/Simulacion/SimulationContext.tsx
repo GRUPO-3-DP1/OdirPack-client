@@ -260,7 +260,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     if (state.ends && solutions.length > 0 && !finalDataExtracted) {
       console.log("Extrayendo data final SE EJECUTO");
       closeWebSocket();
-      const { pedidos, camiones } = extractAllRutas(solutions);
+      const { pedidos, camiones } = extractAllRutas(state.vehicles);
       dispatch({
         type: 'ADD_HISTORY_ENTRY',
         payload: {
