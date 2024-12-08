@@ -39,9 +39,16 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
         endTime: action.payload.endTime,
         operationType: action.payload.operationType,
         ends: false,
+        executionStartTime: new Date(), // Se establece la hora de inicio real
+        executionEndTime: null          // Se reinicia la hora de fin
       };
     case 'STOP_SIMULATION':
-      return { ...state, isPlaying: false, ends: true };
+      return { 
+        ...state, 
+        isPlaying: false, 
+        ends: true,
+        executionEndTime: new Date() 
+      };
     case 'SET_SPEED':
       return { ...state, speed: action.payload };
     case 'UPDATE_VEHICLE_POSITION':
@@ -70,6 +77,10 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, simulationHistory: [...state.simulationHistory, action.payload], };
     case 'RESET_SIMULATION':  // Resetea el estado a los valores iniciales
       return { ...initialState };
+    case 'SET_EXECUTION_START_TIME':
+        return { ...state, executionStartTime: action.payload };
+    case 'SET_EXECUTION_END_TIME':
+        return { ...state, executionEndTime: action.payload };
     default:
       return state;
   }
@@ -100,6 +111,8 @@ const initialState = {
   processedOrderIds: [],
   operationType: 'semanal',
   simulationHistory: [],
+  executionStartTime: null,
+  executionEndTime: null,
 };
 
 export function SimulationProvider({ children }: { children: React.ReactNode; }) {

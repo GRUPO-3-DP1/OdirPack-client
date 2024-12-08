@@ -97,6 +97,8 @@ export type SimulationState = {
     pedidos: OrderRow[];
     camiones: TruckRow[];
   }[];
+  executionStartTime?: Date | null;
+  executionEndTime?: Date | null;
 };
 
 export type HoraStock = {
@@ -192,4 +194,6 @@ export type SimulationAction =
   | { type: 'SET_TRUCKS_IN_MOTION'; payload: number; }
   | { type: 'SET_ORDERS_DELIVERED'; payload: number; }
   | { type: 'SET_ORDERS_PENDING'; payload: number; }
+  | { type: 'SET_EXECUTION_START_TIME'; payload: Date; }
+  | { type: 'SET_EXECUTION_END_TIME'; payload: Date; }
   | { type: 'ADD_HISTORY_ENTRY'; payload: { timestamp: Date; pedidos: OrderRow[]; camiones: TruckRow[] }; };
