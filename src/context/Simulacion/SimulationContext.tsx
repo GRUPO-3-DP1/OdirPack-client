@@ -137,11 +137,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
   const { bloqueosSimulacion, fetchBloqueosSimulacion } = useBloqueosSimulacion();
 
-  const [lastProcessedSolution, setLastProcessedSolution] = useState<string | null>(null);
-  const [indexActualProcess, setIndexActualProcess] = useState(0);
-
-  const { bloqueosSimulacion, fetchBloqueosSimulacion } = useBloqueosSimulacion();
-
   //const { isConnected, closeWebSocket, reconnect } = useWebSocket({
   const { isConnected, closeWebSocket } = useWebSocket({
     url: `${Services.WebUrl}/conexion-websocket`,
