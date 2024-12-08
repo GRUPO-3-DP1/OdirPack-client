@@ -1,9 +1,10 @@
 // OficinaMarker.tsx
 import React from 'react';
 import { AdvancedMarker, AdvancedMarkerProps } from '@vis.gl/react-google-maps';
-import { Home, Store } from '@mui/icons-material';
 import styles from './OficinaMarker.module.css';
 import { Oficina } from '../../../../../../../context/Simulacion/simulationTypes';
+import OficinaIcon from './Icons/OficinaIcon';
+import AlmacenIcon from './Icons/AlmacenIcon';
 
 interface OficinaMarkerProps extends Omit<AdvancedMarkerProps, 'position'> {
   oficina: Oficina;
@@ -27,23 +28,14 @@ const OficinaMarker: React.FC<OficinaMarkerProps> = ({ oficina, ocupacion = 'baj
       onClick={onClick}
       {...markerProps}
     >
-      <div className={styles.iconWrapper} style={
-        { border: '2px solid ' + color }
-      }>
+      <div className={styles.iconWrapper}>
         {oficina.isAlmacen ?
-          <Home
-            style={{ color: color }}
-            fontSize='small'
-          />
+          <AlmacenIcon size='small' />
           :
-          <Store
-            style={{ color: color }}
-            fontSize='small'
-          />
+          <OficinaIcon mainColor={color} size='small' />
         }
-
       </div>
-    </AdvancedMarker>
+    </AdvancedMarker >
   );
 };
 
