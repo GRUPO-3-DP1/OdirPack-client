@@ -146,7 +146,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   useEffect(() => {
     const bloqueos = mapearBloqueosDesdeArchivos(bloqueosSimulacion, state.startTime, state.endTime);
     console.log('Bloqueos mapeados:', bloqueos);
-  }, [state.startTime, bloqueosSimulacion]);
+    dispatch({ type: 'SET_CURRENT_BLOQUEOS', payload: bloqueos });
+  }, [state.startTime, state.endTime, bloqueosSimulacion]);
 
   useEffect(() => {
     if (indexActualProcess < solutions.length) {
