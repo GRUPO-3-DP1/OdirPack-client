@@ -1,4 +1,3 @@
-// OficinaMarker.tsx
 import React from 'react';
 import { AdvancedMarker, AdvancedMarkerProps } from '@vis.gl/react-google-maps';
 import styles from './OficinaMarker.module.css';
@@ -30,9 +29,9 @@ const OficinaMarker: React.FC<OficinaMarkerProps> = ({ oficina, ocupacion = 'baj
     >
       <div className={styles.iconWrapper}>
         {oficina.isAlmacen ?
-          <AlmacenIcon size='small' />
+          <AlmacenIcon size='tiny' />
           :
-          <OficinaIcon mainColor={color} size='small' />
+          <OficinaIcon mainColor={color} size='tiny' />
         }
       </div>
     </AdvancedMarker >
