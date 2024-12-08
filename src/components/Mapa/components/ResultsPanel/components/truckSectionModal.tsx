@@ -5,8 +5,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
   IconButton
 } from '@mui/material';
 import {
@@ -42,15 +40,15 @@ interface TruckSectionModalProps {
 
 const TruckSectionModal: React.FC<TruckSectionModalProps> = ({ open, onClose, tramos }) => {
   const columns: GridColDef<TruckSection>[] = [
-    { field: 'inicio', headerName: 'Inicio', flex:1, sortable: true },
-    { field: 'fin', headerName: 'Fin', flex:1, sortable: true },
-    { field: 'origen', headerName: 'Origen', flex:1, sortable: true },
-    { field: 'destino', headerName: 'Destino', flex:1, sortable: true },
-    { field: 'estado', headerName: 'Estado', flex:1, sortable: true },
+    { field: 'inicio', headerName: 'Inicio', flex: 1, sortable: true },
+    { field: 'fin', headerName: 'Fin', flex: 1, sortable: true },
+    { field: 'origen', headerName: 'Origen', flex: 1, sortable: true },
+    { field: 'destino', headerName: 'Destino', flex: 1, sortable: true },
+    { field: 'estado', headerName: 'Estado', flex: 0.7, sortable: true },
     {
       field: 'horaAveria',
       headerName: 'Hora de avería',
-      flex:1,
+      flex: 1,
       sortable: true,
       valueGetter: (params: GridRowClassNameParams<TruckSection>) => {
         return params.row.horaAveria || 'Sin avería';
@@ -72,7 +70,7 @@ const TruckSectionModal: React.FC<TruckSectionModalProps> = ({ open, onClose, tr
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" scroll="paper">
       <DialogTitle sx={{ position:'relative' }}>
-        Detalle de Tramos (Camiones)
+        Detalle de tramos
         <IconButton 
           onClick={onClose}
           sx={{ position:'absolute', right:8, top:8 }}
@@ -94,10 +92,6 @@ const TruckSectionModal: React.FC<TruckSectionModalProps> = ({ open, onClose, tr
             disableRowSelectionOnClick
             getRowClassName={getRowClassName}
             sx={{
-              '& .MuiDataGrid-columnHeaders': {
-                backgroundColor: '#000',
-                color: '#fff'
-              },
               '& .row-completado': { backgroundColor: '#d4edda' },
               '& .row-averiado': { backgroundColor: '#f8d7da' },
               '& .row-transito': { backgroundColor: '#fff3cd' }
@@ -105,9 +99,6 @@ const TruckSectionModal: React.FC<TruckSectionModalProps> = ({ open, onClose, tr
           />
         </div>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cerrar</Button>
-      </DialogActions>
     </Dialog>
   );
 };

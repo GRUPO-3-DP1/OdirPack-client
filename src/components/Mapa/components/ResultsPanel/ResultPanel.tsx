@@ -47,19 +47,6 @@ const ResultPanel: React.FC<ResultPanelProps> = ({ show = true }) => {
     }
   }, [historyIndex, state.simulationHistory]);
 
-  // useEffect(() => {
-  //   if (state.ends) {
-  //     // Ahora tienes acceso a state.simulationHistory
-  //     // Puedes mapearlo y mostrarlo
-  //     // Por ejemplo, sólo la última entrada:
-  //     if (state.simulationHistory.length > 0) {
-  //       const lastEntry = state.simulationHistory[state.simulationHistory.length - 1];
-  //       setOrderRows(lastEntry.pedidos);
-  //       setTruckRows(lastEntry.camiones);
-  //     }
-  //   }
-  // }, [state.ends, state.simulationHistory]);
-
   const handleShowOrderTramos = (row: OrderRow) => {
     const tramos = row.tramosDetalle || [];
     setOrderTramos(tramos);

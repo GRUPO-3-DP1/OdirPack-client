@@ -5,8 +5,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
   IconButton
 } from '@mui/material';
 import {
@@ -46,8 +44,8 @@ const OrderSectionModal: React.FC<OrderSectionModalProps> = ({ open, onClose, tr
     { field: 'fin', headerName: 'Fin', flex: 1, sortable: true },
     { field: 'origen', headerName: 'Origen', flex: 1, sortable: true },
     { field: 'destino', headerName: 'Destino', flex: 1, sortable: true },
-    { field: 'estado', headerName: 'Estado', flex: 1, sortable: true },
-    { field: 'camion', headerName: 'Camión', flex: 1, sortable: true },
+    { field: 'estado', headerName: 'Estado', flex: 0.7, sortable: true },
+    { field: 'camion', headerName: 'Camión', flex: 0.5, sortable: true },
   ];
 
   const getRowClassName = (params: GridRowClassNameParams<PedidoSection>) => {
@@ -68,7 +66,7 @@ const OrderSectionModal: React.FC<OrderSectionModalProps> = ({ open, onClose, tr
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" scroll="paper">
       <DialogTitle sx={{ position: 'relative' }}>
-        Detalle de Tramos (Pedidos)
+        Detalle de tramos
         <IconButton
           onClick={onClose}
           sx={{ position: 'absolute', right: 8, top: 8 }}
@@ -90,10 +88,6 @@ const OrderSectionModal: React.FC<OrderSectionModalProps> = ({ open, onClose, tr
             disableRowSelectionOnClick
             getRowClassName={getRowClassName}
             sx={{
-              '& .MuiDataGrid-columnHeaders': {
-                backgroundColor: '#000',
-                color: '#fff'
-              },
               '& .row-entregado': { backgroundColor: '#d4edda' },
               '& .row-retrasado': { backgroundColor: '#f8d7da' },
               '& .row-transito': { backgroundColor: '#fff3cd' }
@@ -101,9 +95,6 @@ const OrderSectionModal: React.FC<OrderSectionModalProps> = ({ open, onClose, tr
           />
         </div>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cerrar</Button>
-      </DialogActions>
     </Dialog>
   );
 };

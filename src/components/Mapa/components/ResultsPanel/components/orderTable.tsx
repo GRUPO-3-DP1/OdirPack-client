@@ -24,18 +24,18 @@ const PEDIDO_ESTADOS_CLASSES: Record<string, string> = {
 
 const OrderTable: React.FC<OrderTableProps> = ({ data, onShowTramos }) => {
   const columns: GridColDef[] = [
-    { field: 'ruta', headerName: 'Ruta', flex:1, sortable:true },
-    { field: 'pedido', headerName: 'Pedido', flex:1, sortable:true },
-    { field: 'inicio', headerName: 'Inicio', flex:1, sortable:true },
-    { field: 'fin', headerName: 'Fin', flex:1, sortable:true },
-    { field: 'origen', headerName: 'Origen', flex:1, sortable:true },
-    { field: 'destino', headerName: 'Destino', flex:1, sortable:true },
-    { field: 'paquetes', headerName: 'Paquetes', flex:1, sortable:true },
-    { field: 'estado', headerName: 'Estado', flex:1, sortable:true },
+    { field: 'ruta', headerName: 'Ruta', flex: 0.5, sortable: true },
+    { field: 'pedido', headerName: 'Pedido', flex: 0.5, sortable: true },
+    { field: 'inicio', headerName: 'Inicio', flex: 1, sortable: true },
+    { field: 'fin', headerName: 'Fin', flex: 1, sortable: true },
+    { field: 'origen', headerName: 'Origen', flex: 1, sortable: true },
+    { field: 'destino', headerName: 'Destino', flex: 1, sortable: true },
+    { field: 'paquetes', headerName: 'Paquetes', flex: 0.5, sortable: true },
+    { field: 'estado', headerName: 'Estado', flex: 0.7, sortable: true },
     {
       field: 'tramos',
       headerName: 'Tramos',
-      flex:0.7,
+      flex: 0.5,
       sortable:false,
       renderCell: (params: GridRenderCellParams) => (
         <IconButton onClick={() => onShowTramos(params.row as OrderRow)}>
@@ -68,10 +68,6 @@ const OrderTable: React.FC<OrderTableProps> = ({ data, onShowTramos }) => {
           disableRowSelectionOnClick
           getRowClassName={getRowClassName}
           sx={{
-            '& .MuiDataGrid-columnHeaders': {
-              backgroundColor: '#000',
-              color: '#fff'
-            },
             '& .row-retrasado': { backgroundColor: '#f8d7da' },
             '& .row-entregado': { backgroundColor: '#d4edda' },
             '& .row-transito': { backgroundColor: '#fff3cd' },
