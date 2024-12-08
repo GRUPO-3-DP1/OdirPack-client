@@ -157,7 +157,6 @@ const CustomHeader: React.FC = () => {
         display="flex"
         flexDirection="column"
         gap={1} // Incrementa el espacio entre las filas
-        sx={{ paddingTop: '10px' }} // Agrega espacio superior
       >
         <Box display="flex" alignItems="center" gap={2}>
           <DatePicker

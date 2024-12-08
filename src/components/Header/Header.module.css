@@ -1,46 +1,50 @@
-/*Header.module.css*/
 .mainHeader {
   width: 100%;
-  background: #FFFFFF;
+  height: 70px;
+
+  display: flex;
+  align-items: center;
+  flex-direction: column;
   border-bottom: 1px solid var(--divider, rgba(0, 0, 0, 0.12));
+  background: #FFFFFF;
 }
 
 .header {
+  width: 100%;
+  height: 100%;
+
   display: flex;
-  justify-content: space-between; /* Separa izquierda y derecha */
-  align-items: center; /* Centra los elementos verticalmente */
-  padding: 10px 20px;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+
+  padding-right: 20px;
+  padding-left: 20px;
 }
 
-.leftContainer {
-  display: flex;
-  flex-direction: column; /* Coloca el título y la información de simulación en columnas */
-  justify-content: center; /* Centra los elementos verticalmente dentro del contenedor */
-  gap: 10px; /* Espaciado entre el título y la información de simulación */
-}
+.container {
+  width: fit-content;
+  height: 100%;
 
-.rightContainer {
   display: flex;
-  flex-wrap: wrap; /* Permite ajustar botones y selectores si no hay espacio */
-  align-items: center; /* Centra verticalmente los elementos */
-  justify-content: flex-end; /* Alinea los elementos a la derecha */
-  gap: 20px; /* Espaciado entre botones/selectores */
+  justify-content: center;
+  flex-direction: column;
 }
 
 .title {
-  margin: 0;
+  margin: 0%;
+}
+
+.currentDate {
+  color: rgba(0, 0, 0, 0.38);
+  margin: 0%;
 }
 
 .childrenContainer {
   display: flex;
-  flex-wrap: wrap; /* Permite que los botones se ajusten si no hay espacio */
-  align-items: center; /* Centra verticalmente los elementos */
-  gap: 10px; /* Espaciado entre botones y selectores */
-}
 
-.simulationInfo {
-  display: flex;
-  flex-direction: column; /* Coloca los textos de simulación en columna */
-  gap: 5px; /* Espaciado entre las líneas */
-  color: rgba(0, 0, 0, 0.6);
+  gap: 20px;
+
+  justify-content: center;
+  align-items: center;
 }
