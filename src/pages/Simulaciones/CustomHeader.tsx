@@ -89,7 +89,7 @@ const CustomHeader: React.FC = () => {
 
       if (tipo === 'semanal') {
         console.log('MSJ: Iniciando simulación semanal');
-        endTime = new Date(startTime.getTime() + 1/5 * 24 * 60 * 60 * 1000); // 7 días después
+        endTime = new Date(startTime.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 días después
       } else if (tipo === 'colapso') {
         console.log('MSJ: Iniciando simulación colapso');
         endTime = new Date(startTime.getTime() + 365 * 24 * 60 * 60 * 1000);
@@ -124,7 +124,7 @@ const CustomHeader: React.FC = () => {
 
         if (tipo === 'semanal') {
           console.log('MSJ: Iniciando simulación semanal');
-          endTime = new Date(startTime.getTime() + 1/5 * 24 * 60 * 60 * 1000); // 7 días después
+          endTime = new Date(startTime.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 días después
         } else if (tipo === 'colapso') {
           console.log('MSJ: Iniciando simulación colapso');
           endTime = new Date(startTime.getTime() + 365 * 24 * 60 * 60 * 1000);
