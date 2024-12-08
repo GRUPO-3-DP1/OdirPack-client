@@ -19,7 +19,7 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 const Page: React.FC = () => {
-  const { simulacion, error, fetchSimulacion, uploadFile, deleteFile } = useArchivos();
+  const { simulacion, error, fetchSimulacion, uploadFile, deleteFile, loading } = useArchivos();
   const [loadingMes, setLoadingMes] = useState<Record<string, boolean>>({});
   const [snackbar, setSnackbar] = useState<string | null>(null); // Para mostrar errores de validación
 
@@ -93,7 +93,7 @@ const Page: React.FC = () => {
         <Typography variant="subtitle1">{mes}</Typography>
 
         <div className={styles.monthContainer}>
-          {isLoading ? (
+          {isLoading || loading ? (
             <CircularProgress size={20} />
           ) : archivo ? (
             <Chip
