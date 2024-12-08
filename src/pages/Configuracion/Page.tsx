@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import styles from './page.module.css';
 import { Chip, styled, Box, Typography, Button, CircularProgress, Snackbar, Alert } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
-import { Mes } from '../../store/types/Mes';
-import useArchivos from '../../store/hooks/useArchivos';
-import FileUploader from './components/FileUploader';
+import { Mes, MesReal } from '../../store/types/Mes';
+import usePedidosSimulacion from '../../store/hooks/usePedidosSimulacion';
+import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -19,44 +19,59 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 const Page: React.FC = () => {
-  const { simulacion, error, fetchSimulacion, uploadFile, deleteFile } = useArchivos();
+  const {
+    pedidosSimulacion,
+    error: pedidosError,
+    fetchPedidosSimulacion,
+    uploadFile: uploadPedidosFile,
+    deleteFile: deletePedidosFile,
+    loading: loadingPedidos
+  } = usePedidosSimulacion();
+  const {
+    bloqueosSimulacion,
+    error: bloqueosError,
+    fetchBloqueosSimulacion,
+    uploadFile: uploadBloqueosFile,
+    deleteFile: deleteBloqueosFile,
+    loading: loadingBloqueos
+  } = useBloqueosSimulacion();
   const [loadingMes, setLoadingMes] = useState<Record<string, boolean>>({});
   const [snackbar, setSnackbar] = useState<string | null>(null); // Para mostrar errores de validación
 
   useEffect(() => {
-    fetchSimulacion();
-  }, [fetchSimulacion]);
+    fetchPedidosSimulacion();
+  }, [fetchPedidosSimulacion]);
+
+  useEffect(() => {
+    fetchBloqueosSimulacion();
+  }, [fetchBloqueosSimulacion]);
 
   // Cerrar Snackbar
   const handleCloseSnackbar = () => setSnackbar(null);
 
   // Validar nombre del archivo
-  const isValidFileName = (fileName: string, mes: Mes): boolean => {
-    // Asegúrate de que 'mes' sea una cadena que contiene solo los números del mes (por ejemplo, '202407')
-    const expectedSuffix = mes; // mes será algo como '202407'
-
-    // Modificar la expresión regular para aceptar solo archivos con extensión .txt
+  const isValidPedidosFileName = (fileName: string, mes: Mes): boolean => {
+    const expectedSuffix = mes;
     const regex = new RegExp(`^c\\.1inf54\\.ventas${expectedSuffix}\\.txt$`);
-
     return regex.test(fileName);
   };
 
   // Manejar subida de archivo
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, mes: Mes) => {
+  const handlePedidosFileChange = async (event: React.ChangeEvent<HTMLInputElement>, mes: Mes) => {
     if (event.target.files) {
       const file = event.target.files[0];
       const fileName = file.name;
 
       // Validar el nombre del archivo
-      if (!isValidFileName(fileName, mes)) {
+      if (!isValidPedidosFileName(fileName, mes)) {
         setSnackbar(`El archivo "${fileName}" no es válido para el mes ${mes}.`);
         return;
       }
 
       setLoadingMes((prev) => ({ ...prev, [mes]: true }));
       try {
-        await uploadFile(mes, file); // Subir archivo
-        await fetchSimulacion(); // Actualizar simulación
+        await uploadPedidosFile(mes, file); // Subir archivo
+        await fetchPedidosSimulacion(); // Actualizar simulación
       } catch (err) {
         setSnackbar(`Error al subir el archivo: ${(err as Error).message}`);
       } finally {
@@ -66,11 +81,11 @@ const Page: React.FC = () => {
   };
 
   // Manejar eliminación de archivo
-  const handleDelete = async (mes: Mes) => {
+  const handlePedidosDelete = async (mes: Mes) => {
     setLoadingMes((prev) => ({ ...prev, [mes]: true }));
     try {
-      await deleteFile(mes);
-      await fetchSimulacion();
+      await deletePedidosFile(mes);
+      await fetchPedidosSimulacion();
     } catch (err) {
       setSnackbar(`Error al eliminar el archivo: ${(err as Error).message}`);
     } finally {
@@ -79,8 +94,8 @@ const Page: React.FC = () => {
   };
 
   // Renderizar chip dinámicamente
-  const renderChip = (mes: Mes) => {
-    const archivo = simulacion["archivo" + mes];
+  const renderPedidosChip = (mes: Mes) => {
+    const archivo = pedidosSimulacion["archivo" + mes];
     const isLoading = loadingMes[mes] ?? false;
 
     return (
@@ -93,13 +108,13 @@ const Page: React.FC = () => {
         <Typography variant="subtitle1">{mes}</Typography>
 
         <div className={styles.monthContainer}>
-          {isLoading ? (
+          {isLoading || loadingPedidos ? (
             <CircularProgress size={20} />
           ) : archivo ? (
             <Chip
               variant="outlined"
               label={archivo.nombre}
-              onDelete={() => handleDelete(mes)}
+              onDelete={() => handlePedidosDelete(mes)}
               color="primary"
               className={styles.button}
               size="small"
@@ -115,7 +130,7 @@ const Page: React.FC = () => {
               Subir Archivo
               <VisuallyHiddenInput
                 type="file"
-                onChange={(e) => handleFileChange(e, mes)}
+                onChange={(e) => handlePedidosFileChange(e, mes)}
               />
             </Button>
           )}
@@ -124,10 +139,93 @@ const Page: React.FC = () => {
     );
   };
 
-  if (error) {
+  // Manejar subida de archivo
+  const handleBloqueosFileChange = async (event: React.ChangeEvent<HTMLInputElement>, mes: MesReal) => {
+    if (event.target.files) {
+      const file = event.target.files[0];
+      // const fileName = file.name;
+
+      // Validar el nombre del archivo
+      // if (!isValidPedidosFileName(fileName, mes)) {
+      //   setSnackbar(`El archivo "${fileName}" no es válido para el mes ${mes}.`);
+      //   return;
+      // }
+
+      setLoadingMes((prev) => ({ ...prev, [mes]: true }));
+      try {
+        await uploadBloqueosFile(mes, file); // Subir archivo
+        await fetchBloqueosSimulacion(); // Actualizar simulación
+      } catch (err) {
+        setSnackbar(`Error al subir el archivo: ${(err as Error).message}`);
+      } finally {
+        setLoadingMes((prev) => ({ ...prev, [mes]: false }));
+      }
+    }
+  };
+
+  // Manejar eliminación de archivo
+  const handleBloqueosDelete = async (mes: MesReal) => {
+    setLoadingMes((prev) => ({ ...prev, [mes]: true }));
+    try {
+      await deleteBloqueosFile(mes);
+      await fetchBloqueosSimulacion();
+    } catch (err) {
+      setSnackbar(`Error al eliminar el archivo: ${(err as Error).message}`);
+    } finally {
+      setLoadingMes((prev) => ({ ...prev, [mes]: false }));
+    }
+  };
+
+  // Renderizar chip dinámicamente
+  const renderBloqueosChip = (mes: MesReal) => {
+    const archivo = bloqueosSimulacion[mes.toLocaleLowerCase() as keyof typeof bloqueosSimulacion];
+    const isLoading = loadingMes[mes] ?? false;
+
+    return (
+      <Box
+        display="flex"
+        justifyContent={'space-between'}
+        gap={5}
+        key={mes}
+      >
+        <Typography variant="subtitle1">{mes}</Typography>
+
+        <div className={styles.monthContainer}>
+          {isLoading || loadingBloqueos ? (
+            <CircularProgress size={20} />
+          ) : archivo ? (
+            <Chip
+              variant="outlined"
+              label={archivo.nombre}
+              onDelete={() => handleBloqueosDelete(mes)}
+              color="primary"
+              className={styles.button}
+              size="small"
+            />
+          ) : (
+            <Button
+              component="label"
+              variant="contained"
+              startIcon={<CloudUpload />}
+              className={styles.button}
+              size="small"
+            >
+              Subir Archivo
+              <VisuallyHiddenInput
+                type="file"
+                onChange={(e) => handleBloqueosFileChange(e, mes)}
+              />
+            </Button>
+          )}
+        </div>
+      </Box>
+    );
+  };
+
+  if (pedidosError || bloqueosError) {
     return (
       <div className={styles.container}>
-        <Typography color="error">{error}</Typography>
+        <Typography color="error">ERROR</Typography>
       </div>
     );
   }
@@ -142,10 +240,24 @@ const Page: React.FC = () => {
       >
         {Object.values(Mes).map((mes) => (
           <Box key={mes} display="flex" flexDirection="row" gap={3} width="100%">
-            {renderChip(mes)}
+            {renderPedidosChip(mes)}
           </Box>
         ))}
       </Box>
+
+      <h3>Simulacion - Bloqueos</h3>
+      <Box
+        display="flex"
+        flexDirection="column"
+        gap={3}
+      >
+        {Object.values(MesReal).map((mes) => (
+          <Box key={mes} display="flex" flexDirection="row" gap={3} width="100%">
+            {renderBloqueosChip(mes)}
+          </Box>
+        ))}
+      </Box>
+
 
       {/* Snackbar para errores de validación */}
       <Snackbar
@@ -158,7 +270,6 @@ const Page: React.FC = () => {
           {snackbar}
         </Alert>
       </Snackbar>
-      <FileUploader />
     </div>
   );
 };

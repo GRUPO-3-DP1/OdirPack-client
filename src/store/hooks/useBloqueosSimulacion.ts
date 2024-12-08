@@ -1,33 +1,33 @@
 import { useState, useCallback } from 'react';
-import { subirArchivo, eliminarArchivo, obtenerSimulacion } from '../services/archivos';
+import { subirArchivo, eliminarArchivo, obtenerBloqueos } from '../services/archivos';
 import { Archivo } from '../types/Archivo';
-import { Mes } from '../types/Mes';
-import { PedidosSimulacion } from '../types/PedidosSimulacion';
+import { MesReal } from '../types/Mes';
+import { BloqueosSimulacion } from '../types/BloqueosSimulacion';
 
-type UseArchivosReturn = {
-  simulacion: PedidosSimulacion;
+type UseBloqueosSimulacionReturn = {
+  bloqueosSimulacion: BloqueosSimulacion;
   loading: boolean;
   error: string | null;
-  fetchSimulacion: () => Promise<void>;
-  uploadFile: (mes: Mes, file: File) => Promise<void>;
-  deleteFile: (mes: Mes) => Promise<void>;
+  fetchBloqueosSimulacion: () => Promise<void>;
+  uploadFile: (mes: MesReal, file: File) => Promise<void>;
+  deleteFile: (mes: MesReal) => Promise<void>;
 };
 
-function useArchivos(): UseArchivosReturn {
-  const [simulacion, setSimulacion] = useState<PedidosSimulacion>({});
+function useBloqueosSimulacion(): UseBloqueosSimulacionReturn {
+  const [bloqueosSimulacion, setBloqueosSimulacion] = useState<BloqueosSimulacion>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch simulación (archivos por mes)
-  const fetchSimulacion = useCallback(async () => {
+  const fetchBloqueosSimulacion = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data: PedidosSimulacion = await obtenerSimulacion();
+      const data: BloqueosSimulacion = await obtenerBloqueos();
 
       // Verifica que 'data' tiene la estructura correcta
       if (data && typeof data === 'object') {
-        const simulacionData: PedidosSimulacion = Object.entries(data).reduce(
+        const simulacionData: BloqueosSimulacion = Object.entries(data).reduce(
           (acc, [mes, archivo]) => ({
             ...acc,
             [mes]: archivo ? mapToArchivo(archivo as Archivo) : null,
@@ -35,7 +35,7 @@ function useArchivos(): UseArchivosReturn {
           {}
         );
 
-        setSimulacion(simulacionData);
+        setBloqueosSimulacion(simulacionData);
       } else {
         throw new Error('Respuesta de simulación no válida');
       }
@@ -56,12 +56,12 @@ function useArchivos(): UseArchivosReturn {
   });
 
   // Subir archivo
-  const uploadFile = useCallback(async (mes: Mes, file: File) => {
+  const uploadFile = useCallback(async (mes: MesReal, file: File) => {
     setLoading(true);
     setError(null);
     try {
       const archivo = await subirArchivo(mes, file);
-      setSimulacion((prevSimulacion) => ({
+      setBloqueosSimulacion((prevSimulacion) => ({
         ...prevSimulacion,
         [mes]: archivo,
       }));
@@ -73,12 +73,12 @@ function useArchivos(): UseArchivosReturn {
   }, []);
 
   // Eliminar archivo
-  const deleteFile = useCallback(async (mes: Mes) => {
+  const deleteFile = useCallback(async (mes: MesReal) => {
     setLoading(true);
     setError(null);
     try {
       await eliminarArchivo(mes);
-      setSimulacion((prevSimulacion) => ({
+      setBloqueosSimulacion((prevSimulacion) => ({
         ...prevSimulacion,
         [mes]: null,
       }));
@@ -90,13 +90,13 @@ function useArchivos(): UseArchivosReturn {
   }, []);
 
   return {
-    simulacion,
+    bloqueosSimulacion,
     loading,
     error,
-    fetchSimulacion,
+    fetchBloqueosSimulacion,
     uploadFile,
     deleteFile,
   };
 }
 
-export default useArchivos;
+export default useBloqueosSimulacion;

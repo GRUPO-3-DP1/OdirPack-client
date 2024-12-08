@@ -22,7 +22,7 @@ import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
 import { nuevaDataPrueba } from '../../data/nuevaDataPrueba';
 import { useSelection } from '../../context/Buscador/useSelection';
-import useArchivos from '../../store/hooks/useArchivos';
+import usePedidosSimulacion from '../../store/hooks/usePedidosSimulacion';
 import { mapearContenidoAArchivos } from '../../utils/mapearContenidoAArchivos';
 
 const CustomHeader: React.FC = () => {
@@ -37,11 +37,11 @@ const CustomHeader: React.FC = () => {
   const { state: simulationState, dispatch, userId, stopSimulation } = useData();
   const { setSelectedOficina, setSelectedCamion, setSelectedPedido } = useSelection();
 
-  const { simulacion, fetchSimulacion } = useArchivos();
+  const { pedidosSimulacion, fetchPedidosSimulacion } = usePedidosSimulacion();
 
   useEffect(() => {
-    fetchSimulacion();
-  }, [fetchSimulacion]);
+    fetchPedidosSimulacion();
+  }, [fetchPedidosSimulacion]);
 
   const handleChange = (event: SelectChangeEvent) => {
     setTipo(event.target.value);
@@ -105,7 +105,7 @@ const CustomHeader: React.FC = () => {
           return;
         }
 
-        const pedidos = mapearContenidoAArchivos(simulacion, startTime, endTime);
+        const pedidos = mapearContenidoAArchivos(pedidosSimulacion, startTime, endTime);
 
         const formattedStartTime = dayjs(startTime).format('YYYY-MM-DDTHH:mm:ss');
 
