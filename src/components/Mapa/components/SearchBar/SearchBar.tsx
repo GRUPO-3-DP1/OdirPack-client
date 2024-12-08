@@ -82,7 +82,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, disabled = false }) => 
     >
       <TextField
         size="small"
-        placeholder="Ingrese el código del Pedido, Camión u Oficina"
+        placeholder="Código del Pedido, Camión u Oficina"
         value={searchCode}
         onChange={(e) => setSearchCode(e.target.value)}
         disabled={disabled}
