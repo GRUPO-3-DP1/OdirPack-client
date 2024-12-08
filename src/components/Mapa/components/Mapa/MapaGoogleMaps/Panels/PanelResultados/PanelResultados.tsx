@@ -52,8 +52,8 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true, onClose 
     finalCamionesEnMovimiento = lastEntry.camiones.filter(c => c.estado === 'En tránsito').length;
     // Camiones en mantenimiento se asume = total - en movimiento - completados
     // Pero aquí, "Averiado" son los en mantenimiento.
-    const averiados = lastEntry.camiones.filter(c => c.estado === 'Averiado').length;
-    finalCamionesEnMantenimiento = averiados;
+    //const averiados = lastEntry.camiones.filter(c => c.estado === 'Averiado').length;
+    finalCamionesEnMantenimiento = finalTotalCamiones - finalCamionesEnMovimiento;
 
   } else {
     // Si aún no terminó o no hay historial, usar el estado actual
