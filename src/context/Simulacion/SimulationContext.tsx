@@ -15,6 +15,8 @@ import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
 import { extractAllRutas } from '../../utils/extractAllRutas';
 import { Order } from './simulationTypes';
 import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
+import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
+import { mapearBloqueosDesdeArchivos } from '../../utils/mapearBloqueosDeArchivos';
 
 const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
 
@@ -30,6 +32,8 @@ export const SimulationContext = createContext<{
 
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
   switch (action.type) {
+    case 'SET_START_TIME':
+      return { ...state, startTime: action.payload.startTime, endTime: action.payload.endTime };
     case 'START_SIMULATION':
       return {
         ...state,
@@ -57,6 +61,8 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, currentTime: action.payload };
     case 'SET_VEHICLES':
       return { ...state, vehicles: action.payload };
+    case 'SET_CURRENT_BLOQUEOS':
+      return { ...state, currentBloqueos: action.payload };
     case 'SET_TOTAL_TRUCKS':
       return { ...state, totalTrucks: action.payload };
     case 'SET_OCCUPIED_OFFICES':
@@ -91,14 +97,21 @@ const initialOffices = oficinas.map((office) => ({
   currentOrders: [],
 }));
 
-const initialState = {
+const initialState: SimulationState = {
   isPlaying: false,
-  vehicles: [],
+  //
   speed: 50, //50 por defecto
+  startTime: new Date('2024-10-21T00:00:00Z'),
+  currentTime: new Date('2024-10-21T00:00:00Z'),
+  endTime: new Date('2026-12-28T00:00:00Z'),
   ends: false,
-  startTime: new Date('2024-12-21T00:00:00Z'),
-  currentTime: new Date('2024-12-21T00:00:00Z'),
-  endTime: new Date('2024-12-28T00:00:00Z'),
+  //
+  currentBloqueos: [],
+  vehicles: [],
+  offices: initialOffices,
+  unplannedOrders: [],
+  processedOrderIds: [],
+  //
   trucksInMotion: 0,
   trucksInMaintenance: 0,
   totalTrucks: 0,
@@ -106,9 +119,7 @@ const initialState = {
   occupiedOffices: 0,
   ordersDelivered: 0,
   ordersPending: 0,
-  offices: initialOffices,
-  unplannedOrders: [],
-  processedOrderIds: [],
+  //
   operationType: 'semanal',
   simulationHistory: [],
   executionStartTime: null,
@@ -120,6 +131,16 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   const [finalDataExtracted, setFinalDataExtracted] = useState(false);
   const [userId, setUserId] = useState<string>('');
   const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]);
+
+  const [lastProcessedSolution, setLastProcessedSolution] = useState<string | null>(null);
+  const [indexActualProcess, setIndexActualProcess] = useState(0);
+
+  const { bloqueosSimulacion, fetchBloqueosSimulacion } = useBloqueosSimulacion();
+
+  const [lastProcessedSolution, setLastProcessedSolution] = useState<string | null>(null);
+  const [indexActualProcess, setIndexActualProcess] = useState(0);
+
+  const { bloqueosSimulacion, fetchBloqueosSimulacion } = useBloqueosSimulacion();
 
   //const { isConnected, closeWebSocket, reconnect } = useWebSocket({
   const { isConnected, closeWebSocket } = useWebSocket({
@@ -142,8 +163,15 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     },
   });
 
-  const [lastProcessedSolution, setLastProcessedSolution] = useState<string | null>(null);
-  const [indexActualProcess, setIndexActualProcess] = useState(0);
+  useEffect(() => {
+    fetchBloqueosSimulacion();
+  }, [fetchBloqueosSimulacion]);
+
+  useEffect(() => {
+    const bloqueos = mapearBloqueosDesdeArchivos(bloqueosSimulacion, state.startTime, state.endTime);
+    console.log('Bloqueos mapeados:', bloqueos);
+    dispatch({ type: 'SET_CURRENT_BLOQUEOS', payload: bloqueos });
+  }, [state.startTime, state.endTime, bloqueosSimulacion]);
 
   useEffect(() => {
     if (indexActualProcess < solutions.length) {
@@ -308,7 +336,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
             // Si el tiempo actual está dentro del periodo de mantenimiento
             if (newTime >= maintenanceStartTime && newTime < maintenanceEndTime) {
-              const finishStopTime = new Date(maintenanceStartTime.getTime() + 2 * 60 * 60 * 1000); // 2 horas en milisegundos
+              const finishStopTime = new Date(maintenanceStartTime.getTime() + 5 * 60 * 60 * 1000); // 5 horas en milisegundos
 
               //Entra en averia
               switch (vehicle.averia.tipo) {
@@ -327,7 +355,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                       },
                       position: {
                         ...vehicle.position,
-                        currentSegmentIndex: -1,
+                        //currentSegmentIndex: -1,
                       },
                     };
                   } else {
@@ -354,7 +382,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                       },
                       position: {
                         ...vehicle.position,
-                        currentSegmentIndex: -1,
+                        //currentSegmentIndex: -1,
                       },
                     };
                   } else {
@@ -539,7 +567,13 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         return updatedOffice;
       });
 
+      //Actualizar bloqueos actuales
+      // const updatedBloqueos = state.currentBloqueos.filter((bloqueo) => {
+      //   const bloqueoEndTime = new Date(bloqueo.fechaFin);
+      //   return bloqueoEndTime > newTime;
+      // });
 
+      // dispatch({ type: 'SET_CURRENT_BLOQUEOS', payload: updatedBloqueos });
       // Actualizar oficinas y processedOrderIds en el estado
       dispatch({ type: 'SET_OFFICES', payload: updatedOffices });
       dispatch({ type: 'SET_PROCESSED_ORDER_IDS', payload: newProcessedOrderIds });

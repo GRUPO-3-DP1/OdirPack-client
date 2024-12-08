@@ -73,14 +73,29 @@ export type Vehicle = {
   };
 };
 
+export type Bloqueo = {
+  idBloqueo: string;
+  origen: { lat: number; lng: number; };
+  destino: { lat: number; lng: number; };
+  fechaInicio: Date;
+  fechaFin: Date;
+};
+
 export type SimulationState = {
   isPlaying: boolean;
-  vehicles: Vehicle[];
+  //
   speed: number;
   startTime: Date;
   currentTime: Date;
   endTime: Date;
   ends: boolean;
+  //
+  currentBloqueos: Bloqueo[];
+  vehicles: Vehicle[];
+  offices: Oficina[];             // Añadir oficinas
+  unplannedOrders: Order[];      // Añadir pedidos no planificados
+  processedOrderIds: string[];
+  //
   trucksInMotion: number;        // Número de camiones en movimiento
   trucksInMaintenance: number;   // Número de camiones en mantenimiento
   totalTrucks: number;           // Capacidad total de la flota
@@ -88,9 +103,7 @@ export type SimulationState = {
   occupiedOffices: number;       // Oficinas ocupadas
   ordersDelivered: number;       // Pedidos entregados
   ordersPending: number;         // Pedidos pendientes
-  offices: Oficina[];             // Añadir oficinas
-  unplannedOrders: Order[];      // Añadir pedidos no planificados
-  processedOrderIds: string[];
+  //
   operationType: string;
   simulationHistory: {
     timestamp: Date;
@@ -179,12 +192,14 @@ export type OrderRow = {
 }
 
 export type SimulationAction =
+  | { type: 'SET_START_TIME'; payload: { startTime: Date; endTime: Date; }; }
   | { type: 'START_SIMULATION'; payload: { startTime: Date; endTime: Date; operationType: 'semanal' | 'colapso' | 'diaadia'; }; }
   | { type: 'STOP_SIMULATION'; }
   | { type: 'SET_SPEED'; payload: number; }
   | { type: 'UPDATE_VEHICLE_POSITION'; payload: Vehicle[]; }
   | { type: 'SET_CURRENT_TIME'; payload: Date; }
   | { type: 'SET_VEHICLES'; payload: Vehicle[]; }
+  | { type: 'SET_CURRENT_BLOQUEOS'; payload: Bloqueo[]; }
   | { type: 'SET_OFFICES'; payload: Oficina[]; }
   | { type: 'SET_UNPLANNED_ORDERS'; payload: Order[]; }
   | { type: 'SET_PROCESSED_ORDER_IDS'; payload: string[]; }
