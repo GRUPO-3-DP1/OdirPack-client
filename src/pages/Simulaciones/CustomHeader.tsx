@@ -1,5 +1,5 @@
 //CustomHeader.tsx  
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Header from '../../components/Header/Header';
 import {
   DatePicker,
@@ -23,13 +23,13 @@ import { Services as ServicesProperties } from '../../../config';
 import { nuevaDataPrueba } from '../../data/nuevaDataPrueba';
 import { useSelection } from '../../context/Buscador/useSelection';
 import usePedidosSimulacion from '../../store/hooks/usePedidosSimulacion';
-import { mapearContenidoAArchivos } from '../../utils/mapearContenidoAArchivos';
+import { mapearPedidosDeArchivos } from '../../utils/mapearPedidosDeArchivos';
 
 const CustomHeader: React.FC = () => {
 
   // Estados locales
   const [searchCode, setSearchCode] = useState<string>('');
-  const [tipo, setTipo] = useState("");
+  const [tipo, setTipo] = useState<'semanal' | 'colapso'>('semanal');
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-12-01'));
   const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2024-12-01T18:00'));
 
@@ -43,8 +43,36 @@ const CustomHeader: React.FC = () => {
     fetchPedidosSimulacion();
   }, [fetchPedidosSimulacion]);
 
+  const combinedDateTime = useMemo(() => {
+    if (selectedDate && selectedTime) {
+      return selectedDate
+        .set('hour', selectedTime.hour())
+        .set('minute', selectedTime.minute())
+        .set('second', selectedTime?.second());
+    };
+    return null;
+  }, [selectedDate, selectedTime]);
+
+  useEffect(() => {
+    if (combinedDateTime) {
+      if (tipo === 'semanal') {
+        dispatch({
+          type: 'SET_START_TIME',
+          payload: { startTime: combinedDateTime.toDate(), endTime: combinedDateTime.add(7, 'day').toDate() },
+        });
+      }
+
+      else if (tipo === 'colapso') {
+        dispatch({
+          type: 'SET_START_TIME',
+          payload: { startTime: combinedDateTime.toDate(), endTime: combinedDateTime.add(1, 'year').toDate(), },
+        });
+      }
+    }
+  }, [combinedDateTime, dispatch, tipo]);
+
   const handleChange = (event: SelectChangeEvent) => {
-    setTipo(event.target.value);
+    setTipo(event.target.value as 'semanal' | 'colapso');
   };
 
   const startSimulation = async () => {
@@ -105,7 +133,7 @@ const CustomHeader: React.FC = () => {
           return;
         }
 
-        const pedidos = mapearContenidoAArchivos(pedidosSimulacion, startTime, endTime);
+        const pedidos = mapearPedidosDeArchivos(pedidosSimulacion, startTime, endTime);
 
         const formattedStartTime = dayjs(startTime).format('YYYY-MM-DDTHH:mm:ss');
 

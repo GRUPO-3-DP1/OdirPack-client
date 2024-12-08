@@ -14,6 +14,8 @@ import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
 import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
 import { Order } from './simulationTypes';
 import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
+import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
+import { mapearBloqueosDesdeArchivos } from '../../utils/mapearBloqueosDeArchivos';
 
 const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
 
@@ -29,6 +31,8 @@ export const SimulationContext = createContext<{
 
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
   switch (action.type) {
+    case 'SET_START_TIME':
+      return { ...state, startTime: action.payload.startTime, endTime: action.payload.endTime };
     case 'START_SIMULATION':
       return {
         ...state,
@@ -85,7 +89,7 @@ const initialState: SimulationState = {
   speed: 50, //50 por defecto
   startTime: new Date('2024-10-21T00:00:00Z'),
   currentTime: new Date('2024-10-21T00:00:00Z'),
-  endTime: new Date('2024-10-28T00:00:00Z'),
+  endTime: new Date('2026-12-28T00:00:00Z'),
   ends: false,
   //
   currentBloqueos: [],
@@ -114,6 +118,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   const [lastProcessedSolution, setLastProcessedSolution] = useState<string | null>(null);
   const [indexActualProcess, setIndexActualProcess] = useState(0);
 
+  const { bloqueosSimulacion, fetchBloqueosSimulacion } = useBloqueosSimulacion();
+
   const { isConnected, closeWebSocket, reconnect } = useWebSocket({
     url: `${Services.WebUrl}/conexion-websocket`,
     onMessage: (data) => {
@@ -134,13 +140,14 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   });
 
   useEffect(() => {
-    // Acción que se ejecuta solo al iniciar el componente
-    console.log('Componente SimulationProvider montado');
+    fetchBloqueosSimulacion();
+  }, [fetchBloqueosSimulacion]);
 
-    return () => {
-      console.log('Componente SimulationProvider desmontado');
-    };
-  }, []);
+  useEffect(() => {
+    const bloqueos = mapearBloqueosDesdeArchivos(bloqueosSimulacion, state.startTime, state.endTime);
+    console.log('Bloqueos mapeados:', bloqueos);
+    dispatch({ type: 'SET_CURRENT_BLOQUEOS', payload: bloqueos });
+  }, [state.startTime, state.endTime, bloqueosSimulacion]);
 
   useEffect(() => {
     if (indexActualProcess < solutions.length) {

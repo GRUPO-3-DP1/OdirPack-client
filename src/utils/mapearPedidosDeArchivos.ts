@@ -9,7 +9,7 @@ interface Pedido {
   idCliente: string;
 }
 
-export const mapearContenidoAArchivos = (
+export const mapearPedidosDeArchivos = (
   simulacion: PedidosSimulacion,
   fechaInicio: Date,
   fechaFin: Date
