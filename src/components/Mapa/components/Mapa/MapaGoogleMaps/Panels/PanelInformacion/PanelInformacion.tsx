@@ -14,6 +14,7 @@ import OfficeView from '../../../../InformationPanel/OfficeView';
 import OrderView from '../../../../InformationPanel/OrderView';
 import SimulationView from '../../../../InformationPanel/SimulationView';
 import StatusView from '../../../../InformationPanel/StatusView';
+import SearchView from '../../../../InformationPanel/SearchView';
 
 interface PanelInformacionProps {
   show: boolean;
@@ -38,6 +39,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
     <MapControl position={ControlPosition.TOP_RIGHT}>
       <div className={styles.panel}>
         <StatusView />
+        <SearchView />
         <div>
           {selectedCamion ? (
             <TruckView
