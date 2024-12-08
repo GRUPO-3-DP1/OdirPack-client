@@ -19,7 +19,16 @@ type PanelResultadosProps = {
 
 const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true, onClose }) => {
   const { state } = useData();
-  const { ends, simulationHistory, offices, startTime, endTime, executionStartTime, executionEndTime } = state;
+  const { 
+    ends, 
+    simulationHistory, 
+    startTime, 
+    endTime, 
+    executionStartTime, 
+    executionEndTime,
+    colapso,
+    offices  // Añadir esta línea
+  } = state;
 
   // Estado para mostrar el modal de detalle
   const [showDetalle, setShowDetalle] = useState(false);
@@ -90,12 +99,16 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true, onClose 
     }
   });
 
-  // Cálculo de tiempo simulado
+  // Cálculo de tiempo simulado considerando colapso
   const tiempoSimuladoMs = endTime.getTime() - startTime.getTime();
-  const tiempoSimulado = dayjs.duration(tiempoSimuladoMs);
+  const tiempoSimulado = dayjs.duration(colapso?.collapseDate ? 
+    colapso.collapseDate.getTime() - startTime.getTime() : 
+    tiempoSimuladoMs
+  );
 
+  // Formateo de fechas considerando colapso
   const fechaInicio = dayjs(startTime).format('DD/MM/YYYY, hh:mm A');
-  const fechaFin = dayjs(endTime).format('DD/MM/YYYY, hh:mm A');
+  const fechaFin = dayjs(colapso?.collapseDate || endTime).format('DD/MM/YYYY, hh:mm A');
 
   const totalPedidos = finalPedidosEntregados + finalPedidosPendientes;
 
@@ -206,7 +219,9 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true, onClose 
               📅 Inicio: {ends ? fechaInicio : 'Simulación no iniciada'}
             </Typography>
             <Typography sx={{ marginTop: 1 }}>
-              📅 Fin: {ends && executionEndTime ? fechaFin : 'Simulación no iniciada'}
+              📅 Fin: {ends ? (
+                colapso?.willCollapse ? `${fechaFin} (Colapso)` : fechaFin
+              ) : 'Simulación no iniciada'}
             </Typography>
           </Box>
 
