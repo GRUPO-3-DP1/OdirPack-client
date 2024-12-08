@@ -185,7 +185,7 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true, onClose 
             </Box>
           </Box>
 
-          {/* Tiempos */}
+          {/* Tiempos */} {/*comentario para María: Aquí siempre esta 7d*/}
           <Typography variant="subtitle1" sx={{ marginTop: 1.5 }}>
             <b>Tiempos:</b>
           </Typography>
@@ -202,7 +202,7 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true, onClose 
             </Typography>
           </Box>
           <Box display="flex" justifyContent="space-between" >
-            <Typography sx={{ marginTop: 1 }}>
+            <Typography sx={{ marginTop: 1 }}> {/*comentario para María: Aquí siempre esta 7d*/}
               📅 Inicio: {ends ? fechaInicio : 'Simulación no iniciada'}
             </Typography>
             <Typography sx={{ marginTop: 1 }}>
