@@ -13,6 +13,7 @@ import {
   GridRowClassNameParams,
 } from '@mui/x-data-grid';
 import { Close as CloseIcon } from '@mui/icons-material';
+import { esES } from '@mui/x-data-grid/locales';
 
 // Definimos la interfaz para cada tramo del pedido
 interface PedidoSection {
@@ -87,6 +88,7 @@ const OrderSectionModal: React.FC<OrderSectionModalProps> = ({ open, onClose, tr
             pageSizeOptions={[5, 10]}
             disableRowSelectionOnClick
             getRowClassName={getRowClassName}
+            localeText={esES.components.MuiDataGrid.defaultProps.localeText} // Aplica la localización en español
             sx={{
               '& .row-entregado': { backgroundColor: '#d4edda' },
               '& .row-retrasado': { backgroundColor: '#f8d7da' },

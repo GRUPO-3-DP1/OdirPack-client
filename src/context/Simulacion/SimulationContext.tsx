@@ -104,13 +104,14 @@ const initialState = {
 
 export function SimulationProvider({ children }: { children: React.ReactNode; }) {
   const [state, dispatch] = useReducer(simulationReducer, initialState);
-
+  const [finalDataExtracted, setFinalDataExtracted] = useState(false);
   const [userId, setUserId] = useState<string>('');
   const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]);
 
   const { isConnected, closeWebSocket, reconnect } = useWebSocket({
     url: `${Services.WebUrl}/conexion-websocket`,
     onMessage: (data) => {
+      if (state.ends) return;
       if (data.userId) {
         setUserId(data.userId);
       } else {
@@ -240,6 +241,21 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       setIndexActualProcess(indexActualProcess + 1);
     }
   }, [state.vehicles, indexActualProcess, lastProcessedSolution]);
+
+  useEffect(() => {
+    if (state.ends && solutions.length > 0 && !finalDataExtracted) {
+      const { pedidos, camiones } = extractAllRutas(solutions);
+      dispatch({
+        type: 'ADD_HISTORY_ENTRY',
+        payload: {
+          timestamp: state.currentTime,
+          pedidos,
+          camiones
+        }
+      });
+      setFinalDataExtracted(true);
+    }
+  }, [state.ends, finalDataExtracted]);
 
   useEffect(() => {
     if (!state.isPlaying) return;
@@ -518,17 +534,17 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       // Actualizar 'ordersPending'
       dispatch({ type: 'SET_ORDERS_PENDING', payload: calculateOrdersPending(updatedVehicles, newTime) });
       // Luego de actualizar vehículos, etc, extraer data actual
-      if (solutions.length > 0) {
-        const { pedidos, camiones } = extractAllRutas(solutions); 
-        dispatch({
-          type: 'ADD_HISTORY_ENTRY',
-          payload: {
-            timestamp: newTime,
-            pedidos,
-            camiones
-          }
-        });
-      }
+      // if (solutions.length > 0) {
+      //   const { pedidos, camiones } = extractAllRutas(solutions); 
+      //   dispatch({
+      //     type: 'ADD_HISTORY_ENTRY',
+      //     payload: {
+      //       timestamp: newTime,
+      //       pedidos,
+      //       camiones
+      //     }
+      //   });
+      // }
     }, timeIncrement / state.speed);
 
     return () => clearInterval(updateInterval);

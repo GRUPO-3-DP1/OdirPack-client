@@ -6,6 +6,7 @@ import { IconButton } from '@mui/material';
 import { AddRoad, WarningAmber, CheckCircle } from '@mui/icons-material';
 import { TruckRow } from '../../../../../context/Simulacion/simulationTypes'; 
 import { Typography } from '@mui/material';
+import { esES } from '@mui/x-data-grid/locales';
 
 interface TruckTableProps {
   data: TruckRow[];
@@ -80,6 +81,7 @@ const TruckTable: React.FC<TruckTableProps> = ({ data, onShowTramos }) => {
           pageSizeOptions={[5, 10]}
           disableRowSelectionOnClick
           getRowClassName={getRowClassName}
+          localeText={esES.components.MuiDataGrid.defaultProps.localeText} 
           sx={{
             '& .row-completado': { backgroundColor: '#d4edda' },
             '& .row-averiado': { backgroundColor: '#f8d7da' },

@@ -13,6 +13,7 @@ import {
   GridRowClassNameParams,
 } from '@mui/x-data-grid';
 import { Close as CloseIcon } from '@mui/icons-material';
+import { esES } from '@mui/x-data-grid/locales';
 
 // Definimos la interfaz para cada tramo
 interface TruckSection {
@@ -91,6 +92,7 @@ const TruckSectionModal: React.FC<TruckSectionModalProps> = ({ open, onClose, tr
             pageSizeOptions={[5, 10]}
             disableRowSelectionOnClick
             getRowClassName={getRowClassName}
+            localeText={esES.components.MuiDataGrid.defaultProps.localeText} // Aplica la localización en español
             sx={{
               '& .row-completado': { backgroundColor: '#d4edda' },
               '& .row-averiado': { backgroundColor: '#f8d7da' },

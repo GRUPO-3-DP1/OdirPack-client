@@ -9,7 +9,8 @@ import {
 } from '@mui/x-data-grid';
 import { IconButton } from '@mui/material';
 import { AddRoad } from '@mui/icons-material';
-import { OrderRow } from '../../../../../context/Simulacion/simulationTypes'; 
+import { OrderRow } from '../../../../../context/Simulacion/simulationTypes';
+import { esES } from '@mui/x-data-grid/locales'; 
 
 interface OrderTableProps {
   data: OrderRow[];
@@ -67,6 +68,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ data, onShowTramos }) => {
           pageSizeOptions={[5,10]}
           disableRowSelectionOnClick
           getRowClassName={getRowClassName}
+          localeText={esES.components.MuiDataGrid.defaultProps.localeText} // Aplica la localización en español
           sx={{
             '& .row-retrasado': { backgroundColor: '#f8d7da' },
             '& .row-entregado': { backgroundColor: '#d4edda' },

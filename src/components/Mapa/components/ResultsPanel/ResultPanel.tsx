@@ -1,7 +1,7 @@
 // ResultPanel.tsx
 
 import React, { useEffect, useState } from 'react';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography, Divider } from '@mui/material';
 import { useData } from '../../../../context/useData';
 
 import OrderTable from './components/orderTable';
@@ -68,13 +68,13 @@ const ResultPanel: React.FC<ResultPanelProps> = ({ show = true }) => {
           <Typography variant="h5" sx={{ fontWeight: 'bold', textAlign:'center', mb:2 }}>
             Plan de transporte
           </Typography>
+          <Divider sx={{ marginY: 0.5 }} />
           <TruckTable data={truckRows} onShowTramos={handleShowTruckTramos} />
         </Box>
         <Box>
           <OrderTable data={orderRows} onShowTramos={handleShowOrderTramos} />
         </Box>
       </Stack>
-
       <OrderSectionModal 
         open={openOrderModal} 
         onClose={() => setOpenOrderModal(false)} 

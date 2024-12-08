@@ -42,12 +42,3 @@ export function getTruckTransportationPlan():{truckData:TruckRow[]} {
 
   return { truckData };
 }
-
-// export function extractAllRutas(solutions: any):{ pedidos: any[], camiones: any[] } {
-//   // Esta función podría unir la información real desde solutions
-//   // Por ahora devolvemos las mocks directamente:
-//   const { orderData } = getOrderTransportationPlan(solutions);
-//   const { truckData } = getTruckTransportationPlan(solutions);
-
-//   return { pedidos: orderData, camiones: truckData };
-// }
