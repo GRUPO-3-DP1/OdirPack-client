@@ -47,11 +47,11 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
         executionEndTime: null          // Se reinicia la hora de fin
       };
     case 'STOP_SIMULATION':
-      return { 
-        ...state, 
-        isPlaying: false, 
+      return {
+        ...state,
+        isPlaying: false,
         ends: true,
-        executionEndTime: new Date() 
+        executionEndTime: new Date()
       };
     case 'SET_COLAPSO':
       return { ...state, colapso: action.payload };
@@ -86,9 +86,9 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
     case 'RESET_SIMULATION':  // Resetea el estado a los valores iniciales
       return { ...initialState };
     case 'SET_EXECUTION_START_TIME':
-        return { ...state, executionStartTime: action.payload };
+      return { ...state, executionStartTime: action.payload };
     case 'SET_EXECUTION_END_TIME':
-        return { ...state, executionEndTime: action.payload };
+      return { ...state, executionEndTime: action.payload };
     default:
       return state;
   }
@@ -132,21 +132,21 @@ const initialState: SimulationState = {
 // Función auxiliar para calcular la fecha de colapso
 const calculateCollapseDate = (solutions: ResponseAlgorithm[], simulationStartTime: Date) => {
   if (solutions.length === 0) return null;
-  
+
   const HOURS_PER_WINDOW = 3;
   const totalHours = solutions.length * HOURS_PER_WINDOW;
-  
+
   // Calculamos la fecha de inicio de la última ventana de planificación
   const collapseDate = new Date(simulationStartTime);
   collapseDate.setHours(collapseDate.getHours() + totalHours - HOURS_PER_WINDOW);
-  
+
   console.log('Cálculo de fecha de colapso:', {
     simulationStartTime,
     totalSolutions: solutions.length,
     totalHours,
     calculatedCollapseDate: collapseDate
   });
-  
+
   return collapseDate;
 };
 
@@ -198,12 +198,14 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       console.log('MENSAJE: Procesando respuesta del algoritmo:', newResponse);
       if (newResponse.yaNoPlanificar && newResponse.pedidosNoPlanificados.length > 0) {
         const collapseDate = calculateCollapseDate(solutions, state.startTime);
-        
-        dispatch({ type: 'SET_COLAPSO', payload: {
-          willCollapse: true,
-          collapseDate: collapseDate
-        }});
-        
+
+        dispatch({
+          type: 'SET_COLAPSO', payload: {
+            willCollapse: true,
+            collapseDate: collapseDate
+          }
+        });
+
         console.log('Se detectó colapso. Fecha calculada:', collapseDate);
       }
 
@@ -380,6 +382,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                   if (newTime > finishStopTime) {
                     return {
                       ...vehicle,
+                      currentAveria: true,
                       maintenance: {
                         inMaintenance: true,
                         startTime: maintenanceStartTime,
@@ -388,12 +391,12 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                       },
                       position: {
                         ...vehicle.position,
-                        //currentSegmentIndex: -1,
                       },
                     };
                   } else {
                     return {
                       ...vehicle,
+                      currentAveria: false,
                       maintenance: {
                         inMaintenance: true,
                         startTime: maintenanceStartTime,
@@ -413,14 +416,15 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                         duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
                         officeUbigeo: vehicle.averia.almacenAsignado,
                       },
+                      currentAveria: true,
                       position: {
                         ...vehicle.position,
-                        //currentSegmentIndex: -1,
                       },
                     };
                   } else {
                     return {
                       ...vehicle,
+                      currentAveria: false,
                       maintenance: {
                         inMaintenance: true,
                         startTime: maintenanceStartTime,
