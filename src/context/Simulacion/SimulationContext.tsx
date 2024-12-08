@@ -41,7 +41,7 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
         ends: false,
       };
     case 'STOP_SIMULATION':
-      return { ...state, isPlaying: false };
+      return { ...state, isPlaying: false, ends: true };
     case 'SET_SPEED':
       return { ...state, speed: action.payload };
     case 'UPDATE_VEHICLE_POSITION':
@@ -249,9 +249,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
       if (newTime >= state.endTime) {
         clearInterval(updateInterval);
-        state.ends = true;
-        state.vehicles = [];
-        dispatch({ type: 'RESET_SIMULATION' });
+        dispatch({ type: 'STOP_SIMULATION' });
+        //dispatch({ type: 'RESET_SIMULATION' });
         //console.log('Ya pasó la fecha límite');
         return;
       }

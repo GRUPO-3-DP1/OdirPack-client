@@ -31,7 +31,7 @@ const CustomHeader: React.FC = () => {
   const [searchCode, setSearchCode] = useState<string>('');
   const [tipo, setTipo] = useState("");
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-12-01'));
-  const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2024-12-01T12:00'));
+  const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2024-12-01T18:00'));
 
   // Hooks de contexto
   const { state: simulationState, dispatch, userId, stopSimulation } = useData();
@@ -61,7 +61,7 @@ const CustomHeader: React.FC = () => {
 
       if (tipo === 'semanal') {
         console.log('MSJ: Iniciando simulación semanal');
-        endTime = new Date(startTime.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 días después
+        endTime = new Date(startTime.getTime() + 1/7 * 24 * 60 * 60 * 1000); // 7 días después
       } else if (tipo === 'colapso') {
         console.log('MSJ: Iniciando simulación colapso');
         endTime = new Date(startTime.getTime() + 365 * 24 * 60 * 60 * 1000);
@@ -96,7 +96,7 @@ const CustomHeader: React.FC = () => {
 
         if (tipo === 'semanal') {
           console.log('MSJ: Iniciando simulación semanal');
-          endTime = new Date(startTime.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 días después
+          endTime = new Date(startTime.getTime() + 1/7 * 24 * 60 * 60 * 1000); // 7 días después
         } else if (tipo === 'colapso') {
           console.log('MSJ: Iniciando simulación colapso');
           endTime = new Date(startTime.getTime() + 365 * 24 * 60 * 60 * 1000);
