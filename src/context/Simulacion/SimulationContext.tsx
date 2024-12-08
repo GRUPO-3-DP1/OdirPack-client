@@ -107,7 +107,7 @@ const initialState: SimulationState = {
   currentTime: new Date('2024-10-21T00:00:00Z'),
   endTime: new Date('2026-12-28T00:00:00Z'),
   ends: false,
-  colapso: false,
+  colapso: null,
   //
   currentBloqueos: [],
   vehicles: [],
@@ -127,6 +127,27 @@ const initialState: SimulationState = {
   simulationHistory: [],
   executionStartTime: null,
   executionEndTime: null,
+};
+
+// Función auxiliar para calcular la fecha de colapso
+const calculateCollapseDate = (solutions: ResponseAlgorithm[], simulationStartTime: Date) => {
+  if (solutions.length === 0) return null;
+  
+  const HOURS_PER_WINDOW = 3;
+  const totalHours = solutions.length * HOURS_PER_WINDOW;
+  
+  // Calculamos la fecha de inicio de la última ventana de planificación
+  const collapseDate = new Date(simulationStartTime);
+  collapseDate.setHours(collapseDate.getHours() + totalHours - HOURS_PER_WINDOW);
+  
+  console.log('Cálculo de fecha de colapso:', {
+    simulationStartTime,
+    totalSolutions: solutions.length,
+    totalHours,
+    calculatedCollapseDate: collapseDate
+  });
+  
+  return collapseDate;
 };
 
 export function SimulationProvider({ children }: { children: React.ReactNode; }) {
@@ -176,9 +197,14 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       const newResponse = solutions[indexActualProcess];
       console.log('MENSAJE: Procesando respuesta del algoritmo:', newResponse);
       if (newResponse.yaNoPlanificar && newResponse.pedidosNoPlanificados.length > 0) {
-        //Colapso
-        dispatch({ type: 'SET_COLAPSO', payload: true });
-        dispatch({ type: 'STOP_SIMULATION' });
+        const collapseDate = calculateCollapseDate(solutions, state.startTime);
+        
+        dispatch({ type: 'SET_COLAPSO', payload: {
+          willCollapse: true,
+          collapseDate: collapseDate
+        }});
+        
+        console.log('Se detectó colapso. Fecha calculada:', collapseDate);
       }
 
       const newSolutionString = JSON.stringify(newResponse.solucion);
@@ -286,7 +312,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       // Actualizar el índice para procesar la siguiente respuesta
       setIndexActualProcess(indexActualProcess + 1);
     }
-  }, [state.vehicles, indexActualProcess, lastProcessedSolution]);
+  }, [state.vehicles, indexActualProcess, lastProcessedSolution, solutions, state.startTime]);
 
   useEffect(() => { //comentario para María: Aquí esta habría que verificar la condicional
     if (state.ends && !solutions.length && !finalDataExtracted) {
