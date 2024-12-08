@@ -174,7 +174,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   useEffect(() => {
     if (indexActualProcess < solutions.length) {
       const newResponse = solutions[indexActualProcess];
-
+      console.log('MENSAJE: Procesando respuesta del algoritmo:', newResponse);
       if (newResponse.yaNoPlanificar && newResponse.pedidosNoPlanificados.length > 0) {
         //Colapso
         dispatch({ type: 'SET_COLAPSO', payload: true });
@@ -288,8 +288,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     }
   }, [state.vehicles, indexActualProcess, lastProcessedSolution]);
 
-  useEffect(() => {
-    if (state.ends && solutions.length > 0 && !finalDataExtracted) {
+  useEffect(() => { //comentario para María: Aquí esta habría que verificar la condicional
+    if (state.ends && !solutions.length && !finalDataExtracted) {
       console.log("Extrayendo data final SE EJECUTO");
       closeWebSocket();
       const { pedidos, camiones } = extractAllRutas(state.vehicles);

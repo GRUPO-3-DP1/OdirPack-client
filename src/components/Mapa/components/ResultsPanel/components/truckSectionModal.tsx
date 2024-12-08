@@ -62,7 +62,7 @@ const TruckSectionModal: React.FC<TruckSectionModalProps> = ({ open, onClose, tr
     { field: 'estado', headerName: 'Estado', flex: 0.7, sortable: true },
     {
       field: 'horaAveria',
-      headerName: 'Hora de avería',
+      headerName: 'Hora de avería', //comentario para María: No sale la hora
       flex: 1,
       sortable: true,
       valueGetter: (params: GridRenderCellParams <TruckSection>) => {

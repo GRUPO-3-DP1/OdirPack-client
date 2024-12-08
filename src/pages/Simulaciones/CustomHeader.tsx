@@ -30,8 +30,8 @@ const CustomHeader: React.FC = () => {
   // Estados locales
   const [searchCode, setSearchCode] = useState<string>('');
   const [tipo, setTipo] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-12-01'));
-  const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2024-12-01T18:00'));
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-12-01')); //comentario para María: AQUÍ ESTÁ LA FECHA 
+  const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2024-12-01T18:00')); //comentario para María: AQUÍ ESTÁ LA FECHA 
 
   // Hooks de contexto
   const { state: simulationState, dispatch, userId, stopSimulation } = useData();
