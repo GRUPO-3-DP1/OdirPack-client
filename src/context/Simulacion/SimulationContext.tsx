@@ -711,7 +711,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       case 'COLAPSO':
         {
           const collapseEndTime = new Date(newTime);
-          collapseEndTime.setDate(collapseEndTime.getDate() + 360); // Add 360 days for collapse operation
+          collapseEndTime.setDate(collapseEndTime.getDate() + 60); // Add 360 days for collapse operation
           dispatch({
             type: 'SET_START_TIME',
             payload: { startTime: newTime, endTime: collapseEndTime },
@@ -731,7 +731,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     if (operationType === 'SEMANAL') {
       newEndTime.setDate(newEndTime.getDate() + 7); // Add 7 days for weekly operation
     } else if (operationType === 'COLAPSO') {
-      newEndTime.setDate(newEndTime.getDate() + 360); // Add 360 days for collapse operation
+      newEndTime.setDate(newEndTime.getDate() + 60); // Add 360 days for collapse operation
     }
 
     dispatch({
