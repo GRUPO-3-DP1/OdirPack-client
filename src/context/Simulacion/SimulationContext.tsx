@@ -18,7 +18,7 @@ import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
 import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
 import { mapearBloqueosDesdeArchivos } from '../../utils/mapearBloqueosDeArchivos';
 
-const timeIncrement = 3000;// Avanzar un segundo de simulación por intervalo
+const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
 
 export const SimulationContext = createContext<{
   state: SimulationState;
@@ -27,7 +27,10 @@ export const SimulationContext = createContext<{
   userId: string;
   solutions: ResponseAlgorithm[];
   offices: Oficina[];
+  startSimulation: () => void;
   stopSimulation: () => void;
+  updateStartTime: (newTime: Date) => void;
+  updateSimulationType: (operationType: 'SEMANAL' | 'COLAPSO') => void;
 } | null>(null);
 
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
@@ -38,10 +41,7 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return {
         ...state,
         isPlaying: true,
-        startTime: action.payload.startTime,
-        currentTime: action.payload.startTime,
-        endTime: action.payload.endTime,
-        operationType: action.payload.operationType,
+        currentTime: state.startTime,
         ends: false,
         executionStartTime: new Date(), // Se establece la hora de inicio real
         executionEndTime: null          // Se reinicia la hora de fin
@@ -89,6 +89,8 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, executionStartTime: action.payload };
     case 'SET_EXECUTION_END_TIME':
       return { ...state, executionEndTime: action.payload };
+    case 'SET_SIMULATION_TYPE':
+      return { ...state, operationType: action.payload };
     default:
       return state;
   }
@@ -103,9 +105,9 @@ const initialState: SimulationState = {
   isPlaying: false,
   //
   speed: 50, //50 por defecto
-  startTime: new Date('2024-10-21T00:00:00Z'),
-  currentTime: new Date('2024-10-21T00:00:00Z'),
-  endTime: new Date('2026-12-28T00:00:00Z'),
+  startTime: new Date('2024-10-01T00:00:00'),
+  currentTime: new Date('2024-10-01T00:00:00'),
+  endTime: new Date('2024-10-08T00:00:00'),
   ends: false,
   colapso: null,
   //
@@ -123,7 +125,7 @@ const initialState: SimulationState = {
   ordersDelivered: 0,
   ordersPending: 0,
   //
-  operationType: 'semanal',
+  operationType: 'SEMANAL',
   simulationHistory: [],
   executionStartTime: null,
   executionEndTime: null,
@@ -651,6 +653,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     state.vehicles,
   ]);
 
+  const startSimulation = () => {
+    dispatch({ type: 'START_SIMULATION' });
+  };
+
   const stopSimulation = () => {
     dispatch({ type: 'RESET_SIMULATION' });
     setSolutions([]);
@@ -663,9 +669,53 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     }
   };
 
+  const updateStartTime = (newTime: Date) => {
+    switch (state.operationType) {
+      case 'SEMANAL':
+        {
+          const weeklyEndTime = new Date(newTime);
+          weeklyEndTime.setDate(weeklyEndTime.getDate() + 7); // Add 7 days for weekly operation
+          dispatch({
+            type: 'SET_START_TIME',
+            payload: { startTime: newTime, endTime: weeklyEndTime },
+          });
+          break;
+        }
+      case 'COLAPSO':
+        {
+          const collapseEndTime = new Date(newTime);
+          collapseEndTime.setDate(collapseEndTime.getDate() + 360); // Add 360 days for collapse operation
+          dispatch({
+            type: 'SET_START_TIME',
+            payload: { startTime: newTime, endTime: collapseEndTime },
+          });
+          break;
+        }
+    }
+  };
+
+  const updateSimulationType = (operationType: 'SEMANAL' | 'COLAPSO') => {
+    dispatch({
+      type: 'SET_SIMULATION_TYPE',
+      payload: operationType,
+    });
+
+    const newEndTime = new Date(state.startTime);
+    if (operationType === 'SEMANAL') {
+      newEndTime.setDate(newEndTime.getDate() + 7); // Add 7 days for weekly operation
+    } else if (operationType === 'COLAPSO') {
+      newEndTime.setDate(newEndTime.getDate() + 360); // Add 360 days for collapse operation
+    }
+
+    dispatch({
+      type: 'SET_START_TIME',
+      payload: { startTime: state.startTime, endTime: newEndTime },
+    });
+  };
+
   return (
     <SimulationContext.Provider
-      value={{ state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices, stopSimulation }}
+      value={{ state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices, startSimulation, stopSimulation, updateStartTime, updateSimulationType }}
     >
       {children}
     </SimulationContext.Provider>

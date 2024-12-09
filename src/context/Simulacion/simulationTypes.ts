@@ -110,7 +110,7 @@ export type SimulationState = {
   ordersDelivered: number;       // Pedidos entregados
   ordersPending: number;         // Pedidos pendientes
   //
-  operationType: string;
+  operationType: 'SEMANAL' | 'COLAPSO';
   simulationHistory: {
     timestamp: Date;
     pedidos: OrderRow[];
@@ -160,7 +160,7 @@ export type SectionTruckRow = {
   origen: string;
   destino: string;
   estado: string;
-}
+};
 
 export type TruckRow = {
   id: number;
@@ -173,7 +173,7 @@ export type TruckRow = {
   averia: boolean;
   estado: string; // "Completado", "Averiado", "En tránsito"
   tramosDetalle?: SectionTruckRow[];
-}
+};
 
 export type SectionOrderRow = {
   inicio: string;
@@ -182,7 +182,7 @@ export type SectionOrderRow = {
   destino: string;
   estado: string; // "Retrasado", "Entregado", "En tránsito"
   camion?: string;
-}
+};
 
 export type OrderRow = {
   id: number;
@@ -195,11 +195,11 @@ export type OrderRow = {
   paquetes: number;
   estado: string; // "Retrasado", "Entregado", "En tránsito"
   tramosDetalle?: SectionOrderRow[];
-}
+};
 
 export type SimulationAction =
   | { type: 'SET_START_TIME'; payload: { startTime: Date; endTime: Date; }; }
-  | { type: 'START_SIMULATION'; payload: { startTime: Date; endTime: Date; operationType: 'semanal' | 'colapso' | 'diaadia'; }; }
+  | { type: 'START_SIMULATION'; }
   | { type: 'STOP_SIMULATION'; }
   | { type: 'SET_COLAPSO'; payload: ColapsoInfo | null; }
   | { type: 'SET_SPEED'; payload: number; }
@@ -218,4 +218,5 @@ export type SimulationAction =
   | { type: 'SET_ORDERS_PENDING'; payload: number; }
   | { type: 'SET_EXECUTION_START_TIME'; payload: Date; }
   | { type: 'SET_EXECUTION_END_TIME'; payload: Date; }
-  | { type: 'ADD_HISTORY_ENTRY'; payload: { timestamp: Date; pedidos: OrderRow[]; camiones: TruckRow[] }; };
+  | { type: 'ADD_HISTORY_ENTRY'; payload: { timestamp: Date; pedidos: OrderRow[]; camiones: TruckRow[]; }; }
+  | { type: 'SET_SIMULATION_TYPE'; payload: 'SEMANAL' | 'COLAPSO'; };
