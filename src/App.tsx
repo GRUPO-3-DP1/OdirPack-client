@@ -57,7 +57,7 @@ const customTheme = createTheme({
     MuiTypography: {
       defaultProps: {
         variantMapping: {
-          text: 'body2',
+          text: '',
         },
       },
     },

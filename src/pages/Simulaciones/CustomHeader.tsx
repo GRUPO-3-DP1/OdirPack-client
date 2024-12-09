@@ -1,5 +1,5 @@
 //CustomHeader.tsx  
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect } from 'react';
 import Header from '../../components/Header/Header';
 import {
   DatePicker,
@@ -11,11 +11,10 @@ import {
   MenuItem,
   Select,
   Box,
-  SelectChangeEvent,
 } from '@mui/material';
 import { PlayArrow, Stop } from '@mui/icons-material';
 import { useData } from '../../context/useData';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
 import { nuevaDataPrueba } from '../../data/nuevaDataPrueba';
@@ -23,12 +22,7 @@ import usePedidosSimulacion from '../../store/hooks/usePedidosSimulacion';
 import { mapearPedidosDeArchivos } from '../../utils/mapearPedidosDeArchivos';
 
 const CustomHeader: React.FC = () => {
-  const [tipo, setTipo] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs('2024-12-01')); //comentario para María: AQUÍ ESTÁ LA FECHA 
-  const [selectedTime, setSelectedTime] = useState<Dayjs | null>(dayjs('2024-12-01T18:00')); //comentario para María: AQUÍ ESTÁ LA FECHA 
-
-  // Hooks de contexto
-  const { state: simulationState, dispatch, userId, stopSimulation } = useData();
+  const { state: simulationState, userId, startSimulation, stopSimulation, updateStartTime, updateSimulationType } = useData();
 
   const { pedidosSimulacion, fetchPedidosSimulacion } = usePedidosSimulacion();
 
@@ -36,99 +30,13 @@ const CustomHeader: React.FC = () => {
     fetchPedidosSimulacion();
   }, [fetchPedidosSimulacion]);
 
-  const combinedDateTime = useMemo(() => {
-    if (selectedDate && selectedTime) {
-      return selectedDate
-        .set('hour', selectedTime.hour())
-        .set('minute', selectedTime.minute())
-        .set('second', selectedTime?.second());
-    };
-    return null;
-  }, [selectedDate, selectedTime]);
-
-  useEffect(() => {
-    if (combinedDateTime) {
-      if (tipo === 'semanal') {
-        dispatch({
-          type: 'SET_START_TIME',
-          payload: { startTime: combinedDateTime.toDate(), endTime: combinedDateTime.add(7, 'day').toDate() },
-        });
-      }
-
-      else if (tipo === 'colapso') {
-        dispatch({
-          type: 'SET_START_TIME',
-          payload: { startTime: combinedDateTime.toDate(), endTime: combinedDateTime.add(1, 'year').toDate(), },
-        });
-      }
-    }
-  }, [combinedDateTime, dispatch, tipo]);
-
-  const handleChange = (event: SelectChangeEvent) => {
-    setTipo(event.target.value as 'semanal' | 'colapso');
-  };
-
-  const startSimulation = async () => {
-    if (selectedDate && selectedTime && tipo) {
-      const startTime = new Date(
-        selectedDate.year(),
-        selectedDate.month(),
-        selectedDate.date(),
-        selectedTime.hour(),
-        selectedTime.minute()
-      );
-
-      let endTime: Date;
-
-      if (tipo === 'semanal') {
-        console.log('MSJ: Iniciando simulación semanal');
-        endTime = new Date(startTime.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 días después
-      } else if (tipo === 'colapso') {
-        console.log('MSJ: Iniciando simulación colapso');
-        endTime = new Date(startTime.getTime() + 365 * 24 * 60 * 60 * 1000);
-      } else {
-        console.log('Emergencia, no se escogio ni semanal ni coplapso pero igual quiere ejecutarse');
-        return;
-      }
-
-      dispatch({
-        type: 'START_SIMULATION',
-        payload: { startTime, endTime, operationType: tipo },
-      });
-
-      // Llama a handleIniciarSimulacion después de iniciar la simulación
-      await handleIniciarSimulacion();
-    }
-  };
-
   const handleIniciarSimulacion = async () => {
     try {
+      if (simulationState.startTime && simulationState.operationType) {
 
-      if (selectedDate && selectedTime && tipo) {
-        const startTime = new Date(
-          selectedDate.year(),
-          selectedDate.month(),
-          selectedDate.date(),
-          selectedTime.hour(),
-          selectedTime.minute()
-        );
+        const pedidos = mapearPedidosDeArchivos(pedidosSimulacion, simulationState.startTime, simulationState.endTime);
 
-        let endTime: Date;
-
-        if (tipo === 'semanal') {
-          console.log('MSJ: Iniciando simulación semanal');
-          endTime = new Date(startTime.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 días después
-        } else if (tipo === 'colapso') {
-          console.log('MSJ: Iniciando simulación colapso');
-          endTime = new Date(startTime.getTime() + 365 * 24 * 60 * 60 * 1000);
-        } else {
-          console.log('Emergencia, no se escogio ni semanal ni coplapso pero igual quiere ejecutarse');
-          return;
-        }
-
-        const pedidos = mapearPedidosDeArchivos(pedidosSimulacion, startTime, endTime);
-
-        const formattedStartTime = dayjs(startTime).format('YYYY-MM-DDTHH:mm:ss');
+        const formattedStartTime = dayjs(simulationState.startTime).format('YYYY-MM-DDTHH:mm:ss');
 
         const dataPrueba = {
           ...nuevaDataPrueba,
@@ -136,32 +44,31 @@ const CustomHeader: React.FC = () => {
           fechaInicio: formattedStartTime,
         };
 
-        console.log("Pedidos", pedidos);
+        console.log("Pedidos mapeados: ", pedidos);
 
         const response = await axios.post(
           `${ServicesProperties.BaseUrl}/simulacion/iniciar?userId=${userId}`, dataPrueba,
           { headers: ServicesProperties.Headers }
         );
         console.log('Simulación iniciada, respuesta del servidor:', response.data);
+        startSimulation();
       }
     } catch (error) {
       console.error('Error al iniciar la simulación:', error);
     }
   };
 
-  const getDynamicBackground = (value: Dayjs | string | null) => (value ? '#E6F0FB' : '#FAFAFA');
-
   return (
     <Header isLoading={simulationState.isPlaying}>
       <Box
         display="flex"
         flexDirection="column"
-        gap={1} // Incrementa el espacio entre las filas
+        gap={1}
       >
         <Box display="flex" alignItems="center" gap={2}>
           <DatePicker
-            value={selectedDate}
-            onChange={(newValue) => setSelectedDate(newValue)}
+            value={dayjs(simulationState.startTime)}
+            onChange={(value) => { if (value) updateStartTime(value.toDate()); }}
             disabled={simulationState.isPlaying}
             format="DD/MM/YYYY"
             slotProps={{
@@ -169,16 +76,14 @@ const CustomHeader: React.FC = () => {
                 size: 'small',
                 placeholder: 'Fecha',
                 sx: {
-                  width: '149px',
-                  backgroundColor: getDynamicBackground(selectedDate),
+                  width: '149px'
                 },
-                disabled: simulationState.isPlaying,
               },
             }}
           />
           <TimePicker
-            value={selectedTime}
-            onChange={(newValue) => setSelectedTime(newValue)}
+            value={dayjs(simulationState.startTime)}
+            onChange={(value) => { if (value) updateStartTime(value.toDate()); }}
             disabled={simulationState.isPlaying}
             views={['hours', 'minutes']}
             ampm
@@ -188,9 +93,7 @@ const CustomHeader: React.FC = () => {
                 placeholder: 'Hora',
                 sx: {
                   width: '135px',
-                  backgroundColor: getDynamicBackground(selectedTime),
                 },
-                disabled: simulationState.isPlaying,
               },
             }}
           />
@@ -198,7 +101,6 @@ const CustomHeader: React.FC = () => {
             size="small"
             sx={{
               width: '170px',
-              backgroundColor: getDynamicBackground(tipo),
               '.MuiOutlinedInput-root': {
                 padding: 0, // Elimina padding interno no deseado
               },
@@ -210,38 +112,17 @@ const CustomHeader: React.FC = () => {
           >
             <Select
               displayEmpty
-              value={tipo}
-              onChange={handleChange}
+              value={simulationState.operationType}
+              onChange={(event) => updateSimulationType(event.target.value as "SEMANAL" | "COLAPSO")}
               disabled={simulationState.isPlaying}
-              renderValue={(selected) => {
-                if (!selected) {
-                  return <span style={{ color: '#999' }}>Tipo</span>; // Placeholder estilizado
-                }
-                return selected;
-              }}
-              sx={{
-                padding: '8px 12px', // Centra el texto dentro del cuadro
-                height: '40px', // Asegura un tamaño uniforme con otros inputs
-                lineHeight: 'normal', // Centra visualmente el texto
-              }}
-              MenuProps={{
-                PaperProps: {
-                  sx: {
-                    marginTop: '5px', // Ajusta el espacio entre el cuadro y el menú desplegable
-                  },
-                },
-              }}
             >
-              <MenuItem value="" disabled>
-                Tipo
-              </MenuItem>
-              <MenuItem value="semanal">Semanal</MenuItem>
-              <MenuItem value="colapso">Hasta el colapso</MenuItem>
+              <MenuItem value="SEMANAL">SEMANAL</MenuItem>
+              <MenuItem value="COLAPSO">HASTA COLAPSO</MenuItem>
             </Select>
           </FormControl>
           <Button
             variant="contained"
-            onClick={simulationState.isPlaying ? stopSimulation : startSimulation}
+            onClick={simulationState.isPlaying ? stopSimulation : handleIniciarSimulacion}
             color={simulationState.isPlaying ? 'error' : 'primary'}
             sx={{
               minWidth: '40px', // Tamaño mínimo para igualarlo al botón de búsqueda
