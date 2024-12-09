@@ -95,3 +95,22 @@ export const mapearBloqueosDesdeArchivos = (
 
   return bloqueos;
 };
+
+export const mapBloqueosAsync = async (
+  simulacion: BloqueosSimulacion,
+  fechaInicio: Date,
+  fechaFin: Date
+): Promise<Bloqueo[]> => {
+  // Wrap the synchronous mapping in a Promise to make it async
+  return new Promise((resolve) => {
+    // Use setTimeout to allow UI to update and prevent blocking
+    setTimeout(() => {
+      const mappedBloqueos = mapearBloqueosDesdeArchivos(
+        simulacion,
+        fechaInicio,
+        fechaFin
+      );
+      resolve(mappedBloqueos);
+    }, 0);
+  });
+};
