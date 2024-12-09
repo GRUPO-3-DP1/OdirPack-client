@@ -78,3 +78,22 @@ export const mapearPedidosDeArchivos = (
   });
   return pedidos;
 };
+
+export const mapPedidosAsync = async (
+  simulacion: PedidosSimulacion,
+  fechaInicio: Date,
+  fechaFin: Date
+): Promise<PedidoSimulacion[]> => {
+  // Wrap the synchronous mapping in a Promise to make it async
+  return new Promise((resolve) => {
+    // Use setTimeout to allow UI to update and prevent blocking
+    setTimeout(() => {
+      const mappedPedidos = mapearPedidosDeArchivos(
+        simulacion,
+        fechaInicio,
+        fechaFin
+      );
+      resolve(mappedPedidos);
+    }, 0);
+  });
+};

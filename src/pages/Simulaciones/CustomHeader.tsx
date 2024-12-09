@@ -16,7 +16,7 @@ import { useData } from '../../context/useData';
 import dayjs from 'dayjs';
 
 const CustomHeader: React.FC = () => {
-  const { state: simulationState, startSimulation, stopSimulation, updateStartTime, updateSimulationType } = useData();
+  const { state: simulationState, isLoading, startSimulation, stopSimulation, updateStartTime, updateSimulationType } = useData();
 
   return (
     <Header isLoading={simulationState.isPlaying}>
@@ -84,6 +84,7 @@ const CustomHeader: React.FC = () => {
             variant="contained"
             onClick={simulationState.isPlaying ? stopSimulation : startSimulation}
             color={simulationState.isPlaying ? 'error' : 'primary'}
+            disabled={isLoading}
             sx={{
               minWidth: '40px', // Tamaño mínimo para igualarlo al botón de búsqueda
               height: '40px', // Igual altura que el botón de búsqueda

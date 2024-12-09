@@ -16,13 +16,14 @@ import { extractAllRutas } from '../../utils/extractAllRutas';
 import { Order } from './simulationTypes';
 import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
 import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
-import { mapearBloqueosDesdeArchivos } from '../../utils/mapearBloqueosDeArchivos';
-import { mapearPedidosDeArchivos } from '../../utils/mapearPedidosDeArchivos';
+import { mapBloqueosAsync } from '../../utils/mapearBloqueosDeArchivos';
+import { mapPedidosAsync } from '../../utils/mapearPedidosDeArchivos';
 import usePedidosSimulacion from '../../store/hooks/usePedidosSimulacion';
 import { nuevaDataPrueba } from '../../data/nuevaDataPrueba';
 import { Services as ServicesProperties } from '../../../config';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import { calculateCollapseDate } from '../../utils/calculateCollapseDate';
 
 const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
 
@@ -33,6 +34,7 @@ export const SimulationContext = createContext<{
   userId: string;
   solutions: ResponseAlgorithm[];
   offices: Oficina[];
+  isLoading: boolean;
   startSimulation: () => void;
   stopSimulation: () => void;
   updateStartTime: (newTime: Date) => void;
@@ -140,27 +142,6 @@ const initialState: SimulationState = {
   executionEndTime: null,
 };
 
-// Función auxiliar para calcular la fecha de colapso
-const calculateCollapseDate = (solutions: ResponseAlgorithm[], simulationStartTime: Date) => {
-  if (solutions.length === 0) return null;
-
-  const HOURS_PER_WINDOW = 3;
-  const totalHours = solutions.length * HOURS_PER_WINDOW;
-
-  // Calculamos la fecha de inicio de la última ventana de planificación
-  const collapseDate = new Date(simulationStartTime);
-  collapseDate.setHours(collapseDate.getHours() + totalHours - HOURS_PER_WINDOW);
-
-  console.log('Cálculo de fecha de colapso:', {
-    simulationStartTime,
-    totalSolutions: solutions.length,
-    totalHours,
-    calculatedCollapseDate: collapseDate
-  });
-
-  return collapseDate;
-};
-
 export function SimulationProvider({ children }: { children: React.ReactNode; }) {
   const [state, dispatch] = useReducer(simulationReducer, initialState);
   const [finalDataExtracted, setFinalDataExtracted] = useState(false);
@@ -172,6 +153,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
   const { bloqueosSimulacion, fetchBloqueosSimulacion } = useBloqueosSimulacion();
   const { pedidosSimulacion, fetchPedidosSimulacion } = usePedidosSimulacion();
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   //const { isConnected, closeWebSocket, reconnect } = useWebSocket({
   const { isConnected, closeWebSocket } = useWebSocket({
@@ -661,18 +644,29 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   const startSimulation = async () => {
     try {
       if (state.startTime && state.operationType) {
-        const dataPrueba = {
-          ...nuevaDataPrueba,
-          pedidos: mapearPedidosDeArchivos(
+
+        setIsLoading(true);
+
+        const [mappedPedidos, mappedBloqueos] = await Promise.all([
+          mapPedidosAsync(
             pedidosSimulacion,
             state.startTime,
             state.endTime
           ),
-          bloqueos: mapearBloqueosDesdeArchivos(
+          mapBloqueosAsync(
             bloqueosSimulacion,
             state.startTime,
             state.endTime
-          ),
+          )
+        ]);
+
+        console.log('Bloqueos mapeados:', mappedBloqueos);
+        console.log('Pedidos mapeados:', mappedPedidos);
+
+        const dataPrueba = {
+          ...nuevaDataPrueba,
+          pedidos: mappedPedidos,
+          bloqueos: mappedBloqueos,
           fechaInicio: dayjs(state.startTime).format('YYYY-MM-DDTHH:mm:ss'),
         };
 
@@ -686,6 +680,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       }
     } catch (error) {
       console.error('Error al iniciar la simulación:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -696,7 +692,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     setLastProcessedSolution(null);
 
     if (isConnected) {
-      //reconnect();
       closeWebSocket();
     }
   };
@@ -747,7 +742,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
   return (
     <SimulationContext.Provider
-      value={{ state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices, startSimulation, stopSimulation, updateStartTime, updateSimulationType }}
+      value={{ state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices, isLoading, startSimulation, stopSimulation, updateStartTime, updateSimulationType }}
     >
       {children}
     </SimulationContext.Provider>
