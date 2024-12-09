@@ -8,6 +8,8 @@ export type Bloqueo = {
   destino: { lat: number; lng: number; };
   fechaInicio: Date;
   fechaFin: Date;
+  ubigeoOrigen: string;
+  ubigeoDestino: string;
 };
 
 export const mapearBloqueosDesdeArchivos = (
@@ -75,6 +77,8 @@ export const mapearBloqueosDesdeArchivos = (
                 destino: { lat: destinoCoords.latitud, lng: destinoCoords.longitud },
                 fechaInicio: fechaInicioBloqueo,
                 fechaFin: fechaFinBloqueo,
+                ubigeoOrigen: origen,
+                ubigeoDestino: destino,
               };
 
               bloqueos.push(bloqueo);
@@ -83,7 +87,7 @@ export const mapearBloqueosDesdeArchivos = (
             }
           }
         } else {
-          console.log("Línea no coincide con el formato esperado:", linea);
+          //console.log("Línea no coincide con el formato esperado:", linea);
         }
       });
     }

@@ -17,6 +17,12 @@ import { Order } from './simulationTypes';
 import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
 import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
 import { mapearBloqueosDesdeArchivos } from '../../utils/mapearBloqueosDeArchivos';
+import { mapearPedidosDeArchivos } from '../../utils/mapearPedidosDeArchivos';
+import usePedidosSimulacion from '../../store/hooks/usePedidosSimulacion';
+import { nuevaDataPrueba } from '../../data/nuevaDataPrueba';
+import { Services as ServicesProperties } from '../../../config';
+import axios from 'axios';
+import dayjs from 'dayjs';
 
 const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
 
@@ -65,6 +71,8 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, vehicles: action.payload };
     case 'SET_CURRENT_BLOQUEOS':
       return { ...state, currentBloqueos: action.payload };
+    case 'SET_PEDIDOS':
+      return { ...state, pedidos: action.payload };
     case 'SET_TOTAL_TRUCKS':
       return { ...state, totalTrucks: action.payload };
     case 'SET_OCCUPIED_OFFICES':
@@ -114,6 +122,7 @@ const initialState: SimulationState = {
   currentBloqueos: [],
   vehicles: [],
   offices: initialOffices,
+  pedidos: [],
   unplannedOrders: [],
   processedOrderIds: [],
   //
@@ -162,6 +171,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   const [indexActualProcess, setIndexActualProcess] = useState(0);
 
   const { bloqueosSimulacion, fetchBloqueosSimulacion } = useBloqueosSimulacion();
+  const { pedidosSimulacion, fetchPedidosSimulacion } = usePedidosSimulacion();
 
   //const { isConnected, closeWebSocket, reconnect } = useWebSocket({
   const { isConnected, closeWebSocket } = useWebSocket({
@@ -186,13 +196,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
   useEffect(() => {
     fetchBloqueosSimulacion();
-  }, [fetchBloqueosSimulacion]);
-
-  useEffect(() => {
-    const bloqueos = mapearBloqueosDesdeArchivos(bloqueosSimulacion, state.startTime, state.endTime);
-    console.log('Bloqueos mapeados:', bloqueos);
-    dispatch({ type: 'SET_CURRENT_BLOQUEOS', payload: bloqueos });
-  }, [state.startTime, state.endTime, bloqueosSimulacion]);
+    fetchPedidosSimulacion();
+  }, [fetchBloqueosSimulacion, fetchPedidosSimulacion]);
 
   useEffect(() => {
     if (indexActualProcess < solutions.length) {
@@ -653,8 +658,35 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     state.vehicles,
   ]);
 
-  const startSimulation = () => {
-    dispatch({ type: 'START_SIMULATION' });
+  const startSimulation = async () => {
+    try {
+      if (state.startTime && state.operationType) {
+        const dataPrueba = {
+          ...nuevaDataPrueba,
+          pedidos: mapearPedidosDeArchivos(
+            pedidosSimulacion,
+            state.startTime,
+            state.endTime
+          ),
+          bloqueos: mapearBloqueosDesdeArchivos(
+            bloqueosSimulacion,
+            state.startTime,
+            state.endTime
+          ),
+          fechaInicio: dayjs(state.startTime).format('YYYY-MM-DDTHH:mm:ss'),
+        };
+
+        const response = await axios.post(
+          `${ServicesProperties.BaseUrl}/simulacion/iniciar?userId=${userId}`, dataPrueba,
+          { headers: ServicesProperties.Headers }
+        );
+        console.log('Simulación iniciada, respuesta del servidor:', response.data);
+
+        dispatch({ type: 'START_SIMULATION' });
+      }
+    } catch (error) {
+      console.error('Error al iniciar la simulación:', error);
+    }
   };
 
   const stopSimulation = () => {

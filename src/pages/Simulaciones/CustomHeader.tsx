@@ -1,5 +1,4 @@
-//CustomHeader.tsx  
-import React, { useEffect } from 'react';
+import React from 'react';
 import Header from '../../components/Header/Header';
 import {
   DatePicker,
@@ -15,48 +14,9 @@ import {
 import { PlayArrow, Stop } from '@mui/icons-material';
 import { useData } from '../../context/useData';
 import dayjs from 'dayjs';
-import axios from 'axios';
-import { Services as ServicesProperties } from '../../../config';
-import { nuevaDataPrueba } from '../../data/nuevaDataPrueba';
-import usePedidosSimulacion from '../../store/hooks/usePedidosSimulacion';
-import { mapearPedidosDeArchivos } from '../../utils/mapearPedidosDeArchivos';
 
 const CustomHeader: React.FC = () => {
-  const { state: simulationState, userId, startSimulation, stopSimulation, updateStartTime, updateSimulationType } = useData();
-
-  const { pedidosSimulacion, fetchPedidosSimulacion } = usePedidosSimulacion();
-
-  useEffect(() => {
-    fetchPedidosSimulacion();
-  }, [fetchPedidosSimulacion]);
-
-  const handleIniciarSimulacion = async () => {
-    try {
-      if (simulationState.startTime && simulationState.operationType) {
-
-        const pedidos = mapearPedidosDeArchivos(pedidosSimulacion, simulationState.startTime, simulationState.endTime);
-
-        const formattedStartTime = dayjs(simulationState.startTime).format('YYYY-MM-DDTHH:mm:ss');
-
-        const dataPrueba = {
-          ...nuevaDataPrueba,
-          pedidos,
-          fechaInicio: formattedStartTime,
-        };
-
-        console.log("Pedidos mapeados: ", pedidos);
-
-        const response = await axios.post(
-          `${ServicesProperties.BaseUrl}/simulacion/iniciar?userId=${userId}`, dataPrueba,
-          { headers: ServicesProperties.Headers }
-        );
-        console.log('Simulación iniciada, respuesta del servidor:', response.data);
-        startSimulation();
-      }
-    } catch (error) {
-      console.error('Error al iniciar la simulación:', error);
-    }
-  };
+  const { state: simulationState, startSimulation, stopSimulation, updateStartTime, updateSimulationType } = useData();
 
   return (
     <Header isLoading={simulationState.isPlaying}>
@@ -122,7 +82,7 @@ const CustomHeader: React.FC = () => {
           </FormControl>
           <Button
             variant="contained"
-            onClick={simulationState.isPlaying ? stopSimulation : handleIniciarSimulacion}
+            onClick={simulationState.isPlaying ? stopSimulation : startSimulation}
             color={simulationState.isPlaying ? 'error' : 'primary'}
             sx={{
               minWidth: '40px', // Tamaño mínimo para igualarlo al botón de búsqueda
