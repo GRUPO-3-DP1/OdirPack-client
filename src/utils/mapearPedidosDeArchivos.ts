@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { PedidosSimulacion } from '../store/types/PedidosSimulacion';
 
-interface Pedido {
+export interface PedidoSimulacion {
   idPedido: string;
   fechaRegistro: string;
   ubigeoDestino: string;
@@ -13,9 +13,9 @@ export const mapearPedidosDeArchivos = (
   simulacion: PedidosSimulacion,
   fechaInicio: Date,
   fechaFin: Date
-): Pedido[] => {
+): PedidoSimulacion[] => {
   let idPedidoCounter = 0; // Contador global para el idPedido
-  const pedidos: Pedido[] = [];
+  const pedidos: PedidoSimulacion[] = [];
 
   // Iteramos sobre cada mes en la simulación
   Object.keys(simulacion).forEach((mes) => {
@@ -60,7 +60,7 @@ export const mapearPedidosDeArchivos = (
             // Asignamos el ID de cliente como "0"
             const idCliente = "000000";
             // Creamos el pedido
-            const pedido: Pedido = {
+            const pedido: PedidoSimulacion = {
               idPedido,
               fechaRegistro,
               ubigeoDestino: destino,
@@ -71,7 +71,7 @@ export const mapearPedidosDeArchivos = (
             pedidos.push(pedido);
           }
         } else {
-          console.log("No match para la línea:", linea);
+          //console.log("No match para la línea:", linea);
         }
       });
     }

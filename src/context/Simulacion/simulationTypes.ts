@@ -1,3 +1,5 @@
+import { PedidoSimulacion } from "../../utils/mapearPedidosDeArchivos";
+
 //simulationTypes.ts
 type Location = {
   codigo: string;
@@ -98,7 +100,8 @@ export type SimulationState = {
   //
   currentBloqueos: Bloqueo[];
   vehicles: Vehicle[];
-  offices: Oficina[];             // Añadir oficinas
+  offices: Oficina[];
+  pedidos: PedidoSimulacion[];
   unplannedOrders: Order[];      // Añadir pedidos no planificados
   processedOrderIds: string[];
   //
@@ -207,6 +210,7 @@ export type SimulationAction =
   | { type: 'SET_CURRENT_TIME'; payload: Date; }
   | { type: 'SET_VEHICLES'; payload: Vehicle[]; }
   | { type: 'SET_CURRENT_BLOQUEOS'; payload: Bloqueo[]; }
+  | { type: 'SET_PEDIDOS'; payload: PedidoSimulacion[]; }
   | { type: 'SET_OFFICES'; payload: Oficina[]; }
   | { type: 'SET_UNPLANNED_ORDERS'; payload: Order[]; }
   | { type: 'SET_PROCESSED_ORDER_IDS'; payload: string[]; }
