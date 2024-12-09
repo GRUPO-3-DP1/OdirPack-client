@@ -660,6 +660,9 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           )
         ]);
 
+        console.log('Bloqueos mapeados:', mappedBloqueos);
+        console.log('Pedidos mapeados:', mappedPedidos);
+
         const dataPrueba = {
           ...nuevaDataPrueba,
           pedidos: mappedPedidos,
@@ -674,8 +677,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         console.log('Simulación iniciada, respuesta del servidor:', response.data);
 
         dispatch({ type: 'START_SIMULATION' });
-
-
       }
     } catch (error) {
       console.error('Error al iniciar la simulación:', error);
@@ -691,7 +692,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     setLastProcessedSolution(null);
 
     if (isConnected) {
-      //reconnect();
       closeWebSocket();
     }
   };

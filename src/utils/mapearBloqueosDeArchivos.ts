@@ -20,11 +20,12 @@ export const mapearBloqueosDesdeArchivos = (
   let idBloqueoCounter = 0; // Contador global para los IDs de bloqueo
   const bloqueos: Bloqueo[] = [];
 
-  console.log({ fechaInicio, fechaFin });
+  // console.log({ fechaInicio, fechaFin });
 
   // Iterar sobre los meses en la simulación
   Object.keys(simulacion).forEach((mes) => {
     const archivo = simulacion[mes as keyof BloqueosSimulacion];
+    // console.log('Archivo:', archivo);
 
     if (archivo && archivo.contenido) {
       const { contenido } = archivo;
@@ -43,21 +44,21 @@ export const mapearBloqueosDesdeArchivos = (
           const [diaFin, horaFin] = fin.split(',');
 
           // Crear las fechas usando dayjs para manejar correctamente las fechas
-          const fechaInicioBloqueo = dayjs()
+          const fechaInicioBloqueo = dayjs(fechaInicio)
             .set('date', parseInt(diaInicio.substring(2, 4), 10))
             .set('month', parseInt(diaInicio.substring(0, 2), 10) - 1)
             .set('hour', parseInt(horaInicio.split(':')[0], 10))
             .set('minute', parseInt(horaInicio.split(':')[1], 10))
             .toDate();
 
-          const fechaFinBloqueo = dayjs()
+          const fechaFinBloqueo = dayjs(fechaInicio)
             .set('date', parseInt(diaFin.substring(2, 4), 10))
             .set('month', parseInt(diaFin.substring(0, 2), 10) - 1)
             .set('hour', parseInt(horaFin.split(':')[0], 10))
             .set('minute', parseInt(horaFin.split(':')[1], 10))
             .toDate();
 
-          //console.log({ match, fechaInicioBloqueo, fechaFinBloqueo });
+          // console.log({ fechaInicioBloqueo, fechaFinBloqueo });
 
           // Filtrar por rango de fechas
           if (
