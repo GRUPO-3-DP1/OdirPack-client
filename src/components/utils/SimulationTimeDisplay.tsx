@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useData } from '../../context/useData';
 import dayjs from 'dayjs';
 import durationPlugin from 'dayjs/plugin/duration';
+import { FaClock } from 'react-icons/fa';
 import styles from './SimulationTimeDisplay.module.css';
-import { Divider, Typography } from '@mui/material';
+
 dayjs.extend(durationPlugin);
 
 interface SimulationTimeDisplayProps {
@@ -15,8 +16,8 @@ const SimulationTimeDisplay: React.FC<SimulationTimeDisplayProps> = ({ className
   const [executionStartTime, setExecutionStartTime] = useState<Date | null>(null);
   const [executionElapsedTime, setExecutionElapsedTime] = useState<number>(0);
   const [realTime, setRealTime] = useState(dayjs().format('DD/MM/YYYY, hh:mm A'));
+  const [showPanel, setShowPanel] = useState(false);
 
-  // Existing execution time useEffect
   useEffect(() => {
     let intervalId: number | null = null;
     if (state.isPlaying) {
@@ -42,14 +43,17 @@ const SimulationTimeDisplay: React.FC<SimulationTimeDisplayProps> = ({ className
     };
   }, [state.isPlaying, executionStartTime]);
 
-  // New useEffect for updating real-time
   useEffect(() => {
     const intervalId = setInterval(() => {
       setRealTime(dayjs().format('DD/MM/YYYY, hh:mm A'));
     }, 1000);
-
     return () => clearInterval(intervalId);
   }, []);
+
+  const formatDateTime = (date: Date | null): string => {
+    if (!date) return 'Simulación no iniciada';
+    return dayjs(date).format('DD/MM/YYYY, hh:mm A');
+  };
 
   const formatExecutionTime = (milliseconds: number): string => {
     const timeDuration = dayjs.duration(milliseconds);
@@ -72,47 +76,59 @@ const SimulationTimeDisplay: React.FC<SimulationTimeDisplayProps> = ({ className
   };
 
   const executionTimeDisplay = state.isPlaying ? formatExecutionTime(executionElapsedTime) : '0m 0s';
-
   const simulationElapsedTime = state.isPlaying
     ? state.currentTime.getTime() - state.startTime.getTime()
     : 0;
-
   const simulationTimeDisplay = state.isPlaying ? formatSimulationTime(simulationElapsedTime) : '0d 0h 0m';
-
   const simulationDateTimeDisplay = state.isPlaying
     ? dayjs(state.currentTime).format('DD/MM/YYYY, hh:mm A')
     : 'Simulación no iniciada';
 
+  const inicialReal = formatDateTime(executionStartTime);
+  const actualReal = realTime;
+  const transcurridoReal = executionTimeDisplay;
+
+  const inicialSimulado = formatDateTime(state.startTime);
+  const actualSimulado = simulationDateTimeDisplay;
+  const transcurridoSimulado = simulationTimeDisplay;
+
   return (
-    <div className={`${className} ${styles.simulationTimeDisplay}`}>
-      <div className={styles.tiempo}>
-        <Typography variant="subtitle1" color="textPrimary">
-          <b>
-            Tiempo real:
-          </b>
-        </Typography>
-        <Typography variant="text" color="textPrimary">
-          <span><strong>Fecha y hora:&nbsp;</strong>{realTime}</span>
-        </Typography>
-        <Typography variant="text" color="textPrimary">
-          <span><strong>Tiempo transcurrido:&nbsp;</strong>{executionTimeDisplay}</span>
-        </Typography>
-      </div>
-      <Divider orientation="vertical" flexItem />
-      <div className={styles.tiempo}>
-        <Typography variant="subtitle1" color="textPrimary">
-          <b>
-            Simulación:
-          </b>
-        </Typography>
-        <Typography variant="text" color="textPrimary">
-          <span><strong>Fecha y hora:&nbsp;</strong>{simulationDateTimeDisplay}</span>
-        </Typography>
-        <Typography variant="text" color="textPrimary">
-          <span><strong>Tiempo transcurrido:&nbsp;</strong>{simulationTimeDisplay}</span>
-        </Typography>
-      </div>
-    </div>
+    <>
+      <button className={styles.floatingButton} onClick={() => setShowPanel(!showPanel)}>
+        <FaClock />
+      </button>
+
+      {showPanel && (
+        <div className={styles.panelContainer}>
+          <table className={`${styles.timeTable} ${className}`}>
+            <thead>
+              <tr>
+                <th className={styles.subHeader}>Tiempo</th>
+                <th className={styles.subHeader}>Real</th>
+                <th className={styles.subHeader}>Simulado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className={styles.keyCell}>Inicial</td>
+                <td className={`${styles.valueCell} ${styles.highlightValue}`}>{inicialReal}</td>
+                <td className={`${styles.valueCell} ${styles.highlightValue}`}>{inicialSimulado}</td>
+              </tr>
+              <tr>
+                <td className={styles.keyCell}>Actual</td>
+                <td className={`${styles.valueCell} ${styles.highlightValue}`}>{actualReal}</td>
+                <td className={`${styles.valueCell} ${styles.highlightValue}`}>{actualSimulado}</td>
+              </tr>
+              <tr>
+                <td className={`${styles.keyCell} ${styles.highlight}`}>Transcurrido</td>
+                <td className={`${styles.valueCell} ${styles.highlightValue}`}>{transcurridoReal}</td>
+                <td className={`${styles.valueCell} ${styles.highlightValue}`}>{transcurridoSimulado}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
   );
 };
 

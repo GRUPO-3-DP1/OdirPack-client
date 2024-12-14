@@ -1,4 +1,4 @@
-// PanelInformacion.tsx
+/*PanelInformacion.tsx*/
 import { ControlPosition, MapControl } from '@vis.gl/react-google-maps';
 import React from 'react';
 import dayjs from 'dayjs';
@@ -38,9 +38,16 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
   return (
     <MapControl position={ControlPosition.TOP_RIGHT}>
       <div className={styles.panel}>
-        <StatusView />
-        <SearchView />
-        <div>
+
+        <div className={styles.statusViewContainer}>
+          <StatusView />
+        </div>
+
+        <div className={styles.searchViewContainer}>
+          <SearchView />
+        </div>
+
+        {/* <div className={styles.mainViewContainer}>
           {selectedCamion ? (
             <TruckView
               selectedCamion={selectedCamion}
@@ -54,7 +61,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
           ) : (
             <SimulationView operationType={operationType} />
           )}
-        </div>
+        </div> */}
       </div>
     </MapControl>
   );

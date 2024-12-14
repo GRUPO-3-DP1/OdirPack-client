@@ -43,3 +43,30 @@
   align-items: center;
   justify-content: center;
 }
+
+/* Contenedor para la vista de estado */
+.statusViewContainer {
+  width: 100%;
+  padding: 0px;
+  border: 0px solid #ddd;
+  border-radius: 0px;
+  background-color: #f9f9f9;
+}
+
+/* Contenedor para la vista de búsqueda */
+.searchViewContainer {
+  width: 100%;
+  padding: 0px;
+  border: 8px solid #f9f9f9;
+  border-radius: 0px;
+  background-color: #f9f9f9;
+}
+
+/* Contenedor para la vista principal (dinámica) */
+.mainViewContainer {
+  flex-grow: 1; /* Permite expandir según el contenido */
+  padding: 0px;
+  border: 0px solid #ddd;
+  border-radius: 0px;
+  background-color: #f9f9f9;
+}

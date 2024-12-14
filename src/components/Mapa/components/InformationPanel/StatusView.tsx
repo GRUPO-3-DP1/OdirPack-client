@@ -1,3 +1,4 @@
+/*StatusView.tsx*/
 import React from 'react';
 import SimulationTimeDisplay from '../../../utils/SimulationTimeDisplay';
 import styles from './InformationPanel.module.css';

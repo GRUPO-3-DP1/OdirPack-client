@@ -1,27 +1,106 @@
-/*SimulationTimeDisplay.module.css*/
-
-.simulationTimeDisplay {
-  display: flex;
-  flex-direction: row;
-  /* Coloca las secciones principales en columnas */
-  align-items: center;
-  justify-content: space-between;
-  /* Alinea todo a la izquierda */
-  /* Espaciado entre filas */
-  font: 'Public Sans', sans-serif;
+.timeTable {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  font-family: 'Public Sans', sans-serif;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
 }
 
-.simulationRow {
-  display: flex;
-  /* Coloca los elementos en una fila */
-  gap: 15px;
-  /* Espaciado entre "Tiempo de ejecución" y "Tiempo en simulación" */
+.timeTable th, 
+.timeTable td {
+  padding: 10px 15px;
+  vertical-align: middle;
+  font-size: 0.95em;
+  border: 1px solid #D3D3D3; /* bordes finos y grises */
 }
 
-.simulationTimeDisplay span {
-  display: flex;
+.subHeader {
+  background-color: #4CAF50;
+  color: #FFFFFF;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 0.5px;
 }
 
-.tiempo {
-  min-width: 186px;
+.subHeader {
+  background-color: #4CAF50;
+  color: #FFFFFF;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.timeTable tbody tr:nth-child(odd) {
+  background-color: #E8F5E9; /* verde pálido */
+}
+
+.timeTable tbody tr:nth-child(even) {
+  background-color: #FFFFFF; /* blanco */
+}
+
+.keyCell {
+  font-weight: bold;
+  text-align: left;
+  color: #2E7D32; /* verde más oscuro para resaltar las claves */
+}
+
+.valueCell {
+  text-align: right; /* valores alineados a la derecha */
+}
+
+.valueCell:not(:last-child), .keyCell:not(:last-child) {
+  padding-right: 20px;
+}
+
+.highlight {
+  color: #2E7D32;
+  font-weight: bold;
+}
+
+.highlightValue {
+  font-weight: bold;
+  color: black;
+}
+
+.timeTable tbody tr:hover {
+  background-color: #C5E1A5; 
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* Botón flotante con ícono */
+.floatingButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  color: #FFFFFF;
+  font-size: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.floatingButton:hover {
+  background-color: #388E3C;
+}
+
+.panelContainer {
+  position: fixed;
+  bottom: 80px; 
+  right: 20px;
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
