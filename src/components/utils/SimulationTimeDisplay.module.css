@@ -1,3 +1,4 @@
+/* SimulationTimeDisplay.module.css */
 .timeTable {
   border-collapse: separate;
   border-spacing: 0;
@@ -13,15 +14,7 @@
   padding: 10px 15px;
   vertical-align: middle;
   font-size: 0.95em;
-  border: 1px solid #D3D3D3; /* bordes finos y grises */
-}
-
-.subHeader {
-  background-color: #4CAF50;
-  color: #FFFFFF;
-  font-weight: bold;
-  text-align: center;
-  letter-spacing: 0.5px;
+  border: 1px solid #D3D3D3;
 }
 
 .subHeader {
@@ -33,21 +26,21 @@
 }
 
 .timeTable tbody tr:nth-child(odd) {
-  background-color: #E8F5E9; /* verde pálido */
+  background-color: #E8F5E9;
 }
 
 .timeTable tbody tr:nth-child(even) {
-  background-color: #FFFFFF; /* blanco */
+  background-color: #FFFFFF;
 }
 
 .keyCell {
   font-weight: bold;
   text-align: left;
-  color: #2E7D32; /* verde más oscuro para resaltar las claves */
+  color: #2E7D32;
 }
 
 .valueCell {
-  text-align: right; /* valores alineados a la derecha */
+  text-align: right;
 }
 
 .valueCell:not(:last-child), .keyCell:not(:last-child) {
@@ -89,14 +82,11 @@
   background-color: #388E3C;
 }
 
+/* Panel sin borde blanco, sin fondo visible */
 .panelContainer {
   position: fixed;
   bottom: 80px; 
   right: 20px;
-  background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   animation: fadeIn 0.3s ease-in-out;
 }
 
