@@ -1,3 +1,4 @@
+// SearchBar.tsx (Botón de búsqueda arriba a la derecha debajo del botón de info)
 import React, { useState } from 'react';
 import {
   TextField,
@@ -24,7 +25,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, disabled = false }) => 
   } = useSelection();
   const { state: simulationState } = useData();
 
-  // Para mostrar/ocultar el panel
   const [showPanel, setShowPanel] = useState(false);
 
   const getDynamicBackground = (value: string | null) => (value ? '#E6F0FB' : '#FAFAFA');
@@ -32,18 +32,15 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, disabled = false }) => 
   const handleSearch = () => {
     const query = searchCode.trim();
 
-    // Reset selections
     setSelectedOficina(null);
     setSelectedCamion(null);
     setSelectedPedido(null);
 
-    // Custom search logic if provided
     if (onSearch) {
       onSearch(query);
       return;
     }
 
-    // Default search logic
     if (query.includes(',')) {
       const [departamento, provincia] = query.split(',').map(part => part.trim().toUpperCase());
       const office = simulationState.offices.find((office) =>
@@ -56,14 +53,12 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, disabled = false }) => 
       }
     }
 
-    // Search in vehicles
     const truck = simulationState.vehicles.find((vehicle) => vehicle.idVehiculo === query);
     if (truck) {
       setSelectedCamion(truck);
       return;
     }
 
-    // Search in orders
     const allOrders = [
       ...simulationState.unplannedOrders,
       ...simulationState.vehicles.flatMap(vehicle => vehicle.ruta?.pedidos || [])
@@ -80,22 +75,12 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, disabled = false }) => 
 
   return (
     <>
-      {/* <Button
-        variant="contained"
-        color="primary"
-        onClick={() => setShowPanel(!showPanel)}
-        className={styles.floatingButton} // Usamos la clase CSS
-      >
-        <FaSearch />
-      </Button> */}
-
       <button
-        className={styles.floatingButton}
+        className={styles.searchFloatingButton}
         onClick={() => setShowPanel(!showPanel)}
       >
         <FaSearch />
       </button>
-
 
       {showPanel && (
         <div className={styles.panelContainer}>

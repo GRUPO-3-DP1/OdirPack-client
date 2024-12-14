@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import durationPlugin from 'dayjs/plugin/duration';
 import { FaClock } from 'react-icons/fa';
 import styles from './SimulationTimeDisplay.module.css';
-//import { Button } from '@mui/material';
 
 dayjs.extend(durationPlugin);
 
@@ -95,11 +94,8 @@ const SimulationTimeDisplay: React.FC<SimulationTimeDisplayProps> = ({ className
 
   return (
     <>
-      {/* <button className={styles.floatingButton} onClick={() => setShowPanel(!showPanel)}>
-        <FaClock />
-      </button> */}
       <button
-        className={styles.floatingButton}
+        className={styles.timeFloatingButton} 
         onClick={() => setShowPanel(!showPanel)}
       >
         <FaClock />

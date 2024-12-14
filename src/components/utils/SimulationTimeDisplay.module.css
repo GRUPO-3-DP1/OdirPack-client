@@ -1,4 +1,43 @@
 /* SimulationTimeDisplay.module.css */
+
+/* Botón de tiempo en la esquina inferior derecha */
+.timeFloatingButton {
+  min-width: 40px;
+  height: 35px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed; 
+  bottom: 20px; /* Mantenerlo abajo */
+  right: 20px; 
+  z-index: 1000;
+  border-radius: 50%;
+  background-color: #0056B3; 
+  color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border: none;
+  font-size: 20px;
+}
+
+.timeFloatingButton:hover {
+  background-color: #004494;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.panelContainer {
+  position: fixed;
+  bottom: 80px; 
+  right: 20px;
+  animation: fadeIn 0.3s ease-in-out;
+  z-index: 999;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .timeTable {
   border-collapse: separate;
   border-spacing: 0;
@@ -60,41 +99,4 @@
 .timeTable tbody tr:hover {
   background-color: #C5E1A5; 
   transition: background-color 0.2s ease-in-out;
-}
-
-.floatingButton {
-  min-width: 40px;
-  height: 35px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: fixed; /* Flotante */
-  bottom: 20px; /* Ubicación */
-  right: 20px; /* Ubicación */
-  z-index: 1000;
-  border-radius: 50%; /* Hace el botón redondo */
-  background-color: #0056B3; /* Asegura el mismo color que el buscador */
-  color: white; /* Color del ícono */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
-  border: none; /* Sin bordes */
-  font-size: 20px; /* Tamaño del ícono */
-}
-
-.floatingButton:hover {
-  background-color: #004494; /* Igual color en hover */
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-}
-
-/* Panel sin borde blanco, sin fondo visible */
-.panelContainer {
-  position: fixed;
-  bottom: 80px; 
-  right: 20px;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
 }

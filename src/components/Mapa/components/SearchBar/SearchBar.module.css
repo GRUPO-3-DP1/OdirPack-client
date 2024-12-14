@@ -1,5 +1,7 @@
 /* SearchBar.module.css */
-.floatingButton {
+
+/* Botón flotante de búsqueda debajo del botón de Info en la esquina superior derecha */
+.searchFloatingButton {
   min-width: 40px;
   height: 35px;
   padding: 0;
@@ -7,24 +9,25 @@
   align-items: center;
   justify-content: center;
   position: fixed;
-  bottom: 20px; /* Mantiene el botón flotante desde abajo */
-  right: 20px; /* Mantiene el botón flotante desde la derecha */
-  z-index: 1000; /* Asegura que esté encima de otros elementos */
-  border-radius: 50%; /* Hace que el botón sea redondeado */
+  top: 120px; /* Debajo del de Info que está en top:70px */
+  right: 20px; 
+  z-index: 1000;
+  border-radius: 50%;
   background-color: #0056B3; 
   color: white;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border: none;
+  font-size: 20px;
 }
 
-.floatingButton:hover {
-  background-color: #004494; /* Igual color en hover */
+.searchFloatingButton:hover {
+  background-color: #004494;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Panel sin borde ni fondo visible */
 .panelContainer {
   position: fixed;
-  top: 80px; 
+  top: 170px; /* Abajo del botón */
   right: 20px;
   animation: fadeIn 0.3s ease-in-out;
   z-index: 999;
