@@ -1,17 +1,16 @@
 /* PanelInformacion.module.css */
 .panel {
-  background-color: transparent; /* Asegúrate de que no haya fondo */
-  border: none; /* Sin bordes */
-  box-shadow: none; /* Elimina sombras */
-  padding: 0; /* Sin espacios internos */
-  margin: 0; /* Sin márgenes */
-  display: inline-flex; /* Solo ocupa el tamaño necesario */
-  position: relative; /* Relativo al contenedor */
-  overflow: visible; /* Sin recortes */
-  width: auto; /* Ajusta automáticamente al contenido */
-  height: auto; /* Ajusta automáticamente al contenido */
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  position: relative;
+  overflow: visible;
+  width: auto;
+  height: auto;
 }
-
 
 .titlePanel {
   display: flex;
@@ -47,7 +46,7 @@
 .statusViewContainer {
   width: 100%;
   padding: 0px;
-  border: 0px solid #ddd;
+  border: 0px;
   border-radius: 0px;
   background-color: transparent;
 }
@@ -61,11 +60,50 @@
   background-color: transparent;
 }
 
-/* Contenedor para la vista principal (dinámica) */
+/* Botón flotante para la vista principal */
+.floatingButton {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  z-index: 1000;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  color: #FFFFFF;
+  font-size: 18px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.floatingButton:hover {
+  background-color: #388E3C;
+}
+
+/* Panel que contiene la vista principal */
+.mainViewPanel {
+  position: fixed;
+  top: 120px;
+  right: 20px;
+  z-index: 999;
+  background: none;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: none;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .mainViewContainer {
-  flex-grow: 1; /* Permite expandir según el contenido */
-  padding: 0px;
-  border: 0px solid #ddd;
-  border-radius: 0px;
   background-color: #f9f9f9;
+  padding: none;
+  border-radius: 4px;
 }
