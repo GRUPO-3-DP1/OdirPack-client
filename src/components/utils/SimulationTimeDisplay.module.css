@@ -62,24 +62,28 @@
   transition: background-color 0.2s ease-in-out;
 }
 
-/* Botón flotante con ícono */
 .floatingButton {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: #4CAF50;
-  border: none;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  cursor: pointer;
-  color: #FFFFFF;
-  font-size: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  min-width: 40px;
+  height: 35px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed; /* Flotante */
+  bottom: 20px; /* Ubicación */
+  right: 20px; /* Ubicación */
+  z-index: 1000;
+  border-radius: 50%; /* Hace el botón redondo */
+  background-color: #0056B3; /* Asegura el mismo color que el buscador */
+  color: white; /* Color del ícono */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
+  border: none; /* Sin bordes */
+  font-size: 20px; /* Tamaño del ícono */
 }
 
 .floatingButton:hover {
-  background-color: #388E3C;
+  background-color: #004494; /* Igual color en hover */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* Panel sin borde blanco, sin fondo visible */

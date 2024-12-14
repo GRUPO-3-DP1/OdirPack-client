@@ -7,6 +7,8 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import { useSelection } from '../../../../context/Buscador/useSelection';
 import { useData } from '../../../../context/useData';
+import { FaSearch } from 'react-icons/fa';
+import styles from './SearchBar.module.css';
 
 interface SearchBarProps {
   onSearch?: (query: string) => void;
@@ -21,6 +23,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, disabled = false }) => 
     setSelectedPedido
   } = useSelection();
   const { state: simulationState } = useData();
+
+  // Para mostrar/ocultar el panel
+  const [showPanel, setShowPanel] = useState(false);
 
   const getDynamicBackground = (value: string | null) => (value ? '#E6F0FB' : '#FAFAFA');
 
@@ -65,7 +70,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, disabled = false }) => 
     ];
 
     const order = allOrders.find((order) =>
-      order.idPedido.toUpperCase() === query
+      order.idPedido.toUpperCase() === query.toUpperCase()
     );
     if (order) {
       setSelectedPedido(order);
@@ -74,45 +79,69 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, disabled = false }) => 
   };
 
   return (
-    <Box
-      display="flex"
-      alignItems="center"
-      justifyContent="flex-start"
-      gap={2}
-    >
-      <TextField
-        size="small"
-        placeholder="Código del Pedido, Camión u Oficina"
-        value={searchCode}
-        onChange={(e) => setSearchCode(e.target.value)}
-        disabled={disabled}
-        sx={{
-          width: 486,
-          backgroundColor: getDynamicBackground(searchCode),
-        }}
-        inputProps={{
-          style: {
-            fontSize: '14px',
-          },
-        }}
-      />
-      <Button
+    <>
+      {/* <Button
         variant="contained"
         color="primary"
-        onClick={handleSearch}
-        disabled={disabled}
-        sx={{
-          minWidth: '40px',
-          height: '35px',
-          padding: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+        onClick={() => setShowPanel(!showPanel)}
+        className={styles.floatingButton} // Usamos la clase CSS
       >
-        <SearchIcon />
-      </Button>
-    </Box>
+        <FaSearch />
+      </Button> */}
+
+      <button
+        className={styles.floatingButton}
+        onClick={() => setShowPanel(!showPanel)}
+      >
+        <FaSearch />
+      </button>
+
+
+      {showPanel && (
+        <div className={styles.panelContainer}>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="flex-start"
+            gap={2}
+            className={styles.searchBox}
+          >
+            <TextField
+              size="small"
+              placeholder="Código del Pedido, Camión u Oficina"
+              value={searchCode}
+              onChange={(e) => setSearchCode(e.target.value)}
+              disabled={disabled}
+              sx={{
+                width: 300,
+                backgroundColor: getDynamicBackground(searchCode),
+              }}
+              inputProps={{
+                style: {
+                  fontSize: '14px',
+                },
+              }}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSearch}
+              disabled={disabled}
+              sx={{
+                minWidth: '40px',
+                height: '35px',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <SearchIcon />
+            </Button>
+          </Box>
+        </div>
+      )}
+    </>
   );
 };
 

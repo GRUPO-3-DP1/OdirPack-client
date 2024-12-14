@@ -47,7 +47,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
           <SearchView />
         </div>
 
-        {/* <div className={styles.mainViewContainer}>
+        <div className={styles.mainViewContainer}>
           {selectedCamion ? (
             <TruckView
               selectedCamion={selectedCamion}
@@ -61,7 +61,7 @@ const PanelInformacion: React.FC<PanelInformacionProps> = ({
           ) : (
             <SimulationView operationType={operationType} />
           )}
-        </div> */}
+        </div>
       </div>
     </MapControl>
   );
