@@ -114,7 +114,7 @@ const initialOffices = oficinas.map((office) => ({
 const initialState: SimulationState = {
   isPlaying: false,
   //
-  speed: 9, //9: 1min = 1hora //25
+  speed: 20, //9: 1min = 1hora //25
   startTime: new Date('2024-10-01T00:00:00'),
   currentTime: new Date('2024-10-01T00:00:00'),
   endTime: new Date('2024-10-08T00:00:00'),
@@ -235,7 +235,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         // Actualizar vehículos
         if (!state.vehicles || state.vehicles.length === 0) {
           dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
-          //console.log('Vehículos actualizados:', state.vehicles);
+          console.log('Vehículos actualizados:', state.vehicles);
 
           // Actualizar datos de simulación
           // Actualizar 'totalTrucks'
@@ -283,7 +283,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
           // Actualizar el estado con la lista combinada de vehículos
           dispatch({ type: 'SET_VEHICLES', payload: [...updatedVehicles] });
-          //console.log('Vehículos actualizados:', updatedVehicles);
+          console.log('Vehículos actualizados:', updatedVehicles);
 
           // Actualizar 'totalTrucks'
           //dispatch({ type: 'SET_TOTAL_TRUCKS', payload: updatedVehicles.length });
