@@ -7,14 +7,14 @@ import { locationCoordinates } from '../../utils/locationCoordinates';
 import { useWebSocket } from '../../store/hooks/useWebSocket';
 import { Services } from '../../../config';
 import oficinas from '../../data/oficinas';
-import { convertUnplannedPedidosToOrders } from '../../utils/convertUnplannedPedidosToOrders';
-import { convertOffices } from '../../utils/convertOffices';
+//import { convertUnplannedPedidosToOrders } from '../../utils/convertUnplannedPedidosToOrders';
+//import { convertOffices } from '../../utils/convertOffices';
 import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
 import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
 import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
 import { extractAllRutas } from '../../utils/extractAllRutas';
 import { Order } from './simulationTypes';
-import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
+//import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
 import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
 import { mapBloqueosAsync } from '../../utils/mapearBloqueosDeArchivos';
 import { mapPedidosAsync } from '../../utils/mapearPedidosDeArchivos';
@@ -210,10 +210,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         ));*/
 
         // Procesar oficinas
-        const newOffices = convertOffices(newResponse.oficinas);
+        //const newOffices = convertOffices(newResponse.oficinas);
 
         // Fusionar oficinas
-        const mergedOffices = state.offices.map((office) => {
+        /*const mergedOffices = state.offices.map((office) => {
           const updatedOffice = newOffices.find((o) => o.ubigeo === office.ubigeo);
           if (updatedOffice) {
             return {
@@ -222,15 +222,15 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
             };
           }
           return office;
-        });
+        });*/
 
-        dispatch({ type: 'SET_OFFICES', payload: mergedOffices });
+        //dispatch({ type: 'SET_OFFICES', payload: mergedOffices });
 
         // Procesar pedidos no planificados
-        const newUnplannedOrders = newResponse.pedidosNoPlanificados || [];
+        //const newUnplannedOrders = newResponse.pedidosNoPlanificados || [];
 
         // Convertir pedidos no planificados a Order[]
-        const unplannedOrders: Order[] = convertUnplannedPedidosToOrders(newUnplannedOrders);
+        //const unplannedOrders: Order[] = convertUnplannedPedidosToOrders(newUnplannedOrders);
 
         // Actualizar vehículos
         if (!state.vehicles || state.vehicles.length === 0) {
@@ -239,9 +239,9 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
           // Actualizar datos de simulación
           // Actualizar 'totalTrucks'
-          dispatch({ type: 'SET_TOTAL_TRUCKS', payload: newVehicles.length });
+          //dispatch({ type: 'SET_TOTAL_TRUCKS', payload: newVehicles.length });
           // Actualizar 'occupiedOffices'
-          dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: calculateOccupiedOffices(newOffices) });
+          //dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: calculateOccupiedOffices(newOffices) });
 
         } else {
           //console.log('Procesando');
@@ -286,16 +286,16 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           //console.log('Vehículos actualizados:', updatedVehicles);
 
           // Actualizar 'totalTrucks'
-          dispatch({ type: 'SET_TOTAL_TRUCKS', payload: updatedVehicles.length });
+          //dispatch({ type: 'SET_TOTAL_TRUCKS', payload: updatedVehicles.length });
           // Actualizar 'occupiedOffices'
-          dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: calculateOccupiedOffices(newOffices) });
+          //dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: calculateOccupiedOffices(newOffices) });
         }
 
         // Actualizar oficinas en el estado
-        dispatch({ type: 'SET_OFFICES', payload: newOffices });
+        //dispatch({ type: 'SET_OFFICES', payload: newOffices });
 
         // Actualizar pedidos no planificados en el estado
-        dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: unplannedOrders });
+        //dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: unplannedOrders });
 
       } else {
         //console.log('Es la misma solución');
