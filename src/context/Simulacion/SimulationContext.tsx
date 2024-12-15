@@ -114,7 +114,7 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
 const initialState: SimulationState = {
   isPlaying: false,
   //
-  speed: 20, //9: 1min = 1hora //25
+  speed: 10, //9: 1min = 1hora //25
   startTime: new Date('2024-10-01T00:00:00'),
   currentTime: new Date('2024-10-01T00:00:00'),
   endTime: new Date('2024-10-08T00:00:00'),
@@ -359,6 +359,78 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
             // Si el tiempo actual está dentro del periodo de mantenimiento
             if (newTime >= maintenanceStartTime && newTime < maintenanceEndTime) {
+              const finishStopTime = new Date(maintenanceStartTime.getTime() + 5 * 60 * 60 * 1000); // 5 horas en milisegundos
+
+              //Entra en averia
+              switch (vehicle.averia.tipo) {
+                case 'MODERADA':
+                  break;
+                case 'FUERTE':
+                  // Lógica para avería fuerte
+                  if (newTime > finishStopTime) {
+                    return {
+                      ...vehicle,
+                      currentAveria: true,
+                      maintenance: {
+                        inMaintenance: true,
+                        startTime: maintenanceStartTime,
+                        duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
+                        officeUbigeo: vehicle.averia.almacenAsignado,
+                      },
+                      position: {
+                        ...vehicle.position,
+                        currentSegmentIndex: -1,
+                      }
+                    };
+                  } else {
+                    return {
+                      ...vehicle,
+                      currentAveria: true,
+                      maintenance: {
+                        inMaintenance: true,
+                        startTime: maintenanceStartTime,
+                        duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
+                        officeUbigeo: vehicle.averia.almacenAsignado,
+                      },
+                      position: {
+                        ...vehicle.position,
+                      }
+                    };
+                  }
+                case 'SINIESTRO':
+                  // Lógica para siniestro
+                  if (newTime > finishStopTime) {
+                    return {
+                      ...vehicle,
+                      maintenance: {
+                        inMaintenance: true,
+                        startTime: maintenanceStartTime,
+                        duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
+                        officeUbigeo: vehicle.averia.almacenAsignado,
+                      },
+                      currentAveria: true,
+                      position: {
+                        ...vehicle.position,
+                        currentSegmentIndex: -1,
+                      }
+                    };
+                  } else {
+                    return {
+                      ...vehicle,
+                      currentAveria: true,
+                      maintenance: {
+                        inMaintenance: true,
+                        startTime: maintenanceStartTime,
+                        duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
+                        officeUbigeo: vehicle.averia.almacenAsignado,
+                      },
+                      position: {
+                        ...vehicle.position,
+                      }
+                    };
+                  }
+              }
+
               return {
                 ...vehicle,
                 maintenance: {
@@ -367,9 +439,9 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                   duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
                   officeUbigeo: vehicle.averia.almacenAsignado,
                 },
+                currentAveria: true,
                 position: {
                   ...vehicle.position,
-                  currentSegmentIndex: -1,
                 },
               };
             }
@@ -390,6 +462,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                     duration: maintenanceDuration,
                     officeUbigeo: ruta.tramos[i].destino.codigo,
                   },
+                  currentAveria: false,
                   position: {
                     ...vehicle.position,
                     currentSegmentIndex: -1,
@@ -470,7 +543,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       });
 
       dispatch({ type: 'UPDATE_VEHICLE_POSITION', payload: updatedVehicles });
-
     }, timeIncrement / state.speed);
 
     return () => clearInterval(updateInterval);
