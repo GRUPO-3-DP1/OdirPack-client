@@ -114,7 +114,7 @@ const initialOffices = oficinas.map((office) => ({
 const initialState: SimulationState = {
   isPlaying: false,
   //
-  speed: 9, //9: 1min = 1hora
+  speed: 25, //9: 1min = 1hora
   startTime: new Date('2024-10-01T00:00:00'),
   currentTime: new Date('2024-10-01T00:00:00'),
   endTime: new Date('2024-10-08T00:00:00'),
@@ -659,6 +659,9 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
             state.endTime
           )
         ]);
+
+        dispatch({ type: 'SET_CURRENT_BLOQUEOS', payload: mappedBloqueos });
+        dispatch({ type: 'SET_PEDIDOS', payload: mappedPedidos });
 
         console.log('Bloqueos mapeados:', mappedBloqueos);
         console.log('Pedidos mapeados:', mappedPedidos);
