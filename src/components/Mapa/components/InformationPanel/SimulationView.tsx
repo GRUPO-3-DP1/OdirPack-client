@@ -29,6 +29,7 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
     totalTrucks,
     ordersDelivered,
     ordersPending,
+    unplannedOrders,
     startTime,
     currentTime,
     endTime,
@@ -73,6 +74,8 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
       countLowSaturation += 1;
     }
   });
+
+  const totalPedidos = ordersDelivered + ordersPending + unplannedOrders.length;
 
   return (
     <>
@@ -123,14 +126,14 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
           sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
         >
           <Typography variant="subtitle2" color="textPrimary">
-            <b>Detalles de pedidos (Total: {ordersDelivered + ordersPending})</b>
+            <b>Detalles de pedidos (Total: {totalPedidos})</b>
           </Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Box display="flex">
               <Typography variant="body2" color="textSecondary">
-                ✅ Entregados:
+                ✅ Plan. entregados:
               </Typography>
               <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
                 {ordersDelivered}
@@ -138,12 +141,20 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
             </Box>
             <Box display="flex">
               <Typography variant="body2" color="textSecondary">
-                ⏳ Pendientes:
+                ⏳ Plan. pendientes:
               </Typography>
               <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
                 {ordersPending}
               </Typography>
             </Box>
+          </Box>
+          <Box display="flex" alignItems="center" mt={1.5}>
+            <Typography variant="body2" color="textSecondary">
+              📝 Por planificados:
+            </Typography>
+            <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
+              {unplannedOrders.length}
+            </Typography>
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -214,7 +225,7 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
               </Box>
             </Box>
             {/* Línea 2 */}
-            <Box display="flex" alignItems="center" mt={1}>
+            <Box display="flex" alignItems="center" mt={0.5}>
               <Typography variant="body2" color="textSecondary">
                 🟥 Saturación {'>'}80%:
               </Typography>
