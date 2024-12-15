@@ -12,7 +12,7 @@ import { Services } from '../../../config';
 //import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
 //import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
 //import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
-import { extractAllRutas } from '../../utils/extractAllRutas';
+//import { extractAllRutas } from '../../utils/extractAllRutas';
 //import { Order } from './simulationTypes';
 //import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
 import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
@@ -144,7 +144,7 @@ const initialState: SimulationState = {
 
 export function SimulationProvider({ children }: { children: React.ReactNode; }) {
   const [state, dispatch] = useReducer(simulationReducer, initialState);
-  const [finalDataExtracted, setFinalDataExtracted] = useState(false);
+  //const [finalDataExtracted, setFinalDataExtracted] = useState(false);
   const [userId, setUserId] = useState<string>('');
   const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]);
 
@@ -306,7 +306,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     }
   }, [state.vehicles, indexActualProcess, lastProcessedSolution, solutions, state.startTime]);
 
-  useEffect(() => { //comentario para María: Aquí esta habría que verificar la condicional
+  /*useEffect(() => { //comentario para María: Aquí esta habría que verificar la condicional
     if (state.ends && !solutions.length && !finalDataExtracted) {
       console.log("Extrayendo data final SE EJECUTO");
       closeWebSocket();
@@ -321,7 +321,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       });
       setFinalDataExtracted(true);
     }
-  }, [state.ends]);
+  }, [state.ends]);*/
 
   useEffect(() => {
     if (!state.isPlaying) return;
