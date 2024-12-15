@@ -660,6 +660,9 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           )
         ]);
 
+        dispatch({ type: 'SET_CURRENT_BLOQUEOS', payload: mappedBloqueos });
+        dispatch({ type: 'SET_PEDIDOS', payload: mappedPedidos });
+
         console.log('Bloqueos mapeados:', mappedBloqueos);
         console.log('Pedidos mapeados:', mappedPedidos);
 
