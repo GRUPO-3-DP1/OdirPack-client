@@ -1,0 +1,23 @@
+.simulationTitleContainer {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2000;
+  background: #FFFFFF; /* Fondo blanco */
+  color: #000000;       /* Texto negro */
+  padding: 5px 10px;
+  border-radius: 4px;
+  box-shadow: 0px 2px 6px rgba(0,0,0,0.1); /* Sombra opcional */
+}
+
+.dropdownContainer {
+  position: absolute;
+  top: 60px; /* Debajo del título */
+  left: 10px;
+  z-index: 2000;
+  background: rgba(255,255,255,0.9);
+  color: #000000;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0px 2px 8px rgba(0,0,0,0.2);
+}

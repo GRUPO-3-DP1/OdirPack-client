@@ -70,7 +70,7 @@
 
 /* Panel emergente */
 .panelContainer {
-  position: fixed;
+  position: absolute;
   bottom: 80px; /* Justo encima del botón */
   left: 20px;
   animation: fadeIn 0.3s ease-in-out;
