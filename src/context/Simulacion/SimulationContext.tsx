@@ -6,14 +6,14 @@ import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles
 import { locationCoordinates } from '../../utils/locationCoordinates';
 import { useWebSocket } from '../../store/hooks/useWebSocket';
 import { Services } from '../../../config';
-import oficinas from '../../data/oficinas';
+//import oficinas from '../../data/oficinas';
 //import { convertUnplannedPedidosToOrders } from '../../utils/convertUnplannedPedidosToOrders';
 //import { convertOffices } from '../../utils/convertOffices';
 //import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
 //import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
 //import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
 import { extractAllRutas } from '../../utils/extractAllRutas';
-import { Order } from './simulationTypes';
+//import { Order } from './simulationTypes';
 //import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
 import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
 import { mapBloqueosAsync } from '../../utils/mapearBloqueosDeArchivos';
@@ -106,10 +106,10 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
   }
 }
 
-const initialOffices = oficinas.map((office) => ({
+/*const initialOffices = oficinas.map((office) => ({
   ...office,
   currentOrders: [],
-}));
+}));*/
 
 const initialState: SimulationState = {
   isPlaying: false,
@@ -123,7 +123,7 @@ const initialState: SimulationState = {
   //
   currentBloqueos: [],
   vehicles: [],
-  offices: initialOffices,
+  offices: [],
   pedidos: [],
   unplannedOrders: [],
   processedOrderIds: [],
@@ -131,7 +131,7 @@ const initialState: SimulationState = {
   trucksInMotion: 0,
   trucksInMaintenance: 0,
   totalTrucks: 0,
-  totalOffices: oficinas.length,
+  totalOffices: 0,
   occupiedOffices: 0,
   ordersDelivered: 0,
   ordersPending: 0,
@@ -547,7 +547,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       dispatch({ type: 'UPDATE_VEHICLE_POSITION', payload: updatedVehicles });
 
       // Procesar llegadas de pedidos
-      const arrivedOrders: {
+      /*const arrivedOrders: {
         order: Order;
         arrivalTime: Date;
         ubigeoDestino: string;
@@ -575,7 +575,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       const newProcessedOrderIds = [...state.processedOrderIds];
       arrivedOrders.forEach((arrivedOrder) => {
         newProcessedOrderIds.push(arrivedOrder.order.idPedido);
-      });
+      });*/
 
       // Procesar salidas de pedidos
       /*const updatedOffices = state.offices.map((office) => {
