@@ -9,9 +9,9 @@ import { Services } from '../../../config';
 import oficinas from '../../data/oficinas';
 //import { convertUnplannedPedidosToOrders } from '../../utils/convertUnplannedPedidosToOrders';
 //import { convertOffices } from '../../utils/convertOffices';
-import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
-import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
-import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
+//import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
+//import { calculateOrdersDelivered } from '../../utils/calculateOrdersDelivered';
+//import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
 import { extractAllRutas } from '../../utils/extractAllRutas';
 import { Order } from './simulationTypes';
 //import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
@@ -578,7 +578,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       });
 
       // Procesar salidas de pedidos
-      const updatedOffices = state.offices.map((office) => {
+      /*const updatedOffices = state.offices.map((office) => {
 
         const updatedOffice = { ...office, currentOrders: [...(office.currentOrders ?? [])] };
 
@@ -600,7 +600,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         });
 
         return updatedOffice;
-      });
+      });*/
 
       //Actualizar bloqueos actuales
       // const updatedBloqueos = state.currentBloqueos.filter((bloqueo) => {
@@ -610,14 +610,14 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
       // dispatch({ type: 'SET_CURRENT_BLOQUEOS', payload: updatedBloqueos });
       // Actualizar oficinas y processedOrderIds en el estado
-      dispatch({ type: 'SET_OFFICES', payload: updatedOffices });
-      dispatch({ type: 'SET_PROCESSED_ORDER_IDS', payload: newProcessedOrderIds });
+      //dispatch({ type: 'SET_OFFICES', payload: updatedOffices });
+      //dispatch({ type: 'SET_PROCESSED_ORDER_IDS', payload: newProcessedOrderIds });
       // Actualizar 'trucksInMotion'
-      dispatch({ type: 'SET_TRUCKS_IN_MOTION', payload: calculateTrucksInMotion(updatedVehicles) });
+      //dispatch({ type: 'SET_TRUCKS_IN_MOTION', payload: calculateTrucksInMotion(updatedVehicles) });
       // Actualizar 'ordersDelivered'
-      dispatch({ type: 'SET_ORDERS_DELIVERED', payload: calculateOrdersDelivered(updatedVehicles, newTime) });
+      //dispatch({ type: 'SET_ORDERS_DELIVERED', payload: calculateOrdersDelivered(updatedVehicles, newTime) });
       // Actualizar 'ordersPending'
-      dispatch({ type: 'SET_ORDERS_PENDING', payload: calculateOrdersPending(updatedVehicles, newTime) });
+      //dispatch({ type: 'SET_ORDERS_PENDING', payload: calculateOrdersPending(updatedVehicles, newTime) });
       // Luego de actualizar vehículos, etc, extraer data actual
       // if (solutions.length > 0) {
       //   const { pedidos, camiones } = extractAllRutas(solutions); 
