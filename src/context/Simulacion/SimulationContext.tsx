@@ -23,7 +23,7 @@ import { nuevaDataPrueba } from '../../data/nuevaDataPrueba';
 import { Services as ServicesProperties } from '../../../config';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { calculateCollapseDate } from '../../utils/calculateCollapseDate';
+//import { calculateCollapseDate } from '../../utils/calculateCollapseDate';
 
 const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
 
