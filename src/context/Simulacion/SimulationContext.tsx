@@ -185,7 +185,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   useEffect(() => {
     if (indexActualProcess < solutions.length) {
       const newResponse = solutions[indexActualProcess];
-      console.log('MENSAJE: Procesando respuesta del algoritmo:', newResponse);
+      /*console.log('MENSAJE: Procesando respuesta del algoritmo:', newResponse);
       if (newResponse.yaNoPlanificar && newResponse.pedidosNoPlanificados.length > 0) {
         const collapseDate = calculateCollapseDate(solutions, state.startTime);
 
@@ -197,7 +197,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         });
 
         console.log('Se detectó colapso. Fecha calculada:', collapseDate);
-      }
+      }*/
 
       const newSolutionString = JSON.stringify(newResponse.solucion);
 
