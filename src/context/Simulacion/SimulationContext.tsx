@@ -331,12 +331,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
       if (newTime >= state.endTime) {
         clearInterval(updateInterval);
-        dispatch({ type: 'STOP_SIMULATION' });
-        //dispatch({ type: 'RESET_SIMULATION' });
+        state.ends = true;
+        state.vehicles = [];
+        dispatch({ type: 'RESET_SIMULATION' });
         //console.log('Ya pasó la fecha límite');
-        if (state.colapso) {
-          alert('Colapso');
-        }
         return;
       }
 
@@ -361,78 +359,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
             // Si el tiempo actual está dentro del periodo de mantenimiento
             if (newTime >= maintenanceStartTime && newTime < maintenanceEndTime) {
-              const finishStopTime = new Date(maintenanceStartTime.getTime() + 5 * 60 * 60 * 1000); // 5 horas en milisegundos
-
-              //Entra en averia
-              switch (vehicle.averia.tipo) {
-                case 'MODERADA':
-                  break;
-                case 'FUERTE':
-                  // Lógica para avería fuerte
-                  if (newTime > finishStopTime) {
-                    return {
-                      ...vehicle,
-                      currentAveria: true,
-                      maintenance: {
-                        inMaintenance: true,
-                        startTime: maintenanceStartTime,
-                        duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
-                        officeUbigeo: vehicle.averia.almacenAsignado,
-                      },
-                      position: {
-                        ...vehicle.position,
-                        currentSegmentIndex: -1,
-                      }
-                    };
-                  } else {
-                    return {
-                      ...vehicle,
-                      currentAveria: true,
-                      maintenance: {
-                        inMaintenance: true,
-                        startTime: maintenanceStartTime,
-                        duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
-                        officeUbigeo: vehicle.averia.almacenAsignado,
-                      },
-                      position: {
-                        ...vehicle.position,
-                      }
-                    };
-                  }
-                case 'SINIESTRO':
-                  // Lógica para siniestro
-                  if (newTime > finishStopTime) {
-                    return {
-                      ...vehicle,
-                      maintenance: {
-                        inMaintenance: true,
-                        startTime: maintenanceStartTime,
-                        duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
-                        officeUbigeo: vehicle.averia.almacenAsignado,
-                      },
-                      currentAveria: true,
-                      position: {
-                        ...vehicle.position,
-                        currentSegmentIndex: -1,
-                      }
-                    };
-                  } else {
-                    return {
-                      ...vehicle,
-                      currentAveria: true,
-                      maintenance: {
-                        inMaintenance: true,
-                        startTime: maintenanceStartTime,
-                        duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
-                        officeUbigeo: vehicle.averia.almacenAsignado,
-                      },
-                      position: {
-                        ...vehicle.position,
-                      }
-                    };
-                  }
-              }
-
               return {
                 ...vehicle,
                 maintenance: {
@@ -441,9 +367,9 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                   duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
                   officeUbigeo: vehicle.averia.almacenAsignado,
                 },
-                currentAveria: true,
                 position: {
                   ...vehicle.position,
+                  currentSegmentIndex: -1,
                 },
               };
             }
@@ -464,7 +390,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                     duration: maintenanceDuration,
                     officeUbigeo: ruta.tramos[i].destino.codigo,
                   },
-                  currentAveria: false,
                   position: {
                     ...vehicle.position,
                     currentSegmentIndex: -1,
@@ -546,90 +471,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
       dispatch({ type: 'UPDATE_VEHICLE_POSITION', payload: updatedVehicles });
 
-      // Procesar llegadas de pedidos
-      /*const arrivedOrders: {
-        order: Order;
-        arrivalTime: Date;
-        ubigeoDestino: string;
-      }[] = [];
-
-      state.vehicles.forEach((vehicle) => {
-        vehicle.ruta.pedidos.forEach((pedido) => {
-          if (pedido.fechaLlegada) {
-            const arrivalTime = new Date(pedido.fechaLlegada);
-            if (arrivalTime <= newTime && !state.processedOrderIds.includes(pedido.idPedido)) {
-              if (!state.processedOrderIds.includes(pedido.idPedido)) {
-                // Pedido llega a la oficina
-                arrivedOrders.push({
-                  order: pedido,
-                  arrivalTime: arrivalTime,
-                  ubigeoDestino: pedido.ubigeoDestino,
-                });
-              }
-            }
-          }
-        });
-      });
-
-      // Actualizar processedOrderIds
-      const newProcessedOrderIds = [...state.processedOrderIds];
-      arrivedOrders.forEach((arrivedOrder) => {
-        newProcessedOrderIds.push(arrivedOrder.order.idPedido);
-      });*/
-
-      // Procesar salidas de pedidos
-      /*const updatedOffices = state.offices.map((office) => {
-
-        const updatedOffice = { ...office, currentOrders: [...(office.currentOrders ?? [])] };
-
-        // Agregar pedidos que llegan
-        arrivedOrders.forEach((arrivedOrder) => {
-          if (arrivedOrder.ubigeoDestino === office.ubigeo) {
-            updatedOffice.currentOrders.push({
-              order: arrivedOrder.order,
-              arrivalTime: arrivedOrder.arrivalTime,
-            });
-          }
-        });
-
-        // Remover pedidos que han estado más de 4 horas
-        updatedOffice.currentOrders = updatedOffice.currentOrders.filter((currentOrder) => {
-          const timeInOffice = newTime.getTime() - currentOrder.arrivalTime.getTime();
-          const fourHoursInMs = 1 * 60 * 60 * 1000;
-          return timeInOffice <= fourHoursInMs;
-        });
-
-        return updatedOffice;
-      });*/
-
-      //Actualizar bloqueos actuales
-      // const updatedBloqueos = state.currentBloqueos.filter((bloqueo) => {
-      //   const bloqueoEndTime = new Date(bloqueo.fechaFin);
-      //   return bloqueoEndTime > newTime;
-      // });
-
-      // dispatch({ type: 'SET_CURRENT_BLOQUEOS', payload: updatedBloqueos });
-      // Actualizar oficinas y processedOrderIds en el estado
-      //dispatch({ type: 'SET_OFFICES', payload: updatedOffices });
-      //dispatch({ type: 'SET_PROCESSED_ORDER_IDS', payload: newProcessedOrderIds });
-      // Actualizar 'trucksInMotion'
-      //dispatch({ type: 'SET_TRUCKS_IN_MOTION', payload: calculateTrucksInMotion(updatedVehicles) });
-      // Actualizar 'ordersDelivered'
-      //dispatch({ type: 'SET_ORDERS_DELIVERED', payload: calculateOrdersDelivered(updatedVehicles, newTime) });
-      // Actualizar 'ordersPending'
-      //dispatch({ type: 'SET_ORDERS_PENDING', payload: calculateOrdersPending(updatedVehicles, newTime) });
-      // Luego de actualizar vehículos, etc, extraer data actual
-      // if (solutions.length > 0) {
-      //   const { pedidos, camiones } = extractAllRutas(solutions); 
-      //   dispatch({
-      //     type: 'ADD_HISTORY_ENTRY',
-      //     payload: {
-      //       timestamp: newTime,
-      //       pedidos,
-      //       camiones
-      //     }
-      //   });
-      // }
     }, timeIncrement / state.speed);
 
     return () => clearInterval(updateInterval);
