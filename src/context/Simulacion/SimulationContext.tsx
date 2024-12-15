@@ -304,7 +304,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       // Actualizar el índice para procesar la siguiente respuesta
       setIndexActualProcess(indexActualProcess + 1);
     }
-  }, [state.vehicles, indexActualProcess, lastProcessedSolution, solutions, state.startTime]);
+  }, [state.vehicles, indexActualProcess, lastProcessedSolution]);
 
   /*useEffect(() => { //comentario para María: Aquí esta habría que verificar la condicional
     if (state.ends && !solutions.length && !finalDataExtracted) {
