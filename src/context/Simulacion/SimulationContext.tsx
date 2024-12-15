@@ -114,7 +114,7 @@ const initialOffices = oficinas.map((office) => ({
 const initialState: SimulationState = {
   isPlaying: false,
   //
-  speed: 35, //50 por defecto
+  speed: 30, //30 = 2 horas en simulacion es 1 minuto en tiempo real
   startTime: new Date('2024-10-01T00:00:00'),
   currentTime: new Date('2024-10-01T00:00:00'),
   endTime: new Date('2024-10-08T00:00:00'),
