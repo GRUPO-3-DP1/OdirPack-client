@@ -28,7 +28,6 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
   const { state } = useData();
 
   const {
-    pedidos,
     startTime,
     currentTime,
     endTime,
@@ -83,13 +82,25 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
     }
   });
 
-  const totalPedidos = pedidos.filter((pedido) => {
-    if (pedido.fechaRegistro) {
-      const registrationTime = new Date(pedido.fechaRegistro);
-      return registrationTime <= currentTime;
+  // const totalPedidos = pedidos.filter((pedido) => {
+  //   if (pedido.fechaRegistro) {
+  //     const registrationTime = new Date(pedido.fechaRegistro);
+  //     return registrationTime <= currentTime;
+  //   }
+  //   return false; // Excluir pedidos sin fecha de registro
+  // }).length;
+
+  const getLabel = (operationType: string): string => {
+    switch (operationType) {
+      case 'semanal':
+        return 'Semanal';
+      case 'colapso':
+        return 'Hasta el colapso';
+      case 'diaadia':
+      default:
+        return 'Semanal';
     }
-    return false; // Excluir pedidos sin fecha de registro
-  }).length;
+  };
   
   return (
     <>
@@ -110,11 +121,7 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
             <Typography variant="body2" color="textSecondary">
               <b>{operationType === 'diaadia' ? 'Operación' : 'Simulación'}:</b>{' '}
               <Typography component="span" variant="body2" color="textPrimary">
-                {operationType === 'semanal'
-                  ? 'Semanal'
-                  : operationType === 'colapso'
-                    ? 'Hasta el colapso'
-                    : 'Día a día'}
+                {getLabel(operationType)}
               </Typography>
             </Typography>
           </div>
@@ -140,7 +147,7 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
           sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
         >
           <Typography variant="subtitle2" color="textPrimary">
-            <b>Detalles de pedidos (Total: {totalPedidos})</b>
+            <b>Detalles de pedidos (Total: {ordersDelivered + ordersPending})</b>
           </Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>

@@ -22,6 +22,7 @@ import { nuevaDataPrueba } from '../../data/nuevaDataPrueba';
 import { Services as ServicesProperties } from '../../../config';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import { generarDatosFinales } from '../../utils/generarDatosFinales';
 
 const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
 
@@ -111,7 +112,8 @@ const initialState: SimulationState = {
   speed: 60, //9: 1min = 1hora //25
   startTime: new Date('2024-10-01T00:00:00'),
   currentTime: new Date('2024-10-01T00:00:00'),
-  endTime: new Date('2024-10-08T00:00:00'),
+  //endTime: new Date('2024-10-08T00:00:00'),
+  endTime: new Date('2024-10-01T04:00:00'), 
   ends: false,
   colapso: null,
   //
@@ -304,14 +306,40 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     const updateInterval = setInterval(() => {
       const newTime = new Date(state.currentTime.getTime() + timeIncrement * state.speed);
 
+      // if (newTime >= state.endTime) {
+      //   clearInterval(updateInterval);
+      //   state.ends = true;
+      //   state.vehicles = [];
+      //   dispatch({ type: 'RESET_SIMULATION' });
+      //   //console.log('Ya pasó la fecha límite');
+      //   return;
+      // }
+
       if (newTime >= state.endTime) {
         clearInterval(updateInterval);
-        state.ends = true;
-        state.vehicles = [];
-        dispatch({ type: 'RESET_SIMULATION' });
-        //console.log('Ya pasó la fecha límite');
+        
+        // Ajustar el currentTime al endTime antes de generar datos finales
+        dispatch({ type: 'SET_CURRENT_TIME', payload: state.endTime });
+      
+        const { pedidos, camiones } = generarDatosFinales({
+          ...state,
+          currentTime: state.endTime  // Asegurar que currentTime refleje el final real
+        });
+      
+        dispatch({
+          type: 'ADD_HISTORY_ENTRY',
+          payload: {
+            timestamp: new Date(),
+            pedidos,
+            camiones
+          }
+        });
+      
+        dispatch({ type: 'STOP_SIMULATION' });
         return;
       }
+      
+      
 
       dispatch({ type: 'SET_CURRENT_TIME', payload: newTime });
 
@@ -592,7 +620,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       case 'SEMANAL':
         {
           const weeklyEndTime = new Date(newTime);
-          weeklyEndTime.setDate(weeklyEndTime.getDate() + 7); // Add 7 days for weekly operation
+          //weeklyEndTime.setDate(weeklyEndTime.getDate() + 7); // Add 7 days for weekly operation
+          weeklyEndTime.setHours(weeklyEndTime.getHours() + 4);
           dispatch({
             type: 'SET_START_TIME',
             payload: { startTime: newTime, endTime: weeklyEndTime },
@@ -620,7 +649,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
     const newEndTime = new Date(state.startTime);
     if (operationType === 'SEMANAL') {
-      newEndTime.setDate(newEndTime.getDate() + 7); // Add 7 days for weekly operation
+      //newEndTime.setDate(newEndTime.getDate() + 7); // Add 7 days for weekly operation
+      newEndTime.setHours(newEndTime.getHours() + 4);
     } else if (operationType === 'COLAPSO') {
       newEndTime.setDate(newEndTime.getDate() + 60); // Add 360 days for collapse operation
     }
