@@ -39,7 +39,7 @@ const AlmacenIcon: React.FC<IconComponentProps> = ({
           width="38.40"
           height="38.40"
           rx="19.2"
-          fill="#000000"
+          fill="#00008B"
         />
       </g>
       <path

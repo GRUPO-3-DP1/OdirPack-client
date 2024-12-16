@@ -1,6 +1,6 @@
 // OfficeView.tsx
 import React from 'react';
-import { useData } from '../../../../context/useData';
+import { useData, useOperacionData } from '../../../../context/useData';
 import {
   ExpandMore,
   Business,
@@ -33,7 +33,15 @@ type ScheduledVehicle = {
 };
 
 const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
-  const { state } = useData();
+  // Intentar obtener el contexto de simulación primero
+  let data;
+  try {
+    data = useData();
+  } catch {
+    // Si falla, usar el contexto de operación
+    data = useOperacionData();
+  }
+  const { state } = data;
 
   // Obtener datos de la oficina seleccionada
   const officeData = state.offices.find((office) => office.ubigeo === selectedOficina?.ubigeo);

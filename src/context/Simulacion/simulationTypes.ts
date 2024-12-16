@@ -113,7 +113,7 @@ export type SimulationState = {
   ordersDelivered: number;       // Pedidos entregados
   ordersPending: number;         // Pedidos pendientes
   //
-  operationType: 'SEMANAL' | 'COLAPSO';
+  operationType: 'SEMANAL' | 'COLAPSO' | 'DIADIA';
   simulationHistory: {
     timestamp: Date;
     pedidos: OrderRow[];

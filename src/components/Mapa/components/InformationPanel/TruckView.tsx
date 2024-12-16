@@ -1,6 +1,6 @@
 // TruckView.tsx
 import React, { useState } from 'react';
-import { useData } from '../../../../context/useData';
+import { useData, useOperacionData } from '../../../../context/useData';
 import { createAveria } from '../../../../store/services/averia';
 import {
   ExpandMore,
@@ -38,7 +38,15 @@ interface TruckViewProps {
 }
 
 const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, showRegisterAveria = true }) => {
-  const { state, dispatch } = useData();
+  // Intentar obtener el contexto de simulación primero
+  let data;
+  try {
+    data = useData();
+  } catch {
+    // Si falla, usar el contexto de operación
+    data = useOperacionData();
+  }
+  const { state } = data;
   const [tipoAveria, setTipoAveria] = useState<string>('');
   const [showPastSegments, setShowPastSegments] = useState(true);
 
@@ -656,7 +664,7 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                       : vehicle
                   );
 
-                  dispatch({ type: 'SET_VEHICLES', payload: updatedVehicles });
+                  //dispatch({ type: 'SET_VEHICLES', payload: updatedVehicles });
 
                 } catch (error) {
                   console.error('Error al registrar avería:', error);
