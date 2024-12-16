@@ -1,10 +1,11 @@
 import { useContext } from "react";
 import { OperacionContext } from "./OperacionContext";
+import { OperacionContextType } from './operacionTypes';
 
-export const useOperacion = () => {
+export const useOperacion = (): OperacionContextType => {
   const context = useContext(OperacionContext);
   if (!context) {
-    throw new Error("useOperacion solo se puede usar dentro de OperacionProvider");
+    throw new Error("useOperacion debe usarse dentro de OperacionProvider");
   }
   return context;
 };

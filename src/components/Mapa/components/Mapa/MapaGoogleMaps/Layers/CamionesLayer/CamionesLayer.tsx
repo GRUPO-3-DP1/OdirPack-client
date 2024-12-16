@@ -1,5 +1,5 @@
 import { useMapMarker } from '../../../../../../../context/MapMarker/useMapMarker';
-import { useData } from '../../../../../../../context/useData';
+import { useData, useOperacionData } from '../../../../../../../context/useData';
 import CamionMarker from '../../Markers/CamionMarker/CamionMarker';
 import { Vehicle as Camion } from "../../../../../../../context/Simulacion/simulationTypes";
 
@@ -8,10 +8,23 @@ interface CamionesLayerProps {
 }
 
 const CamionesLayer: React.FC<CamionesLayerProps> = ({ onCamionClick }) => {
-  const { state } = useData();
+
+  // Intentar obtener el contexto de simulación primero
+  let data;
+  try {
+    data = useData();
+  } catch {
+    // Si falla, usar el contexto de operación
+    data = useOperacionData();
+  }
+
+  const { state } = data;
   const { visibility } = useMapMarker();
 
-  if (!visibility.camiones || !state.isPlaying) return null;
+  // Verificar la condición según el tipo de estado
+  const isActiveOrPlaying = 'isPlaying' in state ? state.isPlaying : state.isActive;
+
+  if (!visibility.camiones || !isActiveOrPlaying) return null;
 
   return (
     <>

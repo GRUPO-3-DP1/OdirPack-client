@@ -3,7 +3,7 @@ import oficinas from "../../../../../../../data/oficinas";
 import OficinaMarker from "../../Markers/OficinaMarker/OficinaMarker";
 import { useMapMarker } from "../../../../../../../context/MapMarker/useMapMarker";
 import { Oficina, Order } from "../../../../../../../context/Simulacion/simulationTypes";
-import { useData } from '../../../../../../../context/useData';
+import { useData, useOperacionData } from '../../../../../../../context/useData';
 import { AdvancedMarker } from "@vis.gl/react-google-maps";
 
 interface OficinasLayerProps {
@@ -11,7 +11,18 @@ interface OficinasLayerProps {
 }
 
 const OficinasLayer: React.FC<OficinasLayerProps> = ({ onOficinaClick }) => {
-  const { state } = useData();
+  // Intentar obtener el contexto de simulación primero
+  let data;
+  try {
+    data = useData();
+    //console.log("usando useData de simulación");
+  } catch {
+    // Si falla, usar el contexto de operación
+    data = useOperacionData();
+    //console.log("usando useOperacionData de operaciones");
+  }
+
+  const { state } = data;
   const { visibility } = useMapMarker();
 
   if (!visibility.oficinas && !visibility.almacenes) {
