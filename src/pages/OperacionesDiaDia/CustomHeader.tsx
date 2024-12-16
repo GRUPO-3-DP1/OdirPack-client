@@ -1,38 +1,41 @@
 import React from 'react';
 import Header from '../../components/Header/Header';
-import { Button, Switch, FormControlLabel } from '@mui/material';
+import { Button, TextField, Box } from '@mui/material';
 import { useOperacion } from '../../context/OperacionDia/useOperacion';
+import { Stop, PlayArrow } from '@mui/icons-material';
 
 const CustomHeader: React.FC = () => {
-  const { state, startOperacion, stopOperacion, toggleTestMode } = useOperacion();
+  const { state, startOperacion, stopOperacion } = useOperacion();
+
+  //console.log('Tiempo simulado:', state.simulationTime);
 
   return (
     <Header>
-      <Button
-        variant="contained"
-        onClick={state.isActive ? stopOperacion : startOperacion}
-        color={state.isActive ? 'error' : 'primary'}
-      >
-        {state.isActive ? 'Detener Monitoreo' : 'Iniciar Monitoreo'}
-      </Button>
-      
-      <FormControlLabel
-        control={
-          <Switch
-            checked={state.isTestMode}
-            onChange={toggleTestMode}
-            disabled={state.isActive}
-          />
-        }
-        label="Modo Prueba (1 min)"
-      />
+      <Box display="flex" alignItems="center" gap={2}>
+        <Button
+          variant="contained"
+          onClick={state.isActive ? stopOperacion : startOperacion}
+          color={state.isActive ? 'error' : 'primary'}
+          startIcon={state.isActive ? <Stop /> : <PlayArrow />}
+        >
+          {state.isActive ? 'Detener Monitoreo' : 'Iniciar Monitoreo'}
+        </Button>
 
-      {state.lastPlanificationTime && (
-        <span>Última: {state.lastPlanificationTime.toLocaleTimeString()}</span>
-      )}
-      {state.nextPlanificationTime && (
-        <span>Próxima: {state.nextPlanificationTime.toLocaleTimeString()}</span>
-      )}
+        <TextField
+          size="small"
+          label="Tiempo Simulado"
+          value={state.simulationTime.toLocaleString('es-ES', {
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric',
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit'
+          })}
+          disabled
+          sx={{ width: '220px' }}
+        />
+      </Box>
     </Header>
   );
 };
