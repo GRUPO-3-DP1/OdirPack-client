@@ -44,8 +44,8 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
 
   // Función para obtener el tipo de camión
   const getTipoCamion = (capacidadCarga: number) => {
-    if (capacidadCarga === 10) return 'C';
-    if (capacidadCarga === 20) return 'B';
+    if (capacidadCarga === 30) return 'C';
+    if (capacidadCarga === 45) return 'B';
     return 'A';
   };
 
@@ -105,35 +105,25 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
     if (selectedCamion && selectedCamion.ruta && selectedCamion.ruta.pedidos) {
       const pedidos = selectedCamion.ruta.pedidos;
       const currentTime = state.currentTime;
-
-      // const pedidosEnCamion = pedidos.filter((pedido) => {
-      //   const fechaRecogida = pedido.fechaRecogida ? new Date(pedido.fechaRecogida) : null;
-      //   const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
-
-      //   if (fechaRecogida && fechaLlegada) {
-      //     return fechaRecogida <= currentTime && fechaLlegada > currentTime;
-      //   } else {
-      //     return false;
-      //   }
-      // });
       const pedidosEnCamion = pedidos.filter((pedido) => {
-        // Get dates from selectedCamion.ruta.fechasSalida and fechasLlegada arrays
-        const index = pedidos.indexOf(pedido);
-        const fechaRecogida = selectedCamion.ruta.fechasSalida[index]
-          ? new Date(selectedCamion.ruta.fechasSalida[index])
-          : null;
-        const fechaLlegada = selectedCamion.ruta.fechasLlegada[index]
-          ? new Date(selectedCamion.ruta.fechasLlegada[index])
-          : null;
-
-        if (fechaRecogida && fechaLlegada) {
-          return fechaRecogida <= currentTime && fechaLlegada > currentTime;
+        const fechaSalida = pedido.fechaSalida ? new Date(pedido.fechaSalida) : null;
+        const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+        if (fechaSalida && fechaLlegada) {
+          return fechaSalida <= currentTime && fechaLlegada > currentTime;
+        } else if (fechaSalida && !fechaLlegada) {
+          // Si no hay fecha de llegada, verificamos si el vehículo está en avería
+          const averia = selectedCamion.averia;
+          if (averia && averia.fechaRegistro && averia.fechaReparacion) {
+            const fechaInicioAveria = new Date(averia.fechaRegistro);
+            return (
+              fechaSalida <= currentTime &&
+              currentTime < fechaInicioAveria
+            );
+          }
         }
         return false;
       });
-
       const totalCantidad = pedidosEnCamion.reduce((total, pedido) => total + (pedido.cantidad || 0), 0);
-
       return totalCantidad;
     }
     return 0;

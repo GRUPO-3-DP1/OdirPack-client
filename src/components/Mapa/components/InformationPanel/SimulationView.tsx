@@ -15,7 +15,10 @@ import {
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 dayjs.extend(duration);
-import { Order } from '../../../../context/Simulacion/simulationTypes';
+import oficinas from '../../../../data/oficinas';
+import { calculateTrucksInMotion } from '../../../../utils/calculateTrucksInMotion';
+import { calculateOrdersDelivered } from '../../../../utils/calculateOrdersDelivered';
+import { calculateOrdersPending } from '../../../../utils/calculateOrdersPending';
 
 interface SimulationViewProps {
   operationType: 'semanal' | 'colapso' | 'diaadia';
@@ -25,25 +28,26 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
   const { state } = useData();
 
   const {
-    trucksInMotion,
-    totalTrucks,
-    ordersDelivered,
-    ordersPending,
-    unplannedOrders,
+    pedidos,
     startTime,
     currentTime,
     endTime,
   } = state;
 
+  const fleetSaturation = state.vehicles.length;
+  const trucksInMotion = calculateTrucksInMotion(state.vehicles);
+  const ordersDelivered = calculateOrdersDelivered(state.vehicles,currentTime);
+  const ordersPending = calculateOrdersPending(state.vehicles,currentTime);
+  //const unplannedOrders = calculateUnplannedOrders(state.vehicles,currentTime);
+
   const totalTime = endTime.getTime() - startTime.getTime();
   const elapsedTime = currentTime.getTime() - startTime.getTime();
   const progressPercentage = Math.floor((elapsedTime / totalTime) * 100);
 
-  const fleetSaturation = totalTrucks;
   const trucksInMaintenance = fleetSaturation - trucksInMotion;
 
   // Calcular niveles de saturación de oficinas
-  const totalOffices = state.offices.length;
+  const totalOffices = oficinas.length-3; // No cambian da igual :v
   let countLowSaturation = 0;
   let countMediumSaturation = 0;
   let countHighSaturation = 0;
@@ -51,12 +55,16 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
   state.offices.forEach((oficina) => {
     const maxCapacity = oficina.almacen || 0;
 
-    const currentLoad =
-      oficina.currentOrders?.reduce(
-        (total: number, currentOrder: { order: Order; arrivalTime: Date; }) =>
-          total + (currentOrder.order.cantidad || 0),
-        0
-      ) || 0;
+    const currentLoad = state.vehicles
+      .flatMap((vehicle) => vehicle.ruta?.pedidos || [])
+      .reduce((total, pedido) => {
+        const perteneceOficina = pedido.ubigeoDestino === oficina.ubigeo;
+        const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+        if (!perteneceOficina || !fechaLlegada) return total;
+        const tiempoLimite = new Date(fechaLlegada.getTime() + 4 * 60 * 60 * 1000);
+        const estaEnRango = state.currentTime >= fechaLlegada && state.currentTime <= tiempoLimite;
+        return estaEnRango ? total + (pedido.cantidad || 0) : total;
+    }, 0);
 
     const occupancyRate = maxCapacity > 0 ? currentLoad / maxCapacity : 0;
 
@@ -75,8 +83,14 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
     }
   });
 
-  const totalPedidos = ordersDelivered + ordersPending + unplannedOrders.length;
-
+  const totalPedidos = pedidos.filter((pedido) => {
+    if (pedido.fechaRegistro) {
+      const registrationTime = new Date(pedido.fechaRegistro);
+      return registrationTime <= currentTime;
+    }
+    return false; // Excluir pedidos sin fecha de registro
+  }).length;
+  
   return (
     <>
       <Box
@@ -147,14 +161,6 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
                 {ordersPending}
               </Typography>
             </Box>
-          </Box>
-          <Box display="flex" alignItems="center" mt={1.5}>
-            <Typography variant="body2" color="textSecondary">
-              📝 Por planificados:
-            </Typography>
-            <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-              {unplannedOrders.length}
-            </Typography>
           </Box>
         </AccordionDetails>
       </Accordion>
