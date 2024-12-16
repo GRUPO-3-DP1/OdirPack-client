@@ -1,11 +1,15 @@
-import { Vehicle, Oficina, Bloqueo } from '../Simulacion/simulationTypes';
+import { Vehicle, Oficina, Bloqueo, SimulationState } from '../Simulacion/simulationTypes';
 
-export interface OperacionState {
+export interface OperacionState extends Omit<SimulationState, 
+  'ends' | 
+  'colapso' | 
+  'endTime' | 
+  'simulationHistory' | 
+  'executionStartTime' | 
+  'executionEndTime' |
+  'operationType'
+> {
   isActive: boolean;
-  currentTime: Date;
-  vehicles: Vehicle[];
-  offices: Oficina[];
-  bloqueos: Bloqueo[];
   lastPlanificationTime: Date | null;
   nextPlanificationTime: Date | null;
   isTestMode: boolean;
@@ -18,7 +22,10 @@ export type OperacionAction =
   | { type: 'UPDATE_CURRENT_TIME'; payload: Date }
   | { type: 'SET_NEXT_PLANIFICATION'; payload: Date }
   | { type: 'SET_LAST_PLANIFICATION'; payload: Date }
-  | { type: 'TOGGLE_TEST_MODE' };
+  | { type: 'TOGGLE_TEST_MODE' }
+  | { type: 'SET_VEHICLES'; payload: Vehicle[] }
+  | { type: 'SET_CURRENT_BLOQUEOS'; payload: Bloqueo[] }
+  | { type: 'SET_OFFICES'; payload: Oficina[] };
 
 export interface OperacionContextType {
   state: OperacionState;

@@ -1,40 +1,47 @@
 import React, { createContext, useReducer, useEffect } from 'react';
+import { OperacionState, OperacionAction, OperacionContextType } from './operacionTypes';
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
-import { Vehicle, Oficina, Bloqueo } from '../Simulacion/simulationTypes';
 import { dataPrueba } from "../../data/dataPruebaOp";
 
-interface OperacionState {
-  isActive: boolean;
-  currentTime: Date;
-  vehicles: Vehicle[];
-  offices: Oficina[];
-  bloqueos: Bloqueo[];
-  lastPlanificationTime: Date | null;
-  nextPlanificationTime: Date | null;
-  isTestMode: boolean;
-}
 
-type OperacionAction = 
-  | { type: 'START_OPERACION' }
-  | { type: 'STOP_OPERACION' }
-  | { type: 'UPDATE_VEHICLES'; payload: Vehicle[] }
-  | { type: 'UPDATE_CURRENT_TIME'; payload: Date }
-  | { type: 'SET_NEXT_PLANIFICATION'; payload: Date }
-  | { type: 'SET_LAST_PLANIFICATION'; payload: Date }
-  | { type: 'TOGGLE_TEST_MODE' };
+const initialState: OperacionState = {
+  isPlaying: false,
+  isActive: false,
+  speed: 18,
+  startTime: new Date(),
+  currentTime: new Date(),
+  currentBloqueos: [],
+  vehicles: [],
+  offices: [],
+  pedidos: [],
+  unplannedOrders: [],
+  processedOrderIds: [],
+  trucksInMotion: 0,
+  trucksInMaintenance: 0,
+  totalTrucks: 0,
+  totalOffices: 0,
+  occupiedOffices: 0,
+  ordersDelivered: 0,
+  ordersPending: 0,
+  lastPlanificationTime: null,
+  nextPlanificationTime: null,
+  isTestMode: true
+};
 
 const operacionReducer = (state: OperacionState, action: OperacionAction): OperacionState => {
   switch (action.type) {
     case 'START_OPERACION':
       return {
         ...state,
-        isActive: true
+        isActive: true,
+        isPlaying: true
       };
     case 'STOP_OPERACION':
       return {
         ...state,
         isActive: false,
+        isPlaying: false,
         nextPlanificationTime: null
       };
     case 'UPDATE_VEHICLES':
@@ -67,23 +74,7 @@ const operacionReducer = (state: OperacionState, action: OperacionAction): Opera
   }
 };
 
-const initialState: OperacionState = {
-  isActive: false,
-  currentTime: new Date(),
-  vehicles: [],
-  offices: [],
-  bloqueos: [],
-  lastPlanificationTime: null,
-  nextPlanificationTime: null,
-  isTestMode: true
-};
-
-export const OperacionContext = createContext<{
-  state: OperacionState;
-  startOperacion: () => Promise<void>;
-  stopOperacion: () => void;
-  toggleTestMode: () => void;
-} | null>(null);
+export const OperacionContext = createContext<OperacionContextType | null>(null);
 
 export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(operacionReducer, initialState);

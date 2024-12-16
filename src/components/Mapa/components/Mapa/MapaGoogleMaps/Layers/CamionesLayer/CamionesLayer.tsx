@@ -21,10 +21,7 @@ const CamionesLayer: React.FC<CamionesLayerProps> = ({ onCamionClick }) => {
   const { state } = data;
   const { visibility } = useMapMarker();
 
-  // Verificar la condición según el tipo de estado
-  const isActiveOrPlaying = 'isPlaying' in state ? state.isPlaying : state.isActive;
-
-  if (!visibility.camiones || !isActiveOrPlaying) return null;
+  if (!visibility.camiones || !state.isPlaying) return null;
 
   return (
     <>

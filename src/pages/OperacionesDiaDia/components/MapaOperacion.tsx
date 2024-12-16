@@ -7,17 +7,19 @@ import PanelLeyenda from '../../../components/Mapa/components/Mapa/MapaGoogleMap
 //import PanelInformacion from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelInformacion/PanelInformacion';
 import OficinasLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Layers/OficinasLayer/OficinasLayer';
 import CamionesLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Layers/CamionesLayer/CamionesLayer';
-//import BloqueosLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Layers/BloqueosLayer/BloqueosLayer';
+import BloqueosLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Layers/BloqueosLayer/BloqueosLayer';
 import { Oficina } from '../../../context/Simulacion/simulationTypes';
+import PanelInformacion from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelInformacion/PanelInformacion';
+import PanelInformacionOperacion from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelInformacion/PanelInformacionOperacion';
 
 const MapaOperacion: React.FC = () => {
   const { } = useOperacionData();
   const {
-    //selectedOficina,
+    selectedOficina,
     setSelectedOficina,
-    //selectedCamion,
+    selectedCamion,
     setSelectedCamion,
-    //selectedPedido,
+    selectedPedido,
     setSelectedPedido,
   } = useSelection();
 
@@ -43,16 +45,15 @@ const MapaOperacion: React.FC = () => {
     <Mapa onClick={handleMapClick}>
       {/* Paneles */}
       <PanelLeyenda />
-      {/*<PanelInformacion
-        show={state.isActive}
+      <PanelInformacionOperacion  
+        show={true} // Siempre mostramos el panel en operaciones
         selectedOficina={selectedOficina}
         selectedCamion={selectedCamion}
         selectedPedido={selectedPedido}
-        operationType="diaadia"
-      />*/}
+      />
 
       {/* Layers de marcadores */}
-      {/*<BloqueosLayer />*/}
+      <BloqueosLayer />
       <OficinasLayer onOficinaClick={handleOficinaClick} />
       <CamionesLayer onCamionClick={handleCamionClick} />
     </Mapa>
