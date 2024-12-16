@@ -1,18 +1,18 @@
-import React, { createContext, useReducer, useEffect } from 'react';
+import React, { createContext, useReducer, useEffect, useRef } from 'react';
 import { OperacionState, OperacionAction, OperacionContextType } from './operacionTypes';
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
-import { dataPrueba } from "../../data/dataPruebaOp";
-
+import { dataPrueba } from '../../data/dataPruebaOp';
 
 const initialState: OperacionState = {
-  isPlaying: false,
   isActive: false,
-  speed: 18,
+  speed: 200, // 1 segundo real = 200 segundos simulados
+  simulationTime: new Date(),
+  lastPlanificationTime: null, // Comienza sin planificación previa
+
+  isPlaying: false,
   startTime: new Date(),
   currentTime: new Date(),
-  simulationTime: new Date(),
-  realTime: new Date(),
   currentBloqueos: [],
   vehicles: [],
   offices: [],
@@ -26,9 +26,6 @@ const initialState: OperacionState = {
   occupiedOffices: 0,
   ordersDelivered: 0,
   ordersPending: 0,
-  lastPlanificationTime: null,
-  nextPlanificationTime: null,
-  isTestMode: true
 };
 
 const operacionReducer = (state: OperacionState, action: OperacionAction): OperacionState => {
@@ -37,52 +34,23 @@ const operacionReducer = (state: OperacionState, action: OperacionAction): Opera
       return {
         ...state,
         isActive: true,
-        isPlaying: true,
-        realTime: new Date(),
-        simulationTime: new Date()
+        simulationTime: action.payload.initialTime,
+        lastPlanificationTime: action.payload.initialTime, // Inicializa planificación al iniciar
       };
     case 'STOP_OPERACION':
       return {
         ...state,
         isActive: false,
-        isPlaying: false,
-        nextPlanificationTime: null
       };
-    case 'UPDATE_VEHICLES':
+    case 'UPDATE_TIME':
       return {
         ...state,
-        vehicles: action.payload
-      };
-    case 'UPDATE_CURRENT_TIME':
-      return {
-        ...state,
-        currentTime: action.payload
-      };
-    case 'SET_NEXT_PLANIFICATION':
-      return {
-        ...state,
-        nextPlanificationTime: action.payload
+        simulationTime: action.payload,
       };
     case 'SET_LAST_PLANIFICATION':
       return {
         ...state,
-        lastPlanificationTime: action.payload
-      };
-    case 'TOGGLE_TEST_MODE':
-      return {
-        ...state,
-        isTestMode: !state.isTestMode
-      };
-    case 'SET_SPEED':
-      return {
-        ...state,
-        speed: action.payload
-      };
-    case 'UPDATE_TIMES':
-      return {
-        ...state,
-        realTime: action.payload.realTime,
-        simulationTime: action.payload.simulationTime
+        lastPlanificationTime: action.payload,
       };
     default:
       return state;
@@ -94,93 +62,73 @@ export const OperacionContext = createContext<OperacionContextType | null>(null)
 export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(operacionReducer, initialState);
 
-  const planificar = async () => {
-    try {
-      console.log('Iniciando planificación:', new Date().toLocaleString());
-      
-      const response = await axios.post(
-        `${ServicesProperties.BaseUrl}/operacionDia/iniciar/`, 
-        dataPrueba,
-        { headers: ServicesProperties.Headers }
-      );
-      
-      console.log('Respuesta de planificación:', response.data);
-      
-      if (response.data.vehicles) {
-        dispatch({ type: 'UPDATE_VEHICLES', payload: response.data.vehicles });
-      }
-      
-      const now = new Date();
-      dispatch({ type: 'SET_LAST_PLANIFICATION', payload: now });
-      
-      const nextPlanification = new Date();
-      if (state.isTestMode) {
-        nextPlanification.setMinutes(nextPlanification.getMinutes() + 1);
-        console.log('Próxima planificación (modo prueba):', nextPlanification.toLocaleString());
-      } else {
-        nextPlanification.setHours(nextPlanification.getHours() + 3);
-        console.log('Próxima planificación:', nextPlanification.toLocaleString());
-      }
-      
-      dispatch({ type: 'SET_NEXT_PLANIFICATION', payload: nextPlanification });
-    } catch (error) {
-      console.error('Error en planificación:', error);
-    }
-  };
+  // Ref para acceso seguro al estado más reciente dentro del intervalo
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   useEffect(() => {
     if (state.isActive) {
       const interval = setInterval(() => {
-        const now = new Date();
-        const timeDiff = now.getTime() - state.realTime.getTime();
-        const simulatedDiff = timeDiff * (state.isTestMode ? 60 : 1);
+        const currentSimTime = new Date(stateRef.current.simulationTime.getTime() + stateRef.current.speed * 1000);
         
-        const newSimTime = new Date(state.simulationTime.getTime() + simulatedDiff);
-        
-        dispatch({ 
-          type: 'UPDATE_TIMES', 
-          payload: { 
-            realTime: now, 
-            simulationTime: newSimTime 
-          }
-        });
+        // Actualizar tiempo simulado
+        dispatch({ type: 'UPDATE_TIME', payload: currentSimTime });
 
-        if (state.nextPlanificationTime && newSimTime >= state.nextPlanificationTime) {
-          planificar();
+        // Verificar si es hora de planificar
+        const lastPlanTime = stateRef.current.lastPlanificationTime;
+        if (lastPlanTime) {
+          const timeDiffInHours =
+            (currentSimTime.getTime() - lastPlanTime.getTime()) / (1000 * 60 * 60);
+          
+          console.log('Diferencia en horas:', timeDiffInHours);
+
+          if (timeDiffInHours >= 3) {
+            planificar(currentSimTime);
+          }
         }
       }, 1000);
 
       return () => clearInterval(interval);
     }
-  }, [state.isActive, state.isTestMode]);
+  }, [state.isActive]);
 
-  const startOperacion = async () => {
-    console.log('Iniciando operación');
-    await planificar();
-    dispatch({ type: 'START_OPERACION' });
+  const planificar = async (currentSimTime: Date) => {
+    try {
+      console.log('Planificando a las:', currentSimTime.toLocaleString());
+
+      const response = await axios.post(
+        `${ServicesProperties.BaseUrl}/operacionDia/iniciar/`,
+        dataPrueba,
+        { headers: ServicesProperties.Headers }
+      );
+
+      console.log('Respuesta de planificación:', response.data);
+
+      // Actualiza el tiempo de la última planificación
+      dispatch({ type: 'SET_LAST_PLANIFICATION', payload: currentSimTime });
+    } catch (error) {
+      console.error('Error en planificación:', error);
+    }
+  };
+
+  const startOperacion = () => {
+    const now = new Date();
+    dispatch({ type: 'START_OPERACION', payload: { initialTime: now } });
+    planificar(now); // Llamada inicial a planificación
   };
 
   const stopOperacion = () => {
-    console.log('Deteniendo operación');
     dispatch({ type: 'STOP_OPERACION' });
   };
 
-  const toggleTestMode = () => {
-    dispatch({ type: 'TOGGLE_TEST_MODE' });
-  };
-
-  const setPlanificationInterval = (minutes: number) => {
-    dispatch({ type: 'SET_SPEED', payload: minutes });
-  };
-
   return (
-    <OperacionContext.Provider value={{ 
-      state, 
-      startOperacion, 
-      stopOperacion,
-      toggleTestMode,
-      setPlanificationInterval
-    }}>
+    <OperacionContext.Provider
+      value={{
+        state,
+        startOperacion,
+        stopOperacion,
+      }}
+    >
       {children}
     </OperacionContext.Provider>
   );
