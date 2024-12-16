@@ -339,7 +339,20 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
               //Entra en averia
               switch (vehicle.averia.tipo) {
                 case 'MODERADA':
-                  break;
+                  // Lógica para avería moderada 
+                  return {
+                    ...vehicle,
+                    maintenance: {
+                      inMaintenance: true,
+                      startTime: maintenanceStartTime,
+                      duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
+                      officeUbigeo: vehicle.averia.almacenAsignado,
+                    },
+                    currentAveria: true,
+                    position: {
+                      ...vehicle.position,
+                    },
+                  };
                 case 'FUERTE':
                   // Lógica para avería fuerte
                   if (newTime > finishStopTime) {
@@ -405,19 +418,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                     };
                   }
               }
-
-              return {
-                ...vehicle,
-                maintenance: {
-                  inMaintenance: true,
-                  startTime: maintenanceStartTime,
-                  duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
-                  officeUbigeo: vehicle.averia.almacenAsignado,
-                },
-                currentAveria: true,
-                position: {
-                  ...vehicle.position,
-                },
               };
             }
           } else {
@@ -452,6 +452,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         if (newTime < startTime || newTime > endTime) {
           return {
             ...vehicle,
+            currentAveria: false, //Nuevo
             position: {
               ...vehicle.position,
               currentSegmentIndex: -1,
@@ -487,6 +488,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
             const newPosition = interpolatePosition(startCoords, endCoords, progress);
             return {
               ...vehicle,
+              currentAveria: false, //Nuevo
               position: {
                 ...newPosition,
                 progress,
@@ -509,6 +511,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         // Si no estamos en un segmento válido, mantener la posición actual del vehículo
         return {
           ...vehicle,
+          currentAveria: false, //Nuevo
           position: {
             ...vehicle.position,
             currentSegmentIndex: -1,
