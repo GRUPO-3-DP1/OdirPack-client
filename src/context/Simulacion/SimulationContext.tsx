@@ -182,7 +182,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   useEffect(() => {
     if (indexActualProcess < solutions.length) {
       const newResponse = solutions[indexActualProcess];
-      
+
       /*if (newResponse.yaNoPlanificar && newResponse.pedidosNoPlanificados.length > 0) {
         const collapseDate = calculateCollapseDate(solutions, state.startTime);
         dispatch({
@@ -240,7 +240,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           // Actualizar 'totalTrucks'
           //dispatch({ type: 'SET_TOTAL_TRUCKS', payload: newVehicles.length });
           // Actualizar 'occupiedOffices'
-         // dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: updateOfficesWithOrders(state.vehicles) });
+          // dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: updateOfficesWithOrders(state.vehicles) });
 
         } else {
           //console.log('Procesando');
@@ -668,8 +668,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
   return (
     <SimulationContext.Provider
-      value={{ state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices, isLoading, startSimulation, stopSimulation, updateStartTime, updateSimulationType, 
-        pedidos: state.pedidos}}
+      value={{
+        state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices, isLoading, startSimulation, stopSimulation, updateStartTime, updateSimulationType,
+        pedidos: state.pedidos
+      }}
     >
       {children}
     </SimulationContext.Provider>
