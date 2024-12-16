@@ -6,9 +6,10 @@ import CloseIcon from '@mui/icons-material/Close';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { useData } from '../../../../../../../context/useData';
-import { Order } from '../../../../../../../context/Simulacion/simulationTypes';
+//import { Order } from '../../../../../../../context/Simulacion/simulationTypes';
 import { Visibility } from '@mui/icons-material';
 import ResultPanel from '../../../../ResultsPanel/ResultPanel';
+import oficinas from '../../../../../../../data/oficinas';
 
 dayjs.extend(duration);
 
@@ -26,8 +27,7 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true, onClose 
     endTime, 
     executionStartTime, 
     executionEndTime,
-    colapso,
-    offices  // Añadir esta línea
+    colapso
   } = state;
 
   // Estado para mostrar el modal de detalle
@@ -72,24 +72,35 @@ const PanelResultados: React.FC<PanelResultadosProps> = ({ show = true, onClose 
     finalCamionesEnMovimiento = state.trucksInMotion;
     finalCamionesEnMantenimiento = state.trucksInMaintenance;
   }
-
-  // Calcular saturaciones de oficinas finales
-  const totalOficinas = offices.length;
+  // Calcular niveles de saturación de oficinas
+  const totalOficinas = oficinas.length - 3;
   let countLowSaturation = 0;
   let countMediumSaturation = 0;
   let countHighSaturation = 0;
 
-  offices.forEach((oficina) => {
-    if (oficina.isAlmacen) return;
-
+  // Calcular saturaciones de oficinas finales
+  oficinas.forEach((oficina) => {
     const maxCapacity = oficina.almacen || 0;
-    const currentLoad = oficina.currentOrders?.reduce(
-      (total: number, currentOrder: { order: Order; arrivalTime: Date }) =>
-        total + (currentOrder.order.cantidad || 0),
-      0
-    ) || 0;
+
+    const currentLoad = state.vehicles
+      .flatMap((vehicle) => vehicle.ruta?.pedidos || [])
+      .reduce((total, pedido) => {
+        const perteneceOficina = pedido.ubigeoDestino === oficina.ubigeo;
+        const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+        if (!perteneceOficina || !fechaLlegada) return total;
+        const tiempoLimite = new Date(fechaLlegada.getTime() + 4 * 60 * 60 * 1000);
+        const estaEnRango = state.currentTime >= fechaLlegada && state.currentTime <= tiempoLimite;
+        return estaEnRango ? total + (pedido.cantidad || 0) : total;
+    }, 0);
 
     const occupancyRate = maxCapacity > 0 ? currentLoad / maxCapacity : 0;
+
+    // Determinar el nivel de saturación
+    if (oficina.isAlmacen) {
+      // Excluir almacenes del conteo
+      return;
+    }
+
     if (occupancyRate > 0.8) {
       countHighSaturation += 1;
     } else if (occupancyRate > 0.5) {

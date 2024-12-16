@@ -6,7 +6,7 @@ import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles
 import { locationCoordinates } from '../../utils/locationCoordinates';
 import { useWebSocket } from '../../store/hooks/useWebSocket';
 import { Services } from '../../../config';
-//import oficinas from '../../data/oficinas';
+import oficinas from '../../data/oficinas';
 //import { convertUnplannedPedidosToOrders } from '../../utils/convertUnplannedPedidosToOrders';
 //import { convertOffices } from '../../utils/convertOffices';
 //import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
@@ -14,16 +14,15 @@ import { Services } from '../../../config';
 //import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
 //import { extractAllRutas } from '../../utils/extractAllRutas';
 //import { Order } from './simulationTypes';
-//import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
 import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
 import { mapBloqueosAsync } from '../../utils/mapearBloqueosDeArchivos';
-import { mapPedidosAsync } from '../../utils/mapearPedidosDeArchivos';
+import { mapPedidosAsync, PedidoSimulacion } from '../../utils/mapearPedidosDeArchivos';
 import usePedidosSimulacion from '../../store/hooks/usePedidosSimulacion';
 import { nuevaDataPrueba } from '../../data/nuevaDataPrueba';
 import { Services as ServicesProperties } from '../../../config';
 import axios from 'axios';
 import dayjs from 'dayjs';
-//import { calculateCollapseDate } from '../../utils/calculateCollapseDate';
+import { generarDatosFinales } from '../../utils/generarDatosFinales';
 
 const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
 
@@ -39,6 +38,7 @@ export const SimulationContext = createContext<{
   stopSimulation: () => void;
   updateStartTime: (newTime: Date) => void;
   updateSimulationType: (operationType: 'SEMANAL' | 'COLAPSO') => void;
+  pedidos: PedidoSimulacion[];
 } | null>(null);
 
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
@@ -106,18 +106,14 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
   }
 }
 
-/*const initialOffices = oficinas.map((office) => ({
-  ...office,
-  currentOrders: [],
-}));*/
-
 const initialState: SimulationState = {
   isPlaying: false,
   //
-  speed: 18, //9: 1min = 1hora //25
+  speed: 60, //9: 1min = 1hora //25
   startTime: new Date('2024-10-01T00:00:00'),
   currentTime: new Date('2024-10-01T00:00:00'),
   endTime: new Date('2024-10-08T00:00:00'),
+  //endTime: new Date('2024-10-01T04:00:00'), 
   ends: false,
   colapso: null,
   //
@@ -131,7 +127,7 @@ const initialState: SimulationState = {
   trucksInMotion: 0,
   trucksInMaintenance: 0,
   totalTrucks: 0,
-  totalOffices: 0,
+  totalOffices: oficinas.length,
   occupiedOffices: 0,
   ordersDelivered: 0,
   ordersPending: 0,
@@ -185,17 +181,15 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   useEffect(() => {
     if (indexActualProcess < solutions.length) {
       const newResponse = solutions[indexActualProcess];
-      /*console.log('MENSAJE: Procesando respuesta del algoritmo:', newResponse);
-      if (newResponse.yaNoPlanificar && newResponse.pedidosNoPlanificados.length > 0) {
+      //console.log('MENSAJE: Procesando respuesta del algoritmo:', newResponse);
+      /*if (newResponse.yaNoPlanificar && newResponse.pedidosNoPlanificados.length > 0) {
         const collapseDate = calculateCollapseDate(solutions, state.startTime);
-
         dispatch({
           type: 'SET_COLAPSO', payload: {
             willCollapse: true,
             collapseDate: collapseDate
           }
         });
-
         console.log('Se detectó colapso. Fecha calculada:', collapseDate);
       }*/
 
@@ -241,7 +235,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           // Actualizar 'totalTrucks'
           //dispatch({ type: 'SET_TOTAL_TRUCKS', payload: newVehicles.length });
           // Actualizar 'occupiedOffices'
-          //dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: calculateOccupiedOffices(newOffices) });
+          // dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: updateOfficesWithOrders(state.vehicles) });
 
         } else {
           //console.log('Procesando');
@@ -306,37 +300,46 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     }
   }, [state.vehicles, indexActualProcess, lastProcessedSolution]);
 
-  /*useEffect(() => { //comentario para María: Aquí esta habría que verificar la condicional
-    if (state.ends && !solutions.length && !finalDataExtracted) {
-      console.log("Extrayendo data final SE EJECUTO");
-      closeWebSocket();
-      const { pedidos, camiones } = extractAllRutas(state.vehicles);
-      dispatch({
-        type: 'ADD_HISTORY_ENTRY',
-        payload: {
-          timestamp: state.currentTime,
-          pedidos,
-          camiones
-        }
-      });
-      setFinalDataExtracted(true);
-    }
-  }, [state.ends]);*/
-
   useEffect(() => {
     if (!state.isPlaying) return;
 
     const updateInterval = setInterval(() => {
       const newTime = new Date(state.currentTime.getTime() + timeIncrement * state.speed);
 
+      // if (newTime >= state.endTime) {
+      //   clearInterval(updateInterval);
+      //   state.ends = true;
+      //   state.vehicles = [];
+      //   dispatch({ type: 'RESET_SIMULATION' });
+      //   //console.log('Ya pasó la fecha límite');
+      //   return;
+      // }
+
       if (newTime >= state.endTime) {
         clearInterval(updateInterval);
-        state.ends = true;
-        state.vehicles = [];
-        dispatch({ type: 'RESET_SIMULATION' });
-        //console.log('Ya pasó la fecha límite');
+        
+        // Ajustar el currentTime al endTime antes de generar datos finales
+        dispatch({ type: 'SET_CURRENT_TIME', payload: state.endTime });
+      
+        const { pedidos, camiones } = generarDatosFinales({
+          ...state,
+          currentTime: state.endTime  // Asegurar que currentTime refleje el final real
+        });
+      
+        dispatch({
+          type: 'ADD_HISTORY_ENTRY',
+          payload: {
+            timestamp: new Date(),
+            pedidos,
+            camiones
+          }
+        });
+      
+        dispatch({ type: 'STOP_SIMULATION' });
         return;
       }
+      
+      
 
       dispatch({ type: 'SET_CURRENT_TIME', payload: newTime });
 
@@ -364,7 +367,20 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
               //Entra en averia
               switch (vehicle.averia.tipo) {
                 case 'MODERADA':
-                  break;
+                  // Lógica para avería moderada 
+                  return {
+                    ...vehicle,
+                    maintenance: {
+                      inMaintenance: true,
+                      startTime: maintenanceStartTime,
+                      duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
+                      officeUbigeo: vehicle.averia.almacenAsignado,
+                    },
+                    currentAveria: true,
+                    position: {
+                      ...vehicle.position,
+                    },
+                  };
                 case 'FUERTE':
                   // Lógica para avería fuerte
                   if (newTime > finishStopTime) {
@@ -430,20 +446,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                     };
                   }
               }
-
-              return {
-                ...vehicle,
-                maintenance: {
-                  inMaintenance: true,
-                  startTime: maintenanceStartTime,
-                  duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
-                  officeUbigeo: vehicle.averia.almacenAsignado,
-                },
-                currentAveria: true,
-                position: {
-                  ...vehicle.position,
-                },
-              };
             }
           } else {
             // Si el vehículo no tiene avería, proceder con la lógica de oficina como antes
@@ -477,6 +479,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         if (newTime < startTime || newTime > endTime) {
           return {
             ...vehicle,
+            currentAveria: false, //Nuevo
             position: {
               ...vehicle.position,
               currentSegmentIndex: -1,
@@ -512,6 +515,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
             const newPosition = interpolatePosition(startCoords, endCoords, progress);
             return {
               ...vehicle,
+              currentAveria: false, //Nuevo
               position: {
                 ...newPosition,
                 progress,
@@ -534,6 +538,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         // Si no estamos en un segmento válido, mantener la posición actual del vehículo
         return {
           ...vehicle,
+          currentAveria: false, //Nuevo
           position: {
             ...vehicle.position,
             currentSegmentIndex: -1,
@@ -618,6 +623,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         {
           const weeklyEndTime = new Date(newTime);
           weeklyEndTime.setDate(weeklyEndTime.getDate() + 7); // Add 7 days for weekly operation
+          //weeklyEndTime.setHours(weeklyEndTime.getHours() + 4);
           dispatch({
             type: 'SET_START_TIME',
             payload: { startTime: newTime, endTime: weeklyEndTime },
@@ -646,6 +652,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     const newEndTime = new Date(state.startTime);
     if (operationType === 'SEMANAL') {
       newEndTime.setDate(newEndTime.getDate() + 7); // Add 7 days for weekly operation
+      //newEndTime.setHours(newEndTime.getHours() + 4);
     } else if (operationType === 'COLAPSO') {
       newEndTime.setDate(newEndTime.getDate() + 60); // Add 360 days for collapse operation
     }
@@ -658,7 +665,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
   return (
     <SimulationContext.Provider
-      value={{ state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices, isLoading, startSimulation, stopSimulation, updateStartTime, updateSimulationType }}
+      value={{
+        state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices, isLoading, startSimulation, stopSimulation, updateStartTime, updateSimulationType,
+        pedidos: state.pedidos
+      }}
     >
       {children}
     </SimulationContext.Provider>
