@@ -5,7 +5,7 @@ import CustomHeader from './CustomHeader';
 
 const Layout: React.FC = () => {
   return (
-    <div className={styles.container}>
+    <div className={styles.mapContainer}>
       <CustomHeader />
       <main className={styles.main}>
         <Page />

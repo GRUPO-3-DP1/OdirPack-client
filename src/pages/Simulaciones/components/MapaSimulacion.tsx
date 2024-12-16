@@ -18,7 +18,7 @@ interface MapaProps {
 
 const MapaSimulacion: React.FC<MapaProps> = React.memo(({ alwaysShowInfoPanel = false, operationType }) => {
   const { state } = useData();
-  const [showResumen, setShowResumen] = useState(false);
+  const [showResumen, setShowResumen] = useState(true);
 
   const handleCloseResumen = () => {
     setShowResumen(false);
