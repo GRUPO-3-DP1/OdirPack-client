@@ -1,5 +1,5 @@
 import { ControlPosition, MapControl } from '@vis.gl/react-google-maps';
-import React, { useState } from 'react';
+import React, { } from 'react';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import styles from './PanelInformacion.module.css';
