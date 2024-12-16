@@ -112,8 +112,8 @@ const initialState: SimulationState = {
   speed: 60, //9: 1min = 1hora //25
   startTime: new Date('2024-10-01T00:00:00'),
   currentTime: new Date('2024-10-01T00:00:00'),
-  //endTime: new Date('2024-10-08T00:00:00'),
-  endTime: new Date('2024-10-01T04:00:00'), 
+  endTime: new Date('2024-10-08T00:00:00'),
+  //endTime: new Date('2024-10-01T04:00:00'), 
   ends: false,
   colapso: null,
   //
@@ -620,8 +620,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       case 'SEMANAL':
         {
           const weeklyEndTime = new Date(newTime);
-          //weeklyEndTime.setDate(weeklyEndTime.getDate() + 7); // Add 7 days for weekly operation
-          weeklyEndTime.setHours(weeklyEndTime.getHours() + 4);
+          weeklyEndTime.setDate(weeklyEndTime.getDate() + 7); // Add 7 days for weekly operation
+          //weeklyEndTime.setHours(weeklyEndTime.getHours() + 4);
           dispatch({
             type: 'SET_START_TIME',
             payload: { startTime: newTime, endTime: weeklyEndTime },
@@ -649,8 +649,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
     const newEndTime = new Date(state.startTime);
     if (operationType === 'SEMANAL') {
-      //newEndTime.setDate(newEndTime.getDate() + 7); // Add 7 days for weekly operation
-      newEndTime.setHours(newEndTime.getHours() + 4);
+      newEndTime.setDate(newEndTime.getDate() + 7); // Add 7 days for weekly operation
+      //newEndTime.setHours(newEndTime.getHours() + 4);
     } else if (operationType === 'COLAPSO') {
       newEndTime.setDate(newEndTime.getDate() + 60); // Add 360 days for collapse operation
     }
