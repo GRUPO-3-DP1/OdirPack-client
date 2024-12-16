@@ -2,7 +2,7 @@ import React from "react";
 import oficinas from "../../../../../../../data/oficinas";
 import OficinaMarker from "../../Markers/OficinaMarker/OficinaMarker";
 import { useMapMarker } from "../../../../../../../context/MapMarker/useMapMarker";
-import { Oficina, Order } from "../../../../../../../context/Simulacion/simulationTypes";
+import { Oficina } from "../../../../../../../context/Simulacion/simulationTypes";
 import { useData, useOperacionData } from '../../../../../../../context/useData';
 import { AdvancedMarker } from "@vis.gl/react-google-maps";
 

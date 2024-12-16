@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useEffect, useState } from 'react';
-import { SimulationAction, SimulationState, Vehicle, Oficina, Pedido } from './simulationTypes';
+import { SimulationAction, SimulationState, Vehicle, Oficina } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
 import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
 import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles';
