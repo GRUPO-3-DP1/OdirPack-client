@@ -47,12 +47,12 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
   const trucksInMaintenance = fleetSaturation - trucksInMotion;
 
   // Calcular niveles de saturación de oficinas
-  const totalOffices = oficinas.length-3; // No cambian da igual :v
+  const totalOffices = oficinas.length - 3; // No cambian da igual :v //preparados por si cambia xd
   let countLowSaturation = 0;
   let countMediumSaturation = 0;
   let countHighSaturation = 0;
 
-  state.offices.forEach((oficina) => {
+  oficinas.forEach((oficina) => {
     const maxCapacity = oficina.almacen || 0;
 
     const currentLoad = state.vehicles
@@ -147,7 +147,7 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Box display="flex">
               <Typography variant="body2" color="textSecondary">
-                ✅ Plan. entregados:
+                ✅ Entregados:
               </Typography>
               <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
                 {ordersDelivered}
@@ -155,7 +155,7 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
             </Box>
             <Box display="flex">
               <Typography variant="body2" color="textSecondary">
-                ⏳ Plan. pendientes:
+                ⏳ Pendientes:
               </Typography>
               <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
                 {ordersPending}
