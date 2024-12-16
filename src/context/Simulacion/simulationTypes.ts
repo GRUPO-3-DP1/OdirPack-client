@@ -142,6 +142,7 @@ export type Oficina = {
     order: Order;
     arrivalTime: Date;
   }[];
+  cantidadPedidos: number;
 };
 
 export type Pedido = {

@@ -2,7 +2,7 @@ import React from "react";
 import oficinas from "../../../../../../../data/oficinas";
 import OficinaMarker from "../../Markers/OficinaMarker/OficinaMarker";
 import { useMapMarker } from "../../../../../../../context/MapMarker/useMapMarker";
-import { Oficina, Order } from "../../../../../../../context/Simulacion/simulationTypes";
+import { Oficina } from "../../../../../../../context/Simulacion/simulationTypes";
 import { useData, useOperacionData } from '../../../../../../../context/useData';
 import { AdvancedMarker } from "@vis.gl/react-google-maps";
 
@@ -73,15 +73,10 @@ const OficinasLayer: React.FC<OficinasLayerProps> = ({ onOficinaClick }) => {
     );
   }
 
-  const mergedOffices = oficinas.map((oficina) => {
-    const stateOffice = state.offices.find((o) => o.ubigeo === oficina.ubigeo);
-    return stateOffice ? { ...oficina, ...stateOffice } : oficina;
-  });
-
   return (
     <>
       {
-        mergedOffices.map((oficina, index) => {
+        oficinas.map((oficina, index) => {
 
           // Si es un almacén y la visibilidad de almacenes está desactivada, no lo renderizamos
           if (oficina.isAlmacen && !visibility.almacenes) {
@@ -96,11 +91,16 @@ const OficinasLayer: React.FC<OficinasLayerProps> = ({ onOficinaClick }) => {
           const maxCapacity = oficina.almacen;
 
           // Calcular la carga actual de la oficina
-          const currentLoad = oficina.currentOrders?.reduce(
-            (total: number, currentOrder: { order: Order; arrivalTime: Date; }) =>
-              total + (currentOrder.order.cantidad || 0),
-            0
-          ) || 0;
+          const currentLoad = state.vehicles
+          .flatMap((vehicle) => vehicle.ruta?.pedidos || [])
+          .reduce((total, pedido) => {
+            const perteneceOficina = pedido.ubigeoDestino === oficina.ubigeo;
+            const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+            if (!perteneceOficina || !fechaLlegada) return total;
+            const tiempoLimite = new Date(fechaLlegada.getTime() + 4 * 60 * 60 * 1000);
+            const estaEnRango = state.currentTime >= fechaLlegada && state.currentTime <= tiempoLimite;
+            return estaEnRango ? total + (pedido.cantidad || 0) : total;
+          }, 0);
 
           // Calcular el porcentaje de ocupación
           const occupancyRate = currentLoad / maxCapacity;
