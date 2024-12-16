@@ -7,5 +7,5 @@ export const dataPrueba = {
       ubigeoDestino: "051001",
     },
   ],
-  fechaInicio: "2024-12-05T08:00:00"
+  fechaInicio: "2024-12-18T08:00:00"
 };

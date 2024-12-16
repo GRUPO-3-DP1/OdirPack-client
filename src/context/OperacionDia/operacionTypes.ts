@@ -13,6 +13,9 @@ export interface OperacionState extends Omit<SimulationState,
   lastPlanificationTime: Date | null;
   nextPlanificationTime: Date | null;
   isTestMode: boolean;
+  speed: number;
+  simulationTime: Date;
+  realTime: Date;
 }
 
 export type OperacionAction = 
@@ -25,11 +28,14 @@ export type OperacionAction =
   | { type: 'TOGGLE_TEST_MODE' }
   | { type: 'SET_VEHICLES'; payload: Vehicle[] }
   | { type: 'SET_CURRENT_BLOQUEOS'; payload: Bloqueo[] }
-  | { type: 'SET_OFFICES'; payload: Oficina[] };
+  | { type: 'SET_OFFICES'; payload: Oficina[] }
+  | { type: 'SET_SPEED'; payload: number }
+  | { type: 'UPDATE_TIMES'; payload: { realTime: Date; simulationTime: Date } };
 
 export interface OperacionContextType {
   state: OperacionState;
   startOperacion: () => Promise<void>;
   stopOperacion: () => void;
   toggleTestMode: () => void;
+  setPlanificationInterval: (minutes: number) => void;
 }

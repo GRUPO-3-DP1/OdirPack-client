@@ -11,6 +11,8 @@ const initialState: OperacionState = {
   speed: 18,
   startTime: new Date(),
   currentTime: new Date(),
+  simulationTime: new Date(),
+  realTime: new Date(),
   currentBloqueos: [],
   vehicles: [],
   offices: [],
@@ -35,7 +37,9 @@ const operacionReducer = (state: OperacionState, action: OperacionAction): Opera
       return {
         ...state,
         isActive: true,
-        isPlaying: true
+        isPlaying: true,
+        realTime: new Date(),
+        simulationTime: new Date()
       };
     case 'STOP_OPERACION':
       return {
@@ -68,6 +72,17 @@ const operacionReducer = (state: OperacionState, action: OperacionAction): Opera
       return {
         ...state,
         isTestMode: !state.isTestMode
+      };
+    case 'SET_SPEED':
+      return {
+        ...state,
+        speed: action.payload
+      };
+    case 'UPDATE_TIMES':
+      return {
+        ...state,
+        realTime: action.payload.realTime,
+        simulationTime: action.payload.simulationTime
       };
     default:
       return state;
@@ -117,17 +132,27 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (state.isActive) {
       const interval = setInterval(() => {
         const now = new Date();
-        dispatch({ type: 'UPDATE_CURRENT_TIME', payload: now });
+        const timeDiff = now.getTime() - state.realTime.getTime();
+        const simulatedDiff = timeDiff * (state.isTestMode ? 60 : 1);
+        
+        const newSimTime = new Date(state.simulationTime.getTime() + simulatedDiff);
+        
+        dispatch({ 
+          type: 'UPDATE_TIMES', 
+          payload: { 
+            realTime: now, 
+            simulationTime: newSimTime 
+          }
+        });
 
-        if (state.nextPlanificationTime && now >= state.nextPlanificationTime) {
-          console.log('Ejecutando planificación programada');
+        if (state.nextPlanificationTime && newSimTime >= state.nextPlanificationTime) {
           planificar();
         }
-      }, state.isTestMode ? 1000 : 10000);
+      }, 1000);
 
       return () => clearInterval(interval);
     }
-  }, [state.isActive, state.nextPlanificationTime]);
+  }, [state.isActive, state.isTestMode]);
 
   const startOperacion = async () => {
     console.log('Iniciando operación');
@@ -144,12 +169,17 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     dispatch({ type: 'TOGGLE_TEST_MODE' });
   };
 
+  const setPlanificationInterval = (minutes: number) => {
+    dispatch({ type: 'SET_SPEED', payload: minutes });
+  };
+
   return (
     <OperacionContext.Provider value={{ 
       state, 
       startOperacion, 
       stopOperacion,
-      toggleTestMode
+      toggleTestMode,
+      setPlanificationInterval
     }}>
       {children}
     </OperacionContext.Provider>
