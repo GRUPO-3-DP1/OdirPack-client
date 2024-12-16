@@ -1,3 +1,4 @@
+import { VehiculoAveriadoAlgorithmResponse } from "../../store/types/ResponseAlgorithm";
 import { PedidoSimulacion } from "../../utils/mapearPedidosDeArchivos";
 
 //simulationTypes.ts
@@ -104,6 +105,7 @@ export type SimulationState = {
   pedidos: PedidoSimulacion[];
   unplannedOrders: Order[];      // Añadir pedidos no planificados
   processedOrderIds: string[];
+  vehiculosAveriados: VehiculoAveriadoAlgorithmResponse[];
   //
   trucksInMotion: number;        // Número de camiones en movimiento
   trucksInMaintenance: number;   // Número de camiones en mantenimiento
@@ -223,4 +225,5 @@ export type SimulationAction =
   | { type: 'SET_EXECUTION_START_TIME'; payload: Date; }
   | { type: 'SET_EXECUTION_END_TIME'; payload: Date; }
   | { type: 'ADD_HISTORY_ENTRY'; payload: { timestamp: Date; pedidos: OrderRow[]; camiones: TruckRow[]; }; }
-  | { type: 'SET_SIMULATION_TYPE'; payload: 'SEMANAL' | 'COLAPSO'; };
+  | { type: 'SET_SIMULATION_TYPE'; payload: 'SEMANAL' | 'COLAPSO'; }
+  | { type: 'SET_VEHICULOS_AVERIADOS'; payload: VehiculoAveriadoAlgorithmResponse[]; };

@@ -1,7 +1,7 @@
 import React, { createContext, useReducer, useEffect, useState } from 'react';
 import { SimulationAction, SimulationState, Vehicle, Oficina } from './simulationTypes';
 import { interpolatePosition } from '../../utils/interpolatePosition';
-import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
+import { ResponseAlgorithm, VehiculoAveriadoAlgorithmResponse } from '../../store/types/ResponseAlgorithm';
 import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles';
 import { locationCoordinates } from '../../utils/locationCoordinates';
 import { useWebSocket } from '../../store/hooks/useWebSocket';
@@ -101,6 +101,8 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
       return { ...state, executionEndTime: action.payload };
     case 'SET_SIMULATION_TYPE':
       return { ...state, operationType: action.payload };
+    case 'SET_VEHICULOS_AVERIADOS':
+      return { ...state, vehiculosAveriados: [...state.vehiculosAveriados, ...action.payload] };
     default:
       return state;
   }
@@ -115,9 +117,9 @@ const initialState: SimulationState = {
   isPlaying: false,
   //
   speed: 18, //9: 1min = 1hora //25
-  startTime: new Date('2024-10-01T00:00:00'),
-  currentTime: new Date('2024-10-01T00:00:00'),
-  endTime: new Date('2024-10-08T00:00:00'),
+  startTime: new Date('2024-12-01T00:00:00'),
+  currentTime: new Date('2024-12-01T00:00:00'),
+  endTime: new Date('2024-12-08T00:00:00'),
   ends: false,
   colapso: null,
   //
@@ -127,6 +129,7 @@ const initialState: SimulationState = {
   pedidos: [],
   unplannedOrders: [],
   processedOrderIds: [],
+  vehiculosAveriados: [],
   //
   trucksInMotion: 0,
   trucksInMaintenance: 0,
@@ -185,8 +188,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   useEffect(() => {
     if (indexActualProcess < solutions.length) {
       const newResponse = solutions[indexActualProcess];
-      /*console.log('MENSAJE: Procesando respuesta del algoritmo:', newResponse);
-      if (newResponse.yaNoPlanificar && newResponse.pedidosNoPlanificados.length > 0) {
+      /*if (newResponse.yaNoPlanificar && newResponse.pedidosNoPlanificados.length > 0) {
         const collapseDate = calculateCollapseDate(solutions, state.startTime);
 
         dispatch({
@@ -205,6 +207,10 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         setLastProcessedSolution(newSolutionString);
 
         const newVehicles = convertSolutionToVehicles(newResponse);
+
+        if (newResponse.vehiculosAveriados && newResponse.vehiculosAveriados.length > 0) {
+          dispatch({ type: 'SET_VEHICULOS_AVERIADOS', payload: newResponse.vehiculosAveriados });
+        }
         /*console.log("Pedidos replanificados:", newVehicles.map(v => 
           v.ruta.pedidos.filter(p => p.isReplanificado)
         ));*/
@@ -235,7 +241,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         // Actualizar vehículos
         if (!state.vehicles || state.vehicles.length === 0) {
           dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
-          console.log('Vehículos actualizados:', state.vehicles);
+          // console.log('Vehículos actualizados:', state.vehicles);
 
           // Actualizar datos de simulación
           // Actualizar 'totalTrucks'
@@ -283,7 +289,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
           // Actualizar el estado con la lista combinada de vehículos
           dispatch({ type: 'SET_VEHICLES', payload: [...updatedVehicles] });
-          console.log('Vehículos actualizados:', updatedVehicles);
+          // console.log('Vehículos actualizados:', updatedVehicles);
 
           // Actualizar 'totalTrucks'
           //dispatch({ type: 'SET_TOTAL_TRUCKS', payload: updatedVehicles.length });
@@ -297,14 +303,17 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         // Actualizar pedidos no planificados en el estado
         //dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: unplannedOrders });
 
-      } else {
-        //console.log('Es la misma solución');
       }
+      // else {
+      //   //console.log('Es la misma solución');
+      // }
 
       // Actualizar el índice para procesar la siguiente respuesta
       setIndexActualProcess(indexActualProcess + 1);
+
+      // console.log('MENSAJE: Procesando respuesta del algoritmo:', newResponse);
     }
-  }, [state.vehicles, indexActualProcess, lastProcessedSolution]);
+  }, [solutions, indexActualProcess, lastProcessedSolution, state.vehicles]);
 
   /*useEffect(() => { //comentario para María: Aquí esta habría que verificar la condicional
     if (state.ends && !solutions.length && !finalDataExtracted) {
@@ -334,25 +343,27 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         state.ends = true;
         state.vehicles = [];
         dispatch({ type: 'RESET_SIMULATION' });
-        //console.log('Ya pasó la fecha límite');
         return;
       }
 
       dispatch({ type: 'SET_CURRENT_TIME', payload: newTime });
 
+      const vehiculosAveriados = state.vehiculosAveriados;
+
       const updatedVehicles = state.vehicles.map((vehicle) => {
         const { ruta } = vehicle;
         const startTime = new Date(ruta.fechaInicio);
         const endTime = new Date(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]);
-
+        let currAveriado: VehiculoAveriadoAlgorithmResponse | undefined;
         // Detectar si el vehículo ha llegado a una oficina
         const arrivalTimes = ruta.fechasLlegada.map((fecha) => new Date(fecha));
         for (let i = 0; i < arrivalTimes.length; i++) {
           const arrivalTime = arrivalTimes[i];
           const departureTime = new Date(ruta.fechasSalida[i + 1] || ruta.fechasLlegada[i]);
-
           // Verificar si el vehículo tiene una avería
           if (vehicle.averia?.isAveria) {
+            currAveriado = vehiculosAveriados?.find((v) => v.idVehiculo === vehicle.idVehiculo);
+            // console.log("Averias prueba", vehiculosAveriados, currAveriado);
             // El vehículo tiene una avería y está en mantenimiento
             const maintenanceStartTime = new Date(vehicle.averia.fechaRegistro);
             const maintenanceEndTime = new Date(vehicle.averia.fechaReparacion); // 1 hora en milisegundos
@@ -364,7 +375,20 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
               //Entra en averia
               switch (vehicle.averia.tipo) {
                 case 'MODERADA':
-                  break;
+                  // Lógica para avería moderada 
+                  return {
+                    ...vehicle,
+                    maintenance: {
+                      inMaintenance: true,
+                      startTime: maintenanceStartTime,
+                      duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
+                      officeUbigeo: vehicle.averia.almacenAsignado,
+                    },
+                    currentAveria: true,
+                    position: {
+                      ...vehicle.position,
+                    },
+                  };
                 case 'FUERTE':
                   // Lógica para avería fuerte
                   if (newTime > finishStopTime) {
@@ -430,20 +454,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
                     };
                   }
               }
-
-              return {
-                ...vehicle,
-                maintenance: {
-                  inMaintenance: true,
-                  startTime: maintenanceStartTime,
-                  duration: maintenanceEndTime.getTime() - maintenanceStartTime.getTime(),
-                  officeUbigeo: vehicle.averia.almacenAsignado,
-                },
-                currentAveria: true,
-                position: {
-                  ...vehicle.position,
-                },
-              };
             }
           } else {
             // Si el vehículo no tiene avería, proceder con la lógica de oficina como antes
@@ -477,6 +487,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         if (newTime < startTime || newTime > endTime) {
           return {
             ...vehicle,
+            currentAveria: false, //Nuevo
             position: {
               ...vehicle.position,
               currentSegmentIndex: -1,
@@ -486,12 +497,28 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
         // Encontrar el segmento actual
         let currentSegmentIndex = -1;
+        let currentSegmentIndexHasAveria = false;
         for (let i = 0; i < ruta.fechasSalida.length; i++) {
           const segmentStart = new Date(ruta.fechasSalida[i]);
           const segmentEnd = new Date(ruta.fechasLlegada[i]);
 
           if (newTime >= segmentStart && newTime <= segmentEnd) {
             currentSegmentIndex = i;
+            const horaAveria = currAveriado?.horaAveria ? new Date(currAveriado.horaAveria) : null;
+            if (
+              ruta.tramos[i].origen.codigo === currAveriado?.tramoInicio
+              && ruta.tramos[i].destino.codigo === currAveriado?.tramoFin
+              && horaAveria !== null && horaAveria !== undefined
+              && segmentStart.getTime() <= horaAveria.getTime()
+              && horaAveria.getTime() <= segmentEnd.getTime()
+              && currAveriado.tipoAveria === 'MODERADA'
+              && newTime.getTime() <= segmentEnd.getTime() - 4 * 60 * 60 * 1000
+            ) {
+              console.log('Camion con averia moderada');
+              currentSegmentIndexHasAveria = true;
+            } else {
+              currentSegmentIndexHasAveria = false;
+            }
             break;
           }
         }
@@ -503,20 +530,26 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
           const totalSegmentTime = segmentEnd.getTime() - segmentStart.getTime();
           const currentSegmentTime = newTime.getTime() - segmentStart.getTime();
-          const progress = Math.max(0, Math.min(1, currentSegmentTime / totalSegmentTime));
+          const realProgress =
+            currentSegmentIndexHasAveria
+              ?
+              Math.max(0, Math.min(1, currentSegmentTime / (totalSegmentTime - 4 * 60 * 60 * 1000)))
+              :
+              Math.max(0, Math.min(1, currentSegmentTime / totalSegmentTime));
 
           // Si el vehículo no ha alcanzado el final del segmento, actualizar posición
-          if (progress < 1) {
+          if (realProgress < 1) {
             const startCoords = locationCoordinates[ruta.tramos[currentSegmentIndex].origen.codigo];
             const endCoords = locationCoordinates[ruta.tramos[currentSegmentIndex].destino.codigo];
-            const newPosition = interpolatePosition(startCoords, endCoords, progress);
+            const newPosition = interpolatePosition(startCoords, endCoords, realProgress);
             return {
               ...vehicle,
               position: {
                 ...newPosition,
-                progress,
+                progress: realProgress,
                 currentSegmentIndex,
               },
+              currentAveria: false, //Nuevo
               currentRoute: {
                 origin: {
                   lat: startCoords.lat,
@@ -534,6 +567,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         // Si no estamos en un segmento válido, mantener la posición actual del vehículo
         return {
           ...vehicle,
+          currentAveria: false, //Nuevo
           position: {
             ...vehicle.position,
             currentSegmentIndex: -1,
@@ -663,4 +697,4 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       {children}
     </SimulationContext.Provider>
   );
-}
+};
