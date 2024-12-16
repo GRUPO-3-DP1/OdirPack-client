@@ -2,7 +2,6 @@ import React from 'react';
 import { useOperacionData } from '../../../../context/useData';
 import {
   ExpandMore,
-  AccessTimeFilled,
 } from '@mui/icons-material';
 import {
   Accordion,
@@ -14,7 +13,7 @@ import {
 import dayjs from 'dayjs';
 
 const OperacionView: React.FC = () => {
-  const { state } = useOperacionData();
+  const { } = useOperacionData();
 
   // Valores hardcodeados para mejor rendimiento
   const mockData = {

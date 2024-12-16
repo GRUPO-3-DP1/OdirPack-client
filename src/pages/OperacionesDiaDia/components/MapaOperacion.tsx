@@ -9,7 +9,7 @@ import OficinasLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMa
 import CamionesLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Layers/CamionesLayer/CamionesLayer';
 import BloqueosLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Layers/BloqueosLayer/BloqueosLayer';
 import { Oficina } from '../../../context/Simulacion/simulationTypes';
-import PanelInformacion from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelInformacion/PanelInformacion';
+//import PanelInformacion from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelInformacion/PanelInformacion';
 import PanelInformacionOperacion from '../../../components/Mapa/components/Mapa/MapaGoogleMaps/Panels/PanelInformacion/PanelInformacionOperacion';
 
 const MapaOperacion: React.FC = () => {

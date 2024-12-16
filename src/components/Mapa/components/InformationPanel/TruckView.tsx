@@ -644,7 +644,7 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                   await createAveria(averiaData);
 
                   // Actualizar el estado del camión en el contexto
-                  const updatedVehicles = state.vehicles.map((vehicle) =>
+                  /*const updatedVehicles = state.vehicles.map((vehicle) =>
                     vehicle.idVehiculo === selectedCamion.idVehiculo
                       ? {
                         ...vehicle,
@@ -662,7 +662,7 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                         }
                       }
                       : vehicle
-                  );
+                  );*/
 
                   //dispatch({ type: 'SET_VEHICLES', payload: updatedVehicles });
 
