@@ -1,13 +1,14 @@
 import { Vehicle, Oficina, Bloqueo, SimulationState } from '../Simulacion/simulationTypes';
 
-export interface OperacionState extends Omit<SimulationState, 
-  'ends' | 
-  'colapso' | 
-  'endTime' | 
-  'simulationHistory' | 
-  'executionStartTime' | 
+export interface OperacionState extends Omit<SimulationState,
+  'ends' |
+  'colapso' |
+  'endTime' |
+  'simulationHistory' |
+  'executionStartTime' |
   'executionEndTime' |
-  'operationType'
+  'operationType' |
+  'vehiculosAveriados'
 > {
   isActive: boolean;
   lastPlanificationTime: Date | null;
@@ -15,17 +16,17 @@ export interface OperacionState extends Omit<SimulationState,
   isTestMode: boolean;
 }
 
-export type OperacionAction = 
-  | { type: 'START_OPERACION' }
-  | { type: 'STOP_OPERACION' }
-  | { type: 'UPDATE_VEHICLES'; payload: Vehicle[] }
-  | { type: 'UPDATE_CURRENT_TIME'; payload: Date }
-  | { type: 'SET_NEXT_PLANIFICATION'; payload: Date }
-  | { type: 'SET_LAST_PLANIFICATION'; payload: Date }
-  | { type: 'TOGGLE_TEST_MODE' }
-  | { type: 'SET_VEHICLES'; payload: Vehicle[] }
-  | { type: 'SET_CURRENT_BLOQUEOS'; payload: Bloqueo[] }
-  | { type: 'SET_OFFICES'; payload: Oficina[] };
+export type OperacionAction =
+  | { type: 'START_OPERACION'; }
+  | { type: 'STOP_OPERACION'; }
+  | { type: 'UPDATE_VEHICLES'; payload: Vehicle[]; }
+  | { type: 'UPDATE_CURRENT_TIME'; payload: Date; }
+  | { type: 'SET_NEXT_PLANIFICATION'; payload: Date; }
+  | { type: 'SET_LAST_PLANIFICATION'; payload: Date; }
+  | { type: 'TOGGLE_TEST_MODE'; }
+  | { type: 'SET_VEHICLES'; payload: Vehicle[]; }
+  | { type: 'SET_CURRENT_BLOQUEOS'; payload: Bloqueo[]; }
+  | { type: 'SET_OFFICES'; payload: Oficina[]; };
 
 export interface OperacionContextType {
   state: OperacionState;
