@@ -1,6 +1,6 @@
 // OfficeView.tsx
 import React from 'react';
-import { useData } from '../../../../context/useData';
+import { useData, useOperacionData } from '../../../../context/useData';
 import {
   ExpandMore,
   Business,
@@ -33,19 +33,27 @@ type ScheduledVehicle = {
 };
 
 const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
-  const { state } = useData();
-
-  // Obtener datos de la oficina seleccionada
-  const officeData = state.offices.find((office) => office.ubigeo === selectedOficina?.ubigeo);
+  // Intentar obtener el contexto de simulación primero
+  let data;
+  try {
+    data = useData();
+  } catch {
+    // Si falla, usar el contexto de operación
+    data = useOperacionData();
+  }
+  const { state } = data;
 
   // Calcular la carga actual
-  const currentLoad =
-    officeData && officeData.currentOrders
-      ? officeData.currentOrders.reduce(
-        (total, currentOrder) => total + (currentOrder.order.cantidad || 0),
-        0
-      )
-      : 'Ilimitado';
+  const currentLoad = state.vehicles
+          .flatMap((vehicle) => vehicle.ruta?.pedidos || [])
+          .reduce((total, pedido) => {
+            const perteneceOficina = pedido.ubigeoDestino === selectedOficina.ubigeo;
+            const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+            if (!perteneceOficina || !fechaLlegada) return total;
+            const tiempoLimite = new Date(fechaLlegada.getTime() + 4 * 60 * 60 * 1000);
+            const estaEnRango = state.currentTime >= fechaLlegada && state.currentTime <= tiempoLimite;
+            return estaEnRango ? total + (pedido.cantidad || 0) : total;
+          }, 0);
 
   const maxCapacity = selectedOficina?.almacen || 0;
 
@@ -126,7 +134,7 @@ const OfficeView: React.FC<OfficeViewProps> = ({ selectedOficina }) => {
             <Typography variant="body2" color="textSecondary">
               <b>Stock:</b>{' '}
               <Typography component="span" variant="body2" color="textPrimary">
-                {currentLoad !== 'Ilimitado' ? `${currentLoad}/${maxCapacity}` : 'Ilimitado'}
+                {currentLoad}/{maxCapacity}
               </Typography>
             </Typography>
           </Box>

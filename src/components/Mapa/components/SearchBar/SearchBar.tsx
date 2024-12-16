@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { useSelection } from '../../../../context/Buscador/useSelection';
-import { useData } from '../../../../context/useData';
+import { useData, useOperacionData } from '../../../../context/useData';
 
 interface SearchBarProps {
   onSearch?: (query: string) => void;
@@ -20,7 +20,17 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, disabled = false }) => 
     setSelectedCamion,
     setSelectedPedido
   } = useSelection();
-  const { state: simulationState } = useData();
+  
+  // Intentar obtener el contexto de simulación primero
+  let data;
+  try {
+    data = useData();
+  } catch {
+    // Si falla, usar el contexto de operación
+    data = useOperacionData();
+  }
+
+  const { state: simulationState } = data;
 
   const getDynamicBackground = (value: string | null) => (value ? '#E6F0FB' : '#FAFAFA');
 

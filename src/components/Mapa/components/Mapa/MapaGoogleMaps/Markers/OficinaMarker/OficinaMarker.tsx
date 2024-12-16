@@ -29,7 +29,7 @@ const OficinaMarker: React.FC<OficinaMarkerProps> = ({ oficina, ocupacion = 'baj
     >
       <div className={styles.iconWrapper}>
         {oficina.isAlmacen ?
-          <AlmacenIcon size='tiny' />
+          <AlmacenIcon size='small' />
           :
           <OficinaIcon mainColor={color} size='tiny' />
         }

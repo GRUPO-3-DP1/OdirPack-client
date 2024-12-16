@@ -1,6 +1,6 @@
 // TruckView.tsx
 import React, { useState } from 'react';
-import { useData } from '../../../../context/useData';
+import { useData, useOperacionData } from '../../../../context/useData';
 import { createAveria } from '../../../../store/services/averia';
 import {
   ExpandMore,
@@ -38,14 +38,22 @@ interface TruckViewProps {
 }
 
 const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, showRegisterAveria = true }) => {
-  const { state, dispatch } = useData();
+  // Intentar obtener el contexto de simulación primero
+  let data;
+  try {
+    data = useData();
+  } catch {
+    // Si falla, usar el contexto de operación
+    data = useOperacionData();
+  }
+  const { state } = data;
   const [tipoAveria, setTipoAveria] = useState<string>('');
   const [showPastSegments, setShowPastSegments] = useState(true);
 
   // Función para obtener el tipo de camión
   const getTipoCamion = (capacidadCarga: number) => {
-    if (capacidadCarga === 10) return 'C';
-    if (capacidadCarga === 20) return 'B';
+    if (capacidadCarga === 30) return 'C';
+    if (capacidadCarga === 45) return 'B';
     return 'A';
   };
 
@@ -105,35 +113,25 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
     if (selectedCamion && selectedCamion.ruta && selectedCamion.ruta.pedidos) {
       const pedidos = selectedCamion.ruta.pedidos;
       const currentTime = state.currentTime;
-
-      // const pedidosEnCamion = pedidos.filter((pedido) => {
-      //   const fechaRecogida = pedido.fechaRecogida ? new Date(pedido.fechaRecogida) : null;
-      //   const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
-
-      //   if (fechaRecogida && fechaLlegada) {
-      //     return fechaRecogida <= currentTime && fechaLlegada > currentTime;
-      //   } else {
-      //     return false;
-      //   }
-      // });
       const pedidosEnCamion = pedidos.filter((pedido) => {
-        // Get dates from selectedCamion.ruta.fechasSalida and fechasLlegada arrays
-        const index = pedidos.indexOf(pedido);
-        const fechaRecogida = selectedCamion.ruta.fechasSalida[index]
-          ? new Date(selectedCamion.ruta.fechasSalida[index])
-          : null;
-        const fechaLlegada = selectedCamion.ruta.fechasLlegada[index]
-          ? new Date(selectedCamion.ruta.fechasLlegada[index])
-          : null;
-
-        if (fechaRecogida && fechaLlegada) {
-          return fechaRecogida <= currentTime && fechaLlegada > currentTime;
+        const fechaSalida = pedido.fechaSalida ? new Date(pedido.fechaSalida) : null;
+        const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+        if (fechaSalida && fechaLlegada) {
+          return fechaSalida <= currentTime && fechaLlegada > currentTime;
+        } else if (fechaSalida && !fechaLlegada) {
+          // Si no hay fecha de llegada, verificamos si el vehículo está en avería
+          const averia = selectedCamion.averia;
+          if (averia && averia.fechaRegistro && averia.fechaReparacion) {
+            const fechaInicioAveria = new Date(averia.fechaRegistro);
+            return (
+              fechaSalida <= currentTime &&
+              currentTime < fechaInicioAveria
+            );
+          }
         }
         return false;
       });
-
       const totalCantidad = pedidosEnCamion.reduce((total, pedido) => total + (pedido.cantidad || 0), 0);
-
       return totalCantidad;
     }
     return 0;
@@ -636,7 +634,7 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                   await createAveria(averiaData);
 
                   // Actualizar el estado del camión en el contexto
-                  const updatedVehicles = state.vehicles.map((vehicle) =>
+                  /*const updatedVehicles = state.vehicles.map((vehicle) =>
                     vehicle.idVehiculo === selectedCamion.idVehiculo
                       ? {
                         ...vehicle,
@@ -654,9 +652,9 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
                         }
                       }
                       : vehicle
-                  );
+                  );*/
 
-                  dispatch({ type: 'SET_VEHICLES', payload: updatedVehicles });
+                  //dispatch({ type: 'SET_VEHICLES', payload: updatedVehicles });
 
                 } catch (error) {
                   console.error('Error al registrar avería:', error);

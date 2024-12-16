@@ -1,5 +1,5 @@
 import { useMapMarker } from '../../../../../../../context/MapMarker/useMapMarker';
-import { useData } from '../../../../../../../context/useData';
+import { useData, useOperacionData } from '../../../../../../../context/useData';
 import CamionMarker from '../../Markers/CamionMarker/CamionMarker';
 import { Vehicle as Camion } from "../../../../../../../context/Simulacion/simulationTypes";
 
@@ -8,7 +8,17 @@ interface CamionesLayerProps {
 }
 
 const CamionesLayer: React.FC<CamionesLayerProps> = ({ onCamionClick }) => {
-  const { state } = useData();
+
+  // Intentar obtener el contexto de simulación primero
+  let data;
+  try {
+    data = useData();
+  } catch {
+    // Si falla, usar el contexto de operación
+    data = useOperacionData();
+  }
+
+  const { state } = data;
   const { visibility } = useMapMarker();
 
   if (!visibility.camiones || !state.isPlaying) return null;
@@ -22,22 +32,24 @@ const CamionesLayer: React.FC<CamionesLayerProps> = ({ onCamionClick }) => {
             const pedidos = vehicle.ruta.pedidos;
             const currentTime = state.currentTime;
             const pedidosEnCamion = pedidos.filter((pedido) => {
-              const index = pedidos.indexOf(pedido);
-              const fechaRecogida = vehicle.ruta.fechasSalida[index]
-                ? new Date(vehicle.ruta.fechasSalida[index])
-                : null;
-              const fechaLlegada = vehicle.ruta.fechasLlegada[index]
-                ? new Date(vehicle.ruta.fechasLlegada[index])
-                : null;
-
-              if (fechaRecogida && fechaLlegada) {
-                return fechaRecogida <= currentTime && fechaLlegada > currentTime;
+              const fechaSalida = pedido.fechaSalida ? new Date(pedido.fechaSalida) : null;
+              const fechaLlegada = pedido.fechaLlegada ? new Date(pedido.fechaLlegada) : null;
+              if (fechaSalida && fechaLlegada) {
+                return fechaSalida <= currentTime && fechaLlegada > currentTime;
+              } else if (fechaSalida && !fechaLlegada) {
+                // Si no hay fecha de llegada, verificamos si el vehículo está en avería
+                const averia = vehicle.averia;
+                if (averia && averia.fechaRegistro && averia.fechaReparacion) {
+                  const fechaInicioAveria = new Date(averia.fechaRegistro);
+                  return (
+                    fechaSalida <= currentTime &&
+                    currentTime < fechaInicioAveria
+                  );
+                }
               }
               return false;
             });
-
             const totalCantidad = pedidosEnCamion.reduce((total, pedido) => total + (pedido.cantidad || 0), 0);
-
             return totalCantidad;
           }
           return 0;

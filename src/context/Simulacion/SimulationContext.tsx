@@ -6,7 +6,7 @@ import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles
 import { locationCoordinates } from '../../utils/locationCoordinates';
 import { useWebSocket } from '../../store/hooks/useWebSocket';
 import { Services } from '../../../config';
-//import oficinas from '../../data/oficinas';
+import oficinas from '../../data/oficinas';
 //import { convertUnplannedPedidosToOrders } from '../../utils/convertUnplannedPedidosToOrders';
 //import { convertOffices } from '../../utils/convertOffices';
 //import { calculateTrucksInMotion } from '../../utils/calculateTrucksInMotion';
@@ -14,16 +14,14 @@ import { Services } from '../../../config';
 //import { calculateOrdersPending } from '../../utils/calculateOrdersPending';
 //import { extractAllRutas } from '../../utils/extractAllRutas';
 //import { Order } from './simulationTypes';
-//import { calculateOccupiedOffices } from '../../utils/calculateOccupiedOffices';
 import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
 import { mapBloqueosAsync } from '../../utils/mapearBloqueosDeArchivos';
-import { mapPedidosAsync } from '../../utils/mapearPedidosDeArchivos';
+import { mapPedidosAsync, PedidoSimulacion } from '../../utils/mapearPedidosDeArchivos';
 import usePedidosSimulacion from '../../store/hooks/usePedidosSimulacion';
 import { nuevaDataPrueba } from '../../data/nuevaDataPrueba';
 import { Services as ServicesProperties } from '../../../config';
 import axios from 'axios';
 import dayjs from 'dayjs';
-//import { calculateCollapseDate } from '../../utils/calculateCollapseDate';
 
 const timeIncrement = 1000;// Avanzar un segundo de simulación por intervalo
 
@@ -39,6 +37,7 @@ export const SimulationContext = createContext<{
   stopSimulation: () => void;
   updateStartTime: (newTime: Date) => void;
   updateSimulationType: (operationType: 'SEMANAL' | 'COLAPSO') => void;
+  pedidos: PedidoSimulacion[];
 } | null>(null);
 
 function simulationReducer(state: SimulationState, action: SimulationAction): SimulationState {
@@ -108,11 +107,6 @@ function simulationReducer(state: SimulationState, action: SimulationAction): Si
   }
 }
 
-/*const initialOffices = oficinas.map((office) => ({
-  ...office,
-  currentOrders: [],
-}));*/
-
 const initialState: SimulationState = {
   isPlaying: false,
   //
@@ -134,7 +128,7 @@ const initialState: SimulationState = {
   trucksInMotion: 0,
   trucksInMaintenance: 0,
   totalTrucks: 0,
-  totalOffices: 0,
+  totalOffices: oficinas.length,
   occupiedOffices: 0,
   ordersDelivered: 0,
   ordersPending: 0,
@@ -188,16 +182,15 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
   useEffect(() => {
     if (indexActualProcess < solutions.length) {
       const newResponse = solutions[indexActualProcess];
+      
       /*if (newResponse.yaNoPlanificar && newResponse.pedidosNoPlanificados.length > 0) {
         const collapseDate = calculateCollapseDate(solutions, state.startTime);
-
         dispatch({
           type: 'SET_COLAPSO', payload: {
             willCollapse: true,
             collapseDate: collapseDate
           }
         });
-
         console.log('Se detectó colapso. Fecha calculada:', collapseDate);
       }*/
 
@@ -247,7 +240,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           // Actualizar 'totalTrucks'
           //dispatch({ type: 'SET_TOTAL_TRUCKS', payload: newVehicles.length });
           // Actualizar 'occupiedOffices'
-          //dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: calculateOccupiedOffices(newOffices) });
+         // dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: updateOfficesWithOrders(state.vehicles) });
 
         } else {
           //console.log('Procesando');
@@ -314,23 +307,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
       // console.log('MENSAJE: Procesando respuesta del algoritmo:', newResponse);
     }
   }, [solutions, indexActualProcess, lastProcessedSolution, state.vehicles]);
-
-  /*useEffect(() => { //comentario para María: Aquí esta habría que verificar la condicional
-    if (state.ends && !solutions.length && !finalDataExtracted) {
-      console.log("Extrayendo data final SE EJECUTO");
-      closeWebSocket();
-      const { pedidos, camiones } = extractAllRutas(state.vehicles);
-      dispatch({
-        type: 'ADD_HISTORY_ENTRY',
-        payload: {
-          timestamp: state.currentTime,
-          pedidos,
-          camiones
-        }
-      });
-      setFinalDataExtracted(true);
-    }
-  }, [state.ends]);*/
 
   useEffect(() => {
     if (!state.isPlaying) return;
@@ -692,7 +668,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
   return (
     <SimulationContext.Provider
-      value={{ state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices, isLoading, startSimulation, stopSimulation, updateStartTime, updateSimulationType }}
+      value={{ state, dispatch, vehicles: state.vehicles, userId, solutions, offices: state.offices, isLoading, startSimulation, stopSimulation, updateStartTime, updateSimulationType, 
+        pedidos: state.pedidos}}
     >
       {children}
     </SimulationContext.Provider>
