@@ -10,9 +10,6 @@ interface ModalCargaMasivaProps {
 }
 
 const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
-  // @ts-ignore
-  const [fileContent, setFileContent] = useState<string[]>([]);
-
   const [parsedData, setParsedData] = useState<{ destinoId: string, cantidadTotal: number, clienteId: string; }[]>([]);
   const [fileLoaded, setFileLoaded] = useState<boolean>(false);
 
@@ -25,7 +22,6 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
       reader.onload = (e) => {
         const content = e.target?.result as string;
         const lines = content.split('\n').map(line => line.trim()).filter(line => line);
-        setFileContent(lines);
         parseFileContent(lines);
         setFileLoaded(true);
       };
