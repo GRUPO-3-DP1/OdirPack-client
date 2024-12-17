@@ -93,8 +93,8 @@ const Page: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {pedidos.map((pedido) => (
-              <TableRow key={pedido.pedidoId}>
+            {pedidos.map((pedido, i) => (
+              <TableRow key={i}>
                 <TableCell>{pedido.pedidoId}</TableCell>
                 <TableCell>{pedido.cantidadTotal}</TableCell>
                 <TableCell>{pedido.origenId}</TableCell>
