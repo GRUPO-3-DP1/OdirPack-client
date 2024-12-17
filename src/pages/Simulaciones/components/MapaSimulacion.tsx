@@ -13,7 +13,7 @@ import BloqueosLayer from '../../../components/Mapa/components/Mapa/MapaGoogleMa
 
 interface MapaProps {
   alwaysShowInfoPanel?: boolean;
-  operationType: 'semanal' | 'colapso' | 'diaadia';
+  operationType: 'SEMANAL' | 'COLAPSO' | 'DIAADIA';
 }
 
 const MapaSimulacion: React.FC<MapaProps> = React.memo(({ alwaysShowInfoPanel = false, operationType }) => {

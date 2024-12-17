@@ -3,7 +3,7 @@ import styles from './page.module.css';
 import BaseMap from '../../components/Mapa/components/Mapa/MapaGeneral/BaseMap';
 import { useData } from '../../context/useData';
 
-type OperationType = 'semanal' | 'colapso' | 'diaadia';
+type OperationType = 'SEMANAL' | 'COLAPSO' | 'DIAADIA';
 
 const Page: React.FC = () => {
 

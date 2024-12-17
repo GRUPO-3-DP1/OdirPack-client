@@ -33,7 +33,7 @@ import styles from './InformationPanel.module.css';
 
 interface TruckViewProps {
   selectedCamion: Camion;
-  operationType: 'semanal' | 'colapso' | 'diaadia';
+  operationType: 'SEMANAL' | 'COLAPSO' | 'DIAADIA';
   showRegisterAveria?: boolean;
 }
 
@@ -608,7 +608,7 @@ const TruckView: React.FC<TruckViewProps> = ({ selectedCamion, operationType, sh
 
                 try {
                   let fechaRegistro: Date;
-                  if (operationType === 'semanal') {
+                  if (operationType === 'SEMANAL') {
                     fechaRegistro = state.currentTime;
                   } else {
                     fechaRegistro = dayjs().toDate();

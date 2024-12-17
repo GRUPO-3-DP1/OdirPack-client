@@ -21,7 +21,7 @@ interface PanelInformacionProps {
   selectedOficina: Oficina | null;
   selectedCamion: Camion | null;
   selectedPedido: Order | null;
-  operationType: 'semanal' | 'colapso' | 'diaadia';
+  operationType: 'SEMANAL' | 'COLAPSO' | 'DIAADIA';
 }
 
 const PanelInformacion: React.FC<PanelInformacionProps> = ({

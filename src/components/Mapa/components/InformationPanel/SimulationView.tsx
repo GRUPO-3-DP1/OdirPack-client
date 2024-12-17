@@ -21,7 +21,7 @@ import { calculateOrdersDelivered } from '../../../../utils/calculateOrdersDeliv
 import { calculateOrdersPending } from '../../../../utils/calculateOrdersPending';
 
 interface SimulationViewProps {
-  operationType: 'semanal' | 'colapso' | 'diaadia';
+  operationType: 'SEMANAL' | 'COLAPSO' | 'DIAADIA';
 }
 
 const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
@@ -92,11 +92,12 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
 
   const getLabel = (operationType: string): string => {
     switch (operationType) {
-      case 'semanal':
+      case 'SEMANAL':
         return 'Semanal';
-      case 'colapso':
+      case 'COLAPSO':
         return 'Hasta el colapso';
-      case 'diaadia':
+      case 'DIAADIA':
+        return 'Día a día';
       default:
         return 'Semanal';
     }
@@ -115,17 +116,17 @@ const SimulationView: React.FC<SimulationViewProps> = ({ operationType }) => {
           <div>
             <Typography variant="subtitle1" color="textPrimary">
               <b>
-                Información de la {operationType === 'diaadia' ? 'operación' : 'simulación'}
+                Información de la {operationType === 'DIAADIA' ? 'operación' : 'simulación'}
               </b>
             </Typography>
             <Typography variant="body2" color="textSecondary">
-              <b>{operationType === 'diaadia' ? 'Operación' : 'Simulación'}:</b>{' '}
+              <b>{operationType === 'DIAADIA' ? 'Operación' : 'Simulación'}:</b>{' '}
               <Typography component="span" variant="body2" color="textPrimary">
                 {getLabel(operationType)}
               </Typography>
             </Typography>
           </div>
-          {operationType !== 'diaadia' && (
+          {operationType !== 'DIAADIA' && (
             <Box display="flex" flexDirection="column" alignItems="center">
               <AccessTimeFilled color="primary" sx={{ mb: 0.5 }} />
               <Typography variant="body2" color="textSecondary">

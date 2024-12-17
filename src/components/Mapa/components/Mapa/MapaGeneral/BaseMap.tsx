@@ -4,7 +4,7 @@ import MapaSimulacion from '../../../../../pages/Simulaciones/components/MapaSim
 import MapaOperacion from '../../../../../pages/OperacionesDiaDia/components/MapaOperacion';
 
 interface MapaProps {
-  operationType: 'semanal' | 'colapso' | 'diaadia';
+  operationType: 'SEMANAL' | 'COLAPSO' | 'DIAADIA';
 }
 
 const BaseMap: React.FC<MapaProps> = ({ operationType }) => {
@@ -17,7 +17,7 @@ const BaseMap: React.FC<MapaProps> = ({ operationType }) => {
   return (
     <>
       <MapMarkersProvider>
-        {operationType === 'diaadia' ? <MapaOperacion /> : <MapaSimulacion operationType={operationType}/>}
+        {operationType === 'DIAADIA' ? <MapaOperacion /> : <MapaSimulacion operationType={operationType}/>}
       </MapMarkersProvider>
     </>
   );
