@@ -1,12 +1,18 @@
 import React from 'react';
 import styles from './Sidebar.module.css';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import routes from '../../routes/routes';
 import Logo from '../../assets/Titulo.png';
 import { Button } from '@mui/material';
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated'); // Eliminar autenticación
+    navigate('/login', { replace: true }); // Redirigir al login
+  };
 
   return (
     <aside className={styles.sidebar}>
@@ -37,7 +43,10 @@ const Sidebar: React.FC = () => {
       <div className={styles.userSection}>
         <p className={styles.userName}>Grupo 3C</p>
         <p className={styles.userRole}>Supervisor de operaciones</p>
-        <Button variant='outlined' size='small'>Cerrar Sesión</Button>
+        <Button variant="outlined" size="small" onClick={handleLogout}>
+          Cerrar Sesión
+        </Button>
+
       </div>
     </aside>
   );

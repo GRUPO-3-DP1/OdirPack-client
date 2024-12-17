@@ -10,6 +10,8 @@ import { ArchivosProvider } from './context/Archivos/ArchivosContext';
 import { APIProvider } from '@vis.gl/react-google-maps';
 import { SelectionProvider } from './context/Buscador/SelectionProvider';
 import { OperacionProvider } from './context/OperacionDia/OperacionContext';
+import Login from './pages/Login/Page';
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 
 declare module '@mui/material/styles' {
   interface TypographyVariants {
@@ -66,10 +68,20 @@ const customTheme = createTheme({
 
 const router = createBrowserRouter([
   {
+    path: '/login',
+    element: <Login />,
+  },
+  {
     path: '/',
-    element: <Dashboard />,
-    children: routes.map(({ path, element }) => ({ path, element })),
-  }
+    element: <ProtectedRoute />, // Rutas protegidas
+    children: [
+      {
+        path: '/',
+        element: <Dashboard />,
+        children: routes.map(({ path, element }) => ({ path, element })),
+      },
+    ],
+  },
 ]);
 
 //KEY = AIzaSyAf4vRvjVvt-AuStWjrfbA-tJNYouHBpb4
