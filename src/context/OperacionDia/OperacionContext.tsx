@@ -3,10 +3,11 @@ import { OperacionState, OperacionAction, OperacionContextType } from './operaci
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
 import { dataPrueba } from '../../data/dataPruebaOp';
+import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles';
 
 const initialState: OperacionState = {
   isActive: false,
-  speed: 1, // Aquí aumentar velocidad del tiempo simulado
+  speed: 100, // Aquí aumentar velocidad del tiempo simulado
   simulationTime: new Date(),
   lastPlanificationTime: null, // Comienza sin planificación previa
 
@@ -52,6 +53,24 @@ const operacionReducer = (state: OperacionState, action: OperacionAction): Opera
         ...state,
         lastPlanificationTime: action.payload,
       };
+    case 'UPDATE_VEHICLE_POSITIONS':
+      return {
+        ...state,
+        vehicles: action.payload,
+        trucksInMotion: action.payload.filter(v =>
+          v.position.currentSegmentIndex !== -1
+        ).length
+      };
+    case 'SET_VEHICLES':
+      return {
+        ...state,
+        vehicles: action.payload
+      };
+    case 'SET_CURRENT_BLOQUEOS':
+      return {
+        ...state,
+        currentBloqueos: action.payload
+      };
     default:
       return state;
   }
@@ -66,30 +85,71 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const stateRef = useRef(state);
   stateRef.current = state;
 
+  // En OperacionContext.tsx
   useEffect(() => {
-    if (state.isActive) {
-      const interval = setInterval(() => {
-        const currentSimTime = new Date(stateRef.current.simulationTime.getTime() + stateRef.current.speed * 1000);
-        
-        // Actualizar tiempo simulado
-        dispatch({ type: 'UPDATE_TIME', payload: currentSimTime });
+    console.log('Estado actual:', state);
+    console.log('Vehículos:', state.vehicles);
+  }, [state]);
 
-        // Verificar si es hora de planificar
-        const lastPlanTime = stateRef.current.lastPlanificationTime;
-        if (lastPlanTime) {
-          const timeDiffInHours =
-            (currentSimTime.getTime() - lastPlanTime.getTime()) / (1000 * 60 * 60);
-          
-          console.log('Diferencia en horas:', timeDiffInHours);
+  useEffect(() => {
+    if (!state.isActive) return;
 
-          if (timeDiffInHours >= 3) { //aquí se cambia para indicar cada cuánto se planifica
-            planificar(currentSimTime);
-          }
+    const interval = setInterval(() => {
+      const currentSimTime = new Date(stateRef.current.simulationTime.getTime() + stateRef.current.speed * 1000);
+
+      // Verificar si han pasado 3 horas desde la última planificación
+      const lastPlanTime = stateRef.current.lastPlanificationTime;
+      if (lastPlanTime) {
+        const hoursElapsed = (currentSimTime.getTime() - lastPlanTime.getTime()) / (1000 * 60 * 60);
+        if (hoursElapsed >= 3) {
+          planificar(currentSimTime);
         }
-      }, 1000);
+      }
 
-      return () => clearInterval(interval);
-    }
+      // Actualizar posiciones de vehículos
+      if (state.vehicles.length > 0) {
+        const updatedVehicles = state.vehicles.map(vehicle => {
+          if (!vehicle.ruta?.fechaInicio) return vehicle;
+
+          //const startTime = new Date(vehicle.ruta.fechaInicio);
+          const currentSegmentIndex = vehicle.ruta.fechasSalida.findIndex((fecha, index) => {
+            const segmentStart = new Date(fecha);
+            const segmentEnd = new Date(vehicle.ruta.fechasLlegada[index]);
+
+            console.log("vehicle Calculando segmento", vehicle);
+            console.log("currentSimTime", currentSimTime);
+            console.log("segmentStart", segmentStart);
+            console.log("segmentEnd", segmentEnd);
+            return currentSimTime >= segmentStart && currentSimTime <= segmentEnd;
+          });
+
+          if (currentSegmentIndex !== -1) {
+            console.log("vehicle con ruta", vehicle);
+
+            const segmentStart = new Date(vehicle.ruta.fechasSalida[currentSegmentIndex]);
+            const segmentEnd = new Date(vehicle.ruta.fechasLlegada[currentSegmentIndex]);
+            const progress = (currentSimTime.getTime() - segmentStart.getTime()) /
+              (segmentEnd.getTime() - segmentStart.getTime());
+
+            return {
+              ...vehicle,
+              position: {
+                ...vehicle.position,
+                currentSegmentIndex,
+                progress
+              }
+            };
+          }
+          return vehicle;
+        });
+        console.log("updatedVehicles", updatedVehicles);
+        dispatch({ type: 'UPDATE_VEHICLE_POSITIONS', payload: updatedVehicles });
+      }
+
+      dispatch({ type: 'UPDATE_TIME', payload: currentSimTime });
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, [state.isActive]);
 
   const planificar = async (currentSimTime: Date) => {
@@ -99,7 +159,7 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       // Función auxiliar para formatear la fecha en formato ISO pero manteniendo la hora local
       const formatearFechaLocal = (fecha: Date) => {
         const pad = (num: number) => String(num).padStart(2, '0');
-        
+
         return `${fecha.getFullYear()}-${pad(fecha.getMonth() + 1)}-${pad(fecha.getDate())}T${pad(fecha.getHours())}:${pad(fecha.getMinutes())}:${pad(fecha.getSeconds())}`;
       };
 
@@ -119,7 +179,16 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         { headers: ServicesProperties.Headers }
       );
 
-      console.log('Respuesta de planificación:', response.data);
+      console.log("Respuesta de la planificación:", response.data);
+
+      // Procesar la respuesta y actualizar vehículos
+      const newVehicles = convertSolutionToVehicles(response.data);
+      dispatch({ type: 'SET_VEHICLES', payload: newVehicles });
+
+      // Actualizar bloqueos si es necesario
+      if (response.data.bloqueos) {
+        dispatch({ type: 'SET_CURRENT_BLOQUEOS', payload: response.data.bloqueos });
+      }
 
       // Actualiza el tiempo de la última planificación
       dispatch({ type: 'SET_LAST_PLANIFICATION', payload: currentSimTime });
