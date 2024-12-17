@@ -6,7 +6,7 @@ import { dataPrueba } from '../../data/dataPruebaOp';
 
 const initialState: OperacionState = {
   isActive: false,
-  speed: 1, // 1 segundo real = 200 segundos simulados
+  speed: 1, // Aquí aumentar velocidad del tiempo simulado
   simulationTime: new Date(),
   lastPlanificationTime: null, // Comienza sin planificación previa
 
@@ -82,7 +82,7 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           
           console.log('Diferencia en horas:', timeDiffInHours);
 
-          if (timeDiffInHours >= 3) {
+          if (timeDiffInHours >= 3) { //aquí se cambia para indicar cada cuánto se planifica
             planificar(currentSimTime);
           }
         }
@@ -104,12 +104,12 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       };
 
       // Crear fecha 1 hora antes
-      const fechaInicioPlanificacion = new Date(currentSimTime.getTime() - (60 * 60 * 1000));
+      //const fechaInicioPlanificacion = new Date(currentSimTime.getTime() - (60 * 60 * 1000));
 
       // Crear nuevo objeto con la fecha de simulación 1 hora antes
       const datosPlanificacion = {
         ...dataPrueba,
-        fechaInicio: formatearFechaLocal(fechaInicioPlanificacion)
+        fechaInicio: formatearFechaLocal(currentSimTime)
       };
       console.log('datosPlanificacion', datosPlanificacion);
 
