@@ -194,26 +194,26 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
           }
         });
 
-        // Generar datos finales
-        const { pedidos, camiones } = generarDatosFinales({
-          ...state,
-          currentTime: state.currentTime // Asegúrate que currentTime refleje el momento del colapso
-        });
+        // // Generar datos finales
+        // const { pedidos, camiones } = generarDatosFinales({
+        //   ...state,
+        //   currentTime: state.currentTime // Asegúrate que currentTime refleje el momento del colapso
+        // });
 
-        // Agregar entrada al historial
-        dispatch({
-          type: 'ADD_HISTORY_ENTRY',
-          payload: {
-            timestamp: new Date(),
-            pedidos,
-            camiones
-          }
-        });
+        // // Agregar entrada al historial
+        // dispatch({
+        //   type: 'ADD_HISTORY_ENTRY',
+        //   payload: {
+        //     timestamp: new Date(),
+        //     pedidos,
+        //     camiones
+        //   }
+        // });
 
-        // Detener la simulación
-        dispatch({ type: 'STOP_SIMULATION' });
+        // // Detener la simulación
+        // dispatch({ type: 'STOP_SIMULATION' });
 
-        return; // salir del efecto ya que terminamos la simulación
+        // return; // salir del efecto ya que terminamos la simulación
       }
 
 
@@ -253,7 +253,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         // Actualizar vehículos
         if (!state.vehicles || state.vehicles.length === 0) {
           dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
-          console.log('Vehículos actualizados:', state.vehicles);
+          // console.log('Vehículos actualizados:', state.vehicles);
 
           // Actualizar datos de simulación
           // Actualizar 'totalTrucks'
@@ -301,7 +301,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
           // Actualizar el estado con la lista combinada de vehículos
           dispatch({ type: 'SET_VEHICLES', payload: [...updatedVehicles] });
-          console.log('Vehículos actualizados:', updatedVehicles);
+          // console.log('Vehículos actualizados:', updatedVehicles);
 
           // Actualizar 'totalTrucks'
           //dispatch({ type: 'SET_TOTAL_TRUCKS', payload: updatedVehicles.length });
@@ -330,26 +330,17 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     const updateInterval = setInterval(() => {
       const newTime = new Date(state.currentTime.getTime() + timeIncrement * state.speed);
 
-      // if (newTime >= state.endTime) {
-      //   clearInterval(updateInterval);
-      //   state.ends = true;
-      //   state.vehicles = [];
-      //   dispatch({ type: 'RESET_SIMULATION' });
-      //   //console.log('Ya pasó la fecha límite');
-      //   return;
-      // }
-
-      if (newTime >= state.endTime) {
+      if (newTime >= state.endTime || (state.colapso?.willCollapse && state.colapso.collapseDate && newTime >= state.colapso.collapseDate)) {
         clearInterval(updateInterval);
-        
+
         // Ajustar el currentTime al endTime antes de generar datos finales
         dispatch({ type: 'SET_CURRENT_TIME', payload: state.endTime });
-      
+
         const { pedidos, camiones } = generarDatosFinales({
           ...state,
           currentTime: state.endTime  // Asegurar que currentTime refleje el final real
         });
-      
+
         dispatch({
           type: 'ADD_HISTORY_ENTRY',
           payload: {
@@ -358,12 +349,12 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
             camiones
           }
         });
-      
+
         dispatch({ type: 'STOP_SIMULATION' });
         return;
       }
-      
-      
+
+
 
       dispatch({ type: 'SET_CURRENT_TIME', payload: newTime });
 
@@ -605,8 +596,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         dispatch({ type: 'SET_CURRENT_BLOQUEOS', payload: mappedBloqueos });
         dispatch({ type: 'SET_PEDIDOS', payload: mappedPedidos });
 
-        console.log('Bloqueos mapeados:', mappedBloqueos);
-        console.log('Pedidos mapeados:', mappedPedidos);
+        console.log('Bloqueos mapeados:', mappedBloqueos.length);
+        console.log('Pedidos mapeados:', mappedPedidos.length);
 
         const dataPrueba = {
           ...nuevaDataPrueba,
