@@ -6,7 +6,7 @@ import { dataPrueba } from '../../data/dataPruebaOp';
 
 const initialState: OperacionState = {
   isActive: false,
-  speed: 200, // 1 segundo real = 200 segundos simulados
+  speed: 1, // 1 segundo real = 200 segundos simulados
   simulationTime: new Date(),
   lastPlanificationTime: null, // Comienza sin planificación previa
 
@@ -96,9 +96,26 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     try {
       console.log('Planificando a las:', currentSimTime.toLocaleString());
 
+      // Función auxiliar para formatear la fecha en formato ISO pero manteniendo la hora local
+      const formatearFechaLocal = (fecha: Date) => {
+        const pad = (num: number) => String(num).padStart(2, '0');
+        
+        return `${fecha.getFullYear()}-${pad(fecha.getMonth() + 1)}-${pad(fecha.getDate())}T${pad(fecha.getHours())}:${pad(fecha.getMinutes())}:${pad(fecha.getSeconds())}`;
+      };
+
+      // Crear fecha 1 hora antes
+      const fechaInicioPlanificacion = new Date(currentSimTime.getTime() - (60 * 60 * 1000));
+
+      // Crear nuevo objeto con la fecha de simulación 1 hora antes
+      const datosPlanificacion = {
+        ...dataPrueba,
+        fechaInicio: formatearFechaLocal(fechaInicioPlanificacion)
+      };
+      console.log('datosPlanificacion', datosPlanificacion);
+
       const response = await axios.post(
         `${ServicesProperties.BaseUrl}/operacionDia/iniciar/`,
-        dataPrueba,
+        datosPlanificacion,
         { headers: ServicesProperties.Headers }
       );
 
