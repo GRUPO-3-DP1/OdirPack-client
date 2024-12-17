@@ -182,16 +182,40 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
     if (indexActualProcess < solutions.length) {
       const newResponse = solutions[indexActualProcess];
       //console.log('MENSAJE: Procesando respuesta del algoritmo:', newResponse);
-      /*if (newResponse.yaNoPlanificar && newResponse.pedidosNoPlanificados.length > 0) {
-        const collapseDate = calculateCollapseDate(solutions, state.startTime);
+
+      // Verificar si ya no se debe planificar (colapso)
+      if (newResponse.yaNoPlanificar === true && newResponse.pedidoColapso && newResponse.pedidoColapso.idPedido) {
+        // Establecer colapso
         dispatch({
-          type: 'SET_COLAPSO', payload: {
+          type: 'SET_COLAPSO',
+          payload: {
             willCollapse: true,
-            collapseDate: collapseDate
+            collapseDate: new Date(newResponse.fechaFin) // Usa fechaFin del backend si tiene sentido
           }
         });
-        console.log('Se detectó colapso. Fecha calculada:', collapseDate);
-      }*/
+
+        // Generar datos finales
+        const { pedidos, camiones } = generarDatosFinales({
+          ...state,
+          currentTime: state.currentTime // Asegúrate que currentTime refleje el momento del colapso
+        });
+
+        // Agregar entrada al historial
+        dispatch({
+          type: 'ADD_HISTORY_ENTRY',
+          payload: {
+            timestamp: new Date(),
+            pedidos,
+            camiones
+          }
+        });
+
+        // Detener la simulación
+        dispatch({ type: 'STOP_SIMULATION' });
+
+        return; // salir del efecto ya que terminamos la simulación
+      }
+
 
       const newSolutionString = JSON.stringify(newResponse.solucion);
 
