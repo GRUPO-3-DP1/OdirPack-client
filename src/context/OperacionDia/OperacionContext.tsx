@@ -7,6 +7,8 @@ import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles
 import { locationCoordinates } from '../../utils/locationCoordinates';
 import { interpolatePosition } from '../../utils/interpolatePosition';
 import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
+import { mapBloqueosAsync } from '../../utils/mapearBloqueosDeArchivos';
+import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
 
 const initialState: OperacionState = {
   //isActive: false,
@@ -87,6 +89,12 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode; }> = ({ ch
 
   const [lastProcessedSolution, setLastProcessedSolution] = useState<string | null>(null);
   const [indexActualProcess, setIndexActualProcess] = useState(0);
+
+  const { bloqueosSimulacion, fetchBloqueosSimulacion } = useBloqueosSimulacion();
+
+  useEffect(() => {
+    fetchBloqueosSimulacion();
+  }, [fetchBloqueosSimulacion]);
 
   // Ref para acceso seguro al estado más reciente dentro del intervalo
   const stateRef = useRef(state);
@@ -248,12 +256,21 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode; }> = ({ ch
 
       // Crear fecha 1 hora antes
       //const fechaInicioPlanificacion = new Date(currentSimTime.getTime() - (60 * 60 * 1000));
+      const mappedBloqueos = await mapBloqueosAsync(
+        bloqueosSimulacion,
+        state.startTime,
+        new Date(state.startTime.getTime() + 30 * 24 * 60 * 60 * 1000)
+      );
 
       // Crear nuevo objeto con la fecha de simulación 1 hora antes
       const datosPlanificacion = {
         ...dataPrueba,
+        bloqueos: mappedBloqueos,
         fechaInicio: formatearFechaLocal(currentSimTime)
       };
+
+      dispatch({ type: 'SET_CURRENT_BLOQUEOS', payload: mappedBloqueos });
+
       console.log('datosPlanificacion', datosPlanificacion);
 
       const response = await axios.post(
@@ -275,6 +292,7 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode; }> = ({ ch
 
   const startOperacion = () => {
     const now = new Date();
+
     dispatch({ type: 'START_OPERACION', payload: { initialTime: now } });
     planificar(now); // Llamada inicial a planificación
   };
