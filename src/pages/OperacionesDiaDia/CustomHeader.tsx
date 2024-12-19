@@ -23,7 +23,7 @@ const CustomHeader: React.FC = () => {
 
         <TextField
           size="small"
-          label="Tiempo Simulado"
+          label="Tiempo"
           value={state.currentTime.toLocaleString('es-ES', {
             day: '2-digit', 
             month: '2-digit', 
