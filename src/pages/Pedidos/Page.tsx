@@ -5,17 +5,19 @@ import { Box, Button, FormControl, InputLabel, MenuItem, Paper, Select, SelectCh
 import { Add, UploadFile } from '@mui/icons-material';
 import ModalCargaMasiva from './Componentes/ModalCargaMasiva';
 import { formatDate } from '../../utils/formatDate';
+import CreatePedidoDialog from './Componentes/CreatePedidoDialog';
 
 const Page: React.FC = () => {
   const { pedidos, fetchPedidos } = usePedidos();
 
   useEffect(() => {
     fetchPedidos();
-  }, []);
+  }, [fetchPedidos]);
 
   const [tipo, setTipo] = useState<string>('');
   const [pedidoId, setPedidoId] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal Carga Masiva
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const handlePedidoIdChange = (event: { target: { value: React.SetStateAction<string>; }; }) => {
     setPedidoId(event.target.value);
@@ -65,7 +67,7 @@ const Page: React.FC = () => {
         <Button
           className={styles.button}
           variant="contained"
-          onClick={() => { }}
+          onClick={() => setCreateDialogOpen(true)}
           startIcon={<Add />}
         > Nuevo Pedido </Button>
         {/* Botón Subir Archivo */}
@@ -91,8 +93,8 @@ const Page: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {pedidos.map((pedido) => (
-              <TableRow key={pedido.pedidoId}>
+            {pedidos.map((pedido, i) => (
+              <TableRow key={i}>
                 <TableCell>{pedido.pedidoId}</TableCell>
                 <TableCell>{pedido.cantidadTotal}</TableCell>
                 <TableCell>{pedido.origenId}</TableCell>
@@ -107,6 +109,11 @@ const Page: React.FC = () => {
       </TableContainer>
 
       {isModalOpen && <ModalCargaMasiva onClose={handleCloseModal} />}
+      <CreatePedidoDialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        onCreateSuccess={fetchPedidos}
+      />
     </div>
   );
 };

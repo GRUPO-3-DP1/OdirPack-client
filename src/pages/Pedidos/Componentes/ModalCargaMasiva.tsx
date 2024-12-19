@@ -10,13 +10,10 @@ interface ModalCargaMasivaProps {
 }
 
 const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
-  // @ts-ignore
-  const [fileContent, setFileContent] = useState<string[]>([]);
-  
-  const [parsedData, setParsedData] = useState<{ destinoId: string, cantidadTotal: number, clienteId: string }[]>([]);
-  const [fileLoaded, setFileLoaded] = useState<boolean>(false); // Estado para saber si el archivo fue cargado
+  const [parsedData, setParsedData] = useState<{ destinoId: string, cantidadTotal: number, clienteId: string; }[]>([]);
+  const [fileLoaded, setFileLoaded] = useState<boolean>(false);
 
-  const {createPedido} = usePedidos();
+  const { createPedido } = usePedidos();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -25,43 +22,52 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
       reader.onload = (e) => {
         const content = e.target?.result as string;
         const lines = content.split('\n').map(line => line.trim()).filter(line => line);
-        setFileContent(lines);
         parseFileContent(lines);
-        setFileLoaded(true); // Marca que el archivo fue cargado
+        setFileLoaded(true);
       };
       reader.readAsText(file);
     }
   };
 
-  // Función para parsear el contenido del archivo y convertirlo en datos utilizables
+  // Updated parsing function for the new file format
   const parseFileContent = (lines: string[]) => {
     const parsed = lines.map(line => {
-      const [destinoId, cantidadTotal, clienteId] = line.split(','); // Se asume que el archivo está en formato CSV
-      const cantidadTotalParsed = isNaN(Number(cantidadTotal.trim())) ? 0 : Number(cantidadTotal.trim());
-  
+      // Extract the last part of the line (ubigeo and quantity)
+      const lastPart = line.split('=>').pop()?.trim();
+
+      if (!lastPart) {
+        return null;
+      }
+
+      // Split the last part by comma
+      const [destinoId, cantidadTotal] = lastPart.split(',').map(item => item.trim());
+
+      // Convert quantity to a number, defaulting to 0 if invalid
+      const cantidadTotalParsed = isNaN(Number(cantidadTotal)) ? 0 : Number(cantidadTotal);
+
       return {
-        destinoId: destinoId.trim(),
-        cantidadTotal: cantidadTotalParsed, // Usar el valor convertido
-        clienteId: clienteId.trim()
+        destinoId: destinoId,
+        cantidadTotal: cantidadTotalParsed,
+        clienteId: '' // Left empty as not present in new format
       };
-    });
+    }).filter(item => item !== null) as { destinoId: string, cantidadTotal: number, clienteId: string; }[];
+
     setParsedData(parsed);
   };
 
-  // Función para abrir el input de archivo al hacer clic en el botón
+  // Rest of the component remains the same as in the original code...
   const handleButtonClick = () => {
     const fileInput = document.getElementById('fileInput') as HTMLInputElement;
     fileInput.click();
   };
 
-  // Función para subir todos los pedidos a la base de datos
   const handleUploadToDatabase = async () => {
     try {
       for (const pedido of parsedData) {
         await createPedido(pedido);
       }
       alert('Todos los pedidos han sido subidos exitosamente');
-      setFileLoaded(false); // Reiniciar estado
+      setFileLoaded(false);
       onClose();
     } catch (error) {
       console.error('Error al subir los pedidos:', error);
@@ -71,6 +77,7 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
 
   return (
     <div className={styles.modalOverlay}>
+      {/* Rest of the render method remains the same */}
       <div className={styles.modalContent}>
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>Carga Masiva de Archivos</h2>
@@ -78,15 +85,14 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
         </div>
         <div className={styles.modalSeparator}></div>
 
-        {/* Sección para cargar el archivo */}
-        {!fileLoaded && ( // Si el archivo no ha sido cargado, mostramos el botón
+        {!fileLoaded && (
           <div className={styles.uploadSection}>
             <div className={styles.uploadTitle}>Sube un Archivo</div>
             <div className={styles.buttonContainer}>
               <Button
                 className={styles.button}
                 variant="outlined"
-                onClick={handleButtonClick} // Al hacer clic en el botón, se abrirá el input de archivo
+                onClick={handleButtonClick}
               >Seleccionar Archivo</Button>
               <input
                 id="fileInput"
@@ -99,8 +105,7 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
           </div>
         )}
 
-        {/* Si ya se han cargado datos, se muestra la tabla */}
-        {fileLoaded && parsedData.length > 0 && ( // Si el archivo fue cargado, mostramos la tabla
+        {fileLoaded && parsedData.length > 0 && (
           <div>
             <TableContainer component={Paper} className={styles.tableContainer}>
               <Table stickyHeader>
@@ -108,7 +113,6 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
                   <TableRow>
                     <TableCell>Destino ID</TableCell>
                     <TableCell>Cantidad Total</TableCell>
-                    <TableCell>Cliente ID</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -116,26 +120,24 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
                     <TableRow key={index}>
                       <TableCell>{row.destinoId}</TableCell>
                       <TableCell>{row.cantidadTotal}</TableCell>
-                      <TableCell>{row.clienteId}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </TableContainer>
 
-            {/* Botón para subir un nuevo archivo */}
             <div className={styles.buttonContainer}>
               <Button
                 className={styles.button}
                 variant="outlined"
-                onClick={() => setFileLoaded(false)} // Reinicia el estado para cargar un nuevo archivo
+                onClick={() => setFileLoaded(false)}
               >
                 Subir Otro Archivo
               </Button>
               <Button
                 className={styles.button}
                 variant="contained"
-                onClick={handleUploadToDatabase} // Llamada a la función para subir los datos a la BD
+                onClick={handleUploadToDatabase}
               >
                 Guardar Pedidos
               </Button>

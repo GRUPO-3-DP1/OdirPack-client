@@ -1,77 +1,77 @@
 export type UbigeoAlgorithmResponse = {
     codigo: string;
     descripcion: string;
-};
-
-export type TramoAlgorithmResponse = {
+  };
+  
+  export type TramoAlgorithmResponse = {
     origen: UbigeoAlgorithmResponse;
     destino: UbigeoAlgorithmResponse;
-};
-
-export type PedidoAlgorithmResponse = {
+  };
+  
+  export type PedidoAlgorithmResponse = {
     idPedido: string;
-    ubigeoOrigen: string|null;
-    ubigeoDestino: string; // Código del ubigeo de destino
+    ubigeoOrigen: string | null;
+    ubigeoDestino: string;
     fechaRegistro: string;
-    fechaLlegada: string|null;
-    fechaSalida: string|null;
+    fechaLlegada: string | null;
+    fechaSalida: string | null;
     fechaPlazoMaximo: string;
     cantidad: number;
     idCliente: string;
     estado: string;
     isReplanificado: boolean;
-};
-
-export type Ruta = {
-    tramos: TramoAlgorithmResponse[]; // Lista de tramos en la ruta
-    pedidos: PedidoAlgorithmResponse[]; // Lista de pedidos asociados a la ruta
+  };
+  
+  export type Ruta = {
+    tramos: TramoAlgorithmResponse[];
+    pedidos: PedidoAlgorithmResponse[];
     fechaInicio: string;
     fechasSalida: string[];
     fechasLlegada: string[];
-};
-
-
-export type VehiculoAlgorithmResponse = {
+  };
+  
+  export type VehiculoAlgorithmResponse = {
     idVehiculo: string;
     almacenOrigen: string;
     capacidadCarga: number;
     isAveriado: boolean;
     fechaLibre: string | null;
-    ruta: Ruta|null;
-};
-
-export type RutasVehiculosAlgorithmResponse = {
-    [key: string]: VehiculoAlgorithmResponse; // Permite claves dinámicas para los vehículos
-};
-
-export type SolucionAlgorithmResponse = {
-    rutasVehiculos: RutasVehiculosAlgorithmResponse; // Cambia a la nueva definición
+    ruta: Ruta | null;
+  };
+  
+  export type RutasVehiculosAlgorithmResponse = {
+    [key: string]: VehiculoAlgorithmResponse; 
+  };
+  
+  export type SolucionAlgorithmResponse = {
+    rutasVehiculos: RutasVehiculosAlgorithmResponse;
     costoTotal: number;
-};
-
-
-export type OficinaAlgorithmResponse = {
+  };
+  
+  export type OficinaAlgorithmResponse = {
     ubigeo: string;
-    horas_stock: any[]; // Cambia el tipo según lo que contenga horas_stock
-};
-
-export type VehiculoAveriadoAlgorithmResponse = {
-    idVehiculo: string; // ID del vehículo averiado
+    horas_stock: any[]; // Ajusta el tipo real si se conoce la estructura de horas_stock
+  };
+  
+  export type VehiculoAveriadoAlgorithmResponse = {
+    idVehiculo: string;
     almacenAsignado: string;
-    tipoAveria: string; // Tipo de avería ("SINIESTRO", "FUERTE", "MODERADA")
-    tramoInicio: string; // Código del Ubigeo de inicio del tramo
-    tramoFin: string; // Código del Ubigeo de fin del tramo
-    horaAveria: string; // Hora exacta en la que ocurrió la avería (ISO 8601)
-    fechaReparacion: string; // Fecha en la que el vehículo estará operativo (ISO 8601)
-};
-
-
-export type ResponseAlgorithm = {
+    tipoAveria: string; 
+    tramoInicio: string; 
+    tramoFin: string; 
+    horaAveria: string; 
+    fechaReparacion: string; 
+  };
+  
+  export type ResponseAlgorithm = {
     mensaje: string;
     solucion: SolucionAlgorithmResponse[];
     pedidosNoPlanificados: PedidoAlgorithmResponse[];
     oficinas: OficinaAlgorithmResponse[];
     vehiculosAveriados: VehiculoAveriadoAlgorithmResponse[];
     yaNoPlanificar: boolean;
-};
-
+    pedidoColapso?: PedidoAlgorithmResponse | null; // Campo para indicar el pedido que ocasiona el colapso
+    fechaInicio: string; // Fecha de inicio recibida del backend
+    fechaFin: string;    // Fecha de fin recibida del backend
+  };
+  

@@ -108,7 +108,7 @@ const Page: React.FC = () => {
         <Typography variant="subtitle1">{mes}</Typography>
 
         <div className={styles.monthContainer}>
-          {isLoading || loadingPedidos ? (
+          {isLoading ? (
             <CircularProgress size={20} />
           ) : archivo ? (
             <Chip
@@ -238,7 +238,7 @@ const Page: React.FC = () => {
         flexDirection="column"
         gap={3}
       >
-        {Object.values(Mes).map((mes) => (
+        {!loadingPedidos && Object.values(Mes).map((mes) => (
           <Box key={mes} display="flex" flexDirection="row" gap={3} width="100%">
             {renderPedidosChip(mes)}
           </Box>
@@ -251,7 +251,7 @@ const Page: React.FC = () => {
         flexDirection="column"
         gap={3}
       >
-        {Object.values(MesReal).map((mes) => (
+        {!loadingBloqueos && Object.values(MesReal).map((mes) => (
           <Box key={mes} display="flex" flexDirection="row" gap={3} width="100%">
             {renderBloqueosChip(mes)}
           </Box>
