@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useEffect, useRef } from 'react';
+import React, { createContext, useReducer, useEffect, useRef, useState } from 'react';
 import { OperacionState, OperacionAction, OperacionContextType } from './operacionTypes';
 import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
@@ -6,6 +6,7 @@ import { dataPrueba } from '../../data/dataPruebaOp';
 import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles';
 import { locationCoordinates } from '../../utils/locationCoordinates';
 import { interpolatePosition } from '../../utils/interpolatePosition';
+import { ResponseAlgorithm } from '../../store/types/ResponseAlgorithm';
 
 const initialState: OperacionState = {
   //isActive: false,
@@ -82,10 +83,75 @@ export const OperacionContext = createContext<OperacionContextType | null>(null)
 
 export const OperacionProvider: React.FC<{ children: React.ReactNode; }> = ({ children }) => {
   const [state, dispatch] = useReducer(operacionReducer, initialState);
+  const [solutions, setSolutions] = useState<ResponseAlgorithm[]>([]);
+
+  const [lastProcessedSolution, setLastProcessedSolution] = useState<string | null>(null);
+  const [indexActualProcess, setIndexActualProcess] = useState(0);
 
   // Ref para acceso seguro al estado más reciente dentro del intervalo
   const stateRef = useRef(state);
   stateRef.current = state;
+
+  useEffect(() => {
+    console.log(indexActualProcess, solutions.length);
+    if (indexActualProcess < solutions.length) {
+      const newResponse = solutions[indexActualProcess];
+
+      const newSolutionString = JSON.stringify(newResponse.solucion);
+
+      if (newSolutionString !== lastProcessedSolution) {
+        setLastProcessedSolution(newSolutionString);
+
+        const newVehicles = convertSolutionToVehicles(newResponse);
+
+        // Actualizar vehículos
+        if (!state.vehicles || state.vehicles.length === 0) {
+          dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
+        } else {
+          // Fusionar vehículos existentes con los de la nueva solución
+          const updatedVehicles = state.vehicles.map((existingVehicle) => {
+            const matchingNewVehicle = newVehicles.find((v) => v.idVehiculo === existingVehicle.idVehiculo);
+
+            if (matchingNewVehicle) {
+              const newPosition =
+                existingVehicle.position.lat === 0
+                  ? {
+                    lat: matchingNewVehicle.position.lat,
+                    lng: matchingNewVehicle.position.lng,
+                    progress: 0,
+                    currentSegmentIndex: -1,
+                  }
+                  : existingVehicle.position;
+              const newFechaInicio =
+                existingVehicle.ruta.fechaInicio === null ? matchingNewVehicle.ruta.fechaInicio : existingVehicle.ruta.fechaInicio;
+
+              return {
+                ...existingVehicle,
+                position: newPosition,
+                capacidadCarga: matchingNewVehicle.capacidadCarga,
+                fechaLibre: matchingNewVehicle.fechaLibre,
+                ruta: {
+                  fechaInicio: newFechaInicio,
+                  fechasSalida: [...(existingVehicle.ruta.fechasSalida || []), ...(matchingNewVehicle.ruta.fechasSalida || [])],
+                  fechasLlegada: [...(existingVehicle.ruta.fechasLlegada || []), ...(matchingNewVehicle.ruta.fechasLlegada || [])],
+                  tramos: [...(existingVehicle.ruta.tramos || []), ...(matchingNewVehicle.ruta.tramos || [])],
+                  pedidos: [...(existingVehicle.ruta.pedidos || []), ...(matchingNewVehicle.ruta.pedidos || [])],
+                },
+              };
+            }
+
+            return existingVehicle;
+          });
+
+          // Actualizar el estado con la lista combinada de vehículos
+          dispatch({ type: 'SET_VEHICLES', payload: [...updatedVehicles] });
+        }
+      }
+
+      // Actualizar el índice para procesar la siguiente respuesta
+      setIndexActualProcess(indexActualProcess + 1);
+    }
+  }, [state.vehicles, indexActualProcess, lastProcessedSolution, solutions]);
 
   useEffect(() => {
     if (!state.isPlaying) return;
@@ -196,14 +262,9 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode; }> = ({ ch
         { headers: ServicesProperties.Headers }
       );
 
-      console.log("Respuesta de la planificación:", response.data);
-
-      // Procesar la respuesta y actualizar vehículos
-      const newVehicles = convertSolutionToVehicles(response.data);
-      // console.log("Nuevos vehículos:", newVehicles)
-      dispatch({ type: 'SET_VEHICLES', payload: newVehicles });
-
-      console.log(state.vehicles);
+      const newResponse = response.data;
+      console.log('Respuesta del algoritmo recibida:', newResponse);
+      setSolutions((prevResponses) => [...prevResponses, newResponse]);
 
       // Actualiza el tiempo de la última planificación
       dispatch({ type: 'SET_LAST_PLANIFICATION', payload: currentSimTime });
