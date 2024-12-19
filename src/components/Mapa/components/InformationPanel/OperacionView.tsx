@@ -13,7 +13,7 @@ import {
 import dayjs from 'dayjs';
 
 const OperacionView: React.FC = () => {
-  const { } = useOperacionData();
+  const { state } = useOperacionData();
 
   // Valores hardcodeados para mejor rendimiento
   const mockData = {
@@ -48,7 +48,7 @@ const OperacionView: React.FC = () => {
             <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
               <b>Última actualización:</b>{' '}
               <Typography component="span" variant="body2" color="textPrimary">
-                {dayjs(mockData.ultimaActualizacion).format('DD/MM/YYYY HH:mm:ss')}
+                {dayjs(state.lastPlanificationTime).format('DD/MM/YYYY HH:mm:ss')}
               </Typography>
             </Typography>
           </div>

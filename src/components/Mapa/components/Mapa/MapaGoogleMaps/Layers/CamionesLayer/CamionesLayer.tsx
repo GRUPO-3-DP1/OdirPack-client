@@ -16,10 +16,14 @@ const CamionesLayer: React.FC<CamionesLayerProps> = ({ onCamionClick }) => {
   } catch {
     // Si falla, usar el contexto de operación
     data = useOperacionData();
+    //console.log("usando operacion data")
   }
 
   const { state } = data;
   const { visibility } = useMapMarker();
+
+    // En CamionesLayer.tsx
+    //console.log('Renderizando camiones:', state.vehicles);
 
   if (!visibility.camiones || !state.isPlaying) return null;
 
