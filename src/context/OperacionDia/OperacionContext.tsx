@@ -4,11 +4,13 @@ import axios from 'axios';
 import { Services as ServicesProperties } from '../../../config';
 import { dataPrueba } from '../../data/dataPruebaOp';
 import { convertSolutionToVehicles } from '../../utils/convertSolutionToVehicles';
+import { locationCoordinates } from '../../utils/locationCoordinates';
+import { interpolatePosition } from '../../utils/interpolatePosition';
 
 const initialState: OperacionState = {
-  isActive: false,
-  speed: 100, // Aquí aumentar velocidad del tiempo simulado
-  simulationTime: new Date(),
+  //isActive: false,
+  speed: 50, // Aquí aumentar velocidad del tiempo simulado
+  //simulationTime: new Date(),
   lastPlanificationTime: null, // Comienza sin planificación previa
 
   isPlaying: false,
@@ -34,19 +36,19 @@ const operacionReducer = (state: OperacionState, action: OperacionAction): Opera
     case 'START_OPERACION':
       return {
         ...state,
-        isActive: true,
-        simulationTime: action.payload.initialTime,
+        isPlaying: true,
+        currentTime: action.payload.initialTime,
         lastPlanificationTime: action.payload.initialTime, // Inicializa planificación al iniciar
       };
     case 'STOP_OPERACION':
       return {
         ...state,
-        isActive: false,
+        isPlaying: false,
       };
     case 'UPDATE_TIME':
       return {
         ...state,
-        simulationTime: action.payload,
+        currentTime: action.payload,
       };
     case 'SET_LAST_PLANIFICATION':
       return {
@@ -85,17 +87,13 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  // En OperacionContext.tsx
-  useEffect(() => {
-    console.log('Estado actual:', state);
-    console.log('Vehículos:', state.vehicles);
-  }, [state]);
 
   useEffect(() => {
-    if (!state.isActive) return;
+    if (!state.isPlaying) return;
 
     const interval = setInterval(() => {
-      const currentSimTime = new Date(stateRef.current.simulationTime.getTime() + stateRef.current.speed * 1000);
+      const currentSimTime = new Date(stateRef.current.currentTime.getTime() + stateRef.current.speed * 1000);
+      dispatch({ type: 'UPDATE_TIME', payload: currentSimTime });
 
       // Verificar si han pasado 3 horas desde la última planificación
       const lastPlanTime = stateRef.current.lastPlanificationTime;
@@ -109,48 +107,69 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       // Actualizar posiciones de vehículos
       if (state.vehicles.length > 0) {
         const updatedVehicles = state.vehicles.map(vehicle => {
-          if (!vehicle.ruta?.fechaInicio) return vehicle;
+          const { ruta } = vehicle;
+          if (!ruta || !ruta.fechaInicio) return vehicle;
 
-          //const startTime = new Date(vehicle.ruta.fechaInicio);
-          const currentSegmentIndex = vehicle.ruta.fechasSalida.findIndex((fecha, index) => {
+          // Encontrar el segmento actual
+          const currentSegmentIndex = ruta.fechasSalida.findIndex((fecha, index) => {
             const segmentStart = new Date(fecha);
-            const segmentEnd = new Date(vehicle.ruta.fechasLlegada[index]);
-
-            console.log("vehicle Calculando segmento", vehicle);
-            console.log("currentSimTime", currentSimTime);
-            console.log("segmentStart", segmentStart);
-            console.log("segmentEnd", segmentEnd);
+            const segmentEnd = new Date(ruta.fechasLlegada[index]);
             return currentSimTime >= segmentStart && currentSimTime <= segmentEnd;
           });
 
           if (currentSegmentIndex !== -1) {
-            console.log("vehicle con ruta", vehicle);
+            const segmentStart = new Date(ruta.fechasSalida[currentSegmentIndex]);
+            const segmentEnd = new Date(ruta.fechasLlegada[currentSegmentIndex]);
 
-            const segmentStart = new Date(vehicle.ruta.fechasSalida[currentSegmentIndex]);
-            const segmentEnd = new Date(vehicle.ruta.fechasLlegada[currentSegmentIndex]);
-            const progress = (currentSimTime.getTime() - segmentStart.getTime()) /
-              (segmentEnd.getTime() - segmentStart.getTime());
+            const totalSegmentTime = segmentEnd.getTime() - segmentStart.getTime();
+            const currentSegmentTime = currentSimTime.getTime() - segmentStart.getTime();
+            const progress = Math.max(0, Math.min(1, currentSegmentTime / totalSegmentTime));
 
-            return {
-              ...vehicle,
-              position: {
-                ...vehicle.position,
-                currentSegmentIndex,
-                progress
-              }
-            };
+            // Si el vehículo no ha alcanzado el final del segmento, actualizar posición
+            if (progress < 1) {
+              const startCoords = locationCoordinates[ruta.tramos[currentSegmentIndex].origen.codigo];
+              const endCoords = locationCoordinates[ruta.tramos[currentSegmentIndex].destino.codigo];
+              const newPosition = interpolatePosition(startCoords, endCoords, progress);
+              return {
+                ...vehicle,
+                currentAveria: false, //Nuevo
+                position: {
+                  ...newPosition,
+                  progress,
+                  currentSegmentIndex,
+                },
+                currentRoute: {
+                  origin: {
+                    lat: startCoords.lat,
+                    lng: startCoords.lng
+                  },
+                  destination: {
+                    lat: endCoords.lat,
+                    lng: endCoords.lng
+                  }
+                },
+              };
+            }       
           }
-          return vehicle;
+          // Si no estamos en un segmento válido, mantener la posición actual del vehículo
+          return {
+            ...vehicle,
+            currentAveria: false, //Nuevo
+            position: {
+              ...vehicle.position,
+              currentSegmentIndex: -1,
+            },
+            currentRoute: undefined,
+          };
         });
-        console.log("updatedVehicles", updatedVehicles);
+
         dispatch({ type: 'UPDATE_VEHICLE_POSITIONS', payload: updatedVehicles });
       }
-
-      dispatch({ type: 'UPDATE_TIME', payload: currentSimTime });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [state.isActive]);
+  }, [state.isPlaying]);
+
 
   const planificar = async (currentSimTime: Date) => {
     try {
@@ -183,12 +202,8 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       // Procesar la respuesta y actualizar vehículos
       const newVehicles = convertSolutionToVehicles(response.data);
+      console.log("Nuevos vehículos:", newVehicles)
       dispatch({ type: 'SET_VEHICLES', payload: newVehicles });
-
-      // Actualizar bloqueos si es necesario
-      if (response.data.bloqueos) {
-        dispatch({ type: 'SET_CURRENT_BLOQUEOS', payload: response.data.bloqueos });
-      }
 
       // Actualiza el tiempo de la última planificación
       dispatch({ type: 'SET_LAST_PLANIFICATION', payload: currentSimTime });

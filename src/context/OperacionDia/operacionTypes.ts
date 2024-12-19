@@ -10,9 +10,9 @@ export interface OperacionState extends Omit<SimulationState,
 'operationType'
 > {
 
-  isActive: boolean;
+  //isActive: boolean;
   speed: number;
-  simulationTime: Date;
+  //simulationTime: Date;
   lastPlanificationTime?: Date | null;
 
 }

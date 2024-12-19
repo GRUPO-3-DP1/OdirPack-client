@@ -14,17 +14,17 @@ const CustomHeader: React.FC = () => {
       <Box display="flex" alignItems="center" gap={2}>
         <Button
           variant="contained"
-          onClick={state.isActive ? stopOperacion : startOperacion}
-          color={state.isActive ? 'error' : 'primary'}
-          startIcon={state.isActive ? <Stop /> : <PlayArrow />}
+          onClick={state.isPlaying ? stopOperacion : startOperacion}
+          color={state.isPlaying ? 'error' : 'primary'}
+          startIcon={state.isPlaying ? <Stop /> : <PlayArrow />}
         >
-          {state.isActive ? 'Detener Monitoreo' : 'Iniciar Monitoreo'}
+          {state.isPlaying ? 'Detener Monitoreo' : 'Iniciar Monitoreo'}
         </Button>
 
         <TextField
           size="small"
           label="Tiempo Simulado"
-          value={state.simulationTime.toLocaleString('es-ES', {
+          value={state.currentTime.toLocaleString('es-ES', {
             day: '2-digit', 
             month: '2-digit', 
             year: 'numeric',
