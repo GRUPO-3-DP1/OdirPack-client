@@ -25,29 +25,21 @@ export function generarDatosFinales(state: SimulationState): { pedidos: OrderRow
   state.vehicles.forEach((vehicle) => {
     const ruta = vehicle.ruta;
 
+    console.log(`Procesando camión ${vehicle.idVehiculo}`);
+    console.log('Ruta:', ruta);
+    console.log('Tramos de la ruta:', ruta.tramos);
+
+    if (!ruta || !ruta.tramos || ruta.tramos.length === 0) {
+      console.log(`Saltando camión ${vehicle.idVehiculo} porque no tiene tramos asignados.`);
+      return; // Saltar a la siguiente iteración
+    }
+
     const inicioRuta = ruta.fechaInicio
       ? formatDate(ruta.fechaInicio)
       : formatDate(state.startTime);
     const finRuta = ruta.fechasLlegada.length > 0
       ? formatDate(ruta.fechasLlegada[ruta.fechasLlegada.length - 1])
       : formatDate(state.endTime);
-
-    let origen: string;
-    let destino: string;
-
-    // Determinar origen/destino para camiones
-    if (ruta.tramos.length > 0) {
-      const primerTramo = ruta.tramos[0];
-      const ultimoTramo = ruta.tramos[ruta.tramos.length - 1];
-      const origenUbigeo = primerTramo.origen.codigo;
-      const destinoUbigeo = ultimoTramo.destino.codigo;
-      origen = `${origenUbigeo}-${obtenerProvincia(origenUbigeo)}`;
-      destino = `${destinoUbigeo}-${obtenerProvincia(destinoUbigeo)}`;
-    } else {
-      // Sin tramos: poner N/A directamente
-      origen = 'N/A';
-      destino = 'N/A';
-    }
 
     // Estado del camión
     const averia = vehicle.averia?.isAveria || false;
@@ -65,43 +57,67 @@ export function generarDatosFinales(state: SimulationState): { pedidos: OrderRow
 
     const horaAveriaText = averia ? 'Desconocida' : 'Sin avería';
 
+    // Para camiones - calcular 'Origen' y 'Destino'
+    let origenCamionStr: string;
+    let destinoCamionStr: string;
+
+    if (ruta.tramos && ruta.tramos.length > 0) {
+      const primerTramo = ruta.tramos[0];
+      const ultimoTramo = ruta.tramos[ruta.tramos.length - 1];
+
+      const origenProv = obtenerProvincia(primerTramo.origen.codigo);
+      const destinoProv = obtenerProvincia(ultimoTramo.destino.codigo);
+
+      origenCamionStr = `${primerTramo.origen.codigo} - ${origenProv}`;
+      destinoCamionStr = `${ultimoTramo.destino.codigo} - ${destinoProv}`;
+    } else {
+      origenCamionStr = 'N/A';
+      destinoCamionStr = 'N/A';
+      console.log(`El camión ${vehicle.idVehiculo} no tiene tramos asignados.`);
+    }
+
     // Tramos del camión
     const truckTramos = ruta.tramos.length > 0
       ? ruta.tramos.map((tramo, i) => {
-          const tramoInicio = ruta.fechasSalida[i] ? formatDate(ruta.fechasSalida[i]) : formatDate(state.startTime);
-          const tramoFin = ruta.fechasLlegada[i] ? formatDate(ruta.fechasLlegada[i]) : formatDate(endTime);
+          const tramoInicio = ruta.fechasSalida[i]
+            ? formatDate(ruta.fechasSalida[i])
+            : formatDate(state.startTime);
+          const tramoFin = ruta.fechasLlegada[i]
+            ? formatDate(ruta.fechasLlegada[i])
+            : formatDate(state.endTime);
           const origenProv = obtenerProvincia(tramo.origen.codigo);
           const destinoProv = obtenerProvincia(tramo.destino.codigo);
+
           return {
-            horaAveria: horaAveriaText,
             inicio: tramoInicio,
             fin: tramoFin,
             origen: `${tramo.origen.codigo} - ${origenProv}`,
             destino: `${tramo.destino.codigo} - ${destinoProv}`,
-            estado: truckEstado
+            estado: truckEstado,
+            horaAveria: horaAveriaText
           };
         })
       : [{
-          horaAveria: horaAveriaText,
           inicio: inicioRuta,
           fin: finRuta,
-          origen: 'N/A',
-          destino: 'N/A',
-          estado: truckEstado
+          origen: origenCamionStr,
+          destino: destinoCamionStr,
+          estado: truckEstado,
+          horaAveria: horaAveriaText
         }];
 
-    camionesFinales.push({
-      id: truckIdCounter,
-      ruta: `R${truckIdCounter.toString().padStart(3, '0')}`,
-      camion: vehicle.idVehiculo,
-      inicio: inicioRuta,
-      fin: finRuta,
-      origen: origen,
-      destino: destino,
-      averia: averia,
-      estado: truckEstado,
-      tramosDetalle: truckTramos
-    });
+      camionesFinales.push({
+        id: truckIdCounter,
+        ruta: `R${truckIdCounter.toString().padStart(3, '0')}`,
+        camion: vehicle.idVehiculo,
+        inicio: inicioRuta,
+        fin: finRuta,
+        origen: origenCamionStr,      // Usar las variables correctas
+        destino: destinoCamionStr,    // Usar las variables correctas
+        averia: averia,
+        estado: truckEstado,
+        tramosDetalle: truckTramos
+      });
 
     // Pedidos
     ruta.pedidos.forEach((pedido) => {
@@ -123,18 +139,6 @@ export function generarDatosFinales(state: SimulationState): { pedidos: OrderRow
       // Para pedidos
       let origenPedidoStr: string;
       let destinoPedidoStr: string;
-
-      // if (pedido.ubigeoOrigen && pedido.ubigeoDestino) {
-      //   // Si hay ubigeos definidos para el pedido
-      //   const origenProv = obtenerProvincia(pedido.ubigeoOrigen);
-      //   const destinoProv = obtenerProvincia(pedido.ubigeoDestino);
-      //   origenPedidoStr = `${pedido.ubigeoOrigen}-${origenProv}`;
-      //   destinoPedidoStr = `${pedido.ubigeoDestino}-${destinoProv}`;
-      // } else {
-      //   // Si no hay ubigeos definidos, usar N/A
-      //   origenPedidoStr = 'N/A';
-      //   destinoPedidoStr = 'N/A';
-      // }
 
       if (ruta.tramos.length > 0) {
         const primerTramo = ruta.tramos[0];
