@@ -193,27 +193,6 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
             collapseDate: new Date(newResponse.fechaFin) // Usa fechaFin del backend si tiene sentido
           }
         });
-
-        // // Generar datos finales
-        // const { pedidos, camiones } = generarDatosFinales({
-        //   ...state,
-        //   currentTime: state.currentTime // Asegúrate que currentTime refleje el momento del colapso
-        // });
-
-        // // Agregar entrada al historial
-        // dispatch({
-        //   type: 'ADD_HISTORY_ENTRY',
-        //   payload: {
-        //     timestamp: new Date(),
-        //     pedidos,
-        //     camiones
-        //   }
-        // });
-
-        // // Detener la simulación
-        // dispatch({ type: 'STOP_SIMULATION' });
-
-        // return; // salir del efecto ya que terminamos la simulación
       }
 
 
@@ -223,47 +202,11 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
         setLastProcessedSolution(newSolutionString);
 
         const newVehicles = convertSolutionToVehicles(newResponse);
-        /*console.log("Pedidos replanificados:", newVehicles.map(v => 
-          v.ruta.pedidos.filter(p => p.isReplanificado)
-        ));*/
-
-        // Procesar oficinas
-        //const newOffices = convertOffices(newResponse.oficinas);
-
-        // Fusionar oficinas
-        /*const mergedOffices = state.offices.map((office) => {
-          const updatedOffice = newOffices.find((o) => o.ubigeo === office.ubigeo);
-          if (updatedOffice) {
-            return {
-              ...office,
-              ...updatedOffice,
-            };
-          }
-          return office;
-        });*/
-
-        //dispatch({ type: 'SET_OFFICES', payload: mergedOffices });
-
-        // Procesar pedidos no planificados
-        //const newUnplannedOrders = newResponse.pedidosNoPlanificados || [];
-
-        // Convertir pedidos no planificados a Order[]
-        //const unplannedOrders: Order[] = convertUnplannedPedidosToOrders(newUnplannedOrders);
 
         // Actualizar vehículos
         if (!state.vehicles || state.vehicles.length === 0) {
           dispatch({ type: 'SET_VEHICLES', payload: [...newVehicles] });
-          // console.log('Vehículos actualizados:', state.vehicles);
-
-          // Actualizar datos de simulación
-          // Actualizar 'totalTrucks'
-          //dispatch({ type: 'SET_TOTAL_TRUCKS', payload: newVehicles.length });
-          // Actualizar 'occupiedOffices'
-          // dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: updateOfficesWithOrders(state.vehicles) });
-
         } else {
-          //console.log('Procesando');
-
           // Fusionar vehículos existentes con los de la nueva solución
           const updatedVehicles = state.vehicles.map((existingVehicle) => {
             const matchingNewVehicle = newVehicles.find((v) => v.idVehiculo === existingVehicle.idVehiculo);
@@ -301,22 +244,7 @@ export function SimulationProvider({ children }: { children: React.ReactNode; })
 
           // Actualizar el estado con la lista combinada de vehículos
           dispatch({ type: 'SET_VEHICLES', payload: [...updatedVehicles] });
-          // console.log('Vehículos actualizados:', updatedVehicles);
-
-          // Actualizar 'totalTrucks'
-          //dispatch({ type: 'SET_TOTAL_TRUCKS', payload: updatedVehicles.length });
-          // Actualizar 'occupiedOffices'
-          //dispatch({ type: 'SET_OCCUPIED_OFFICES', payload: calculateOccupiedOffices(newOffices) });
         }
-
-        // Actualizar oficinas en el estado
-        //dispatch({ type: 'SET_OFFICES', payload: newOffices });
-
-        // Actualizar pedidos no planificados en el estado
-        //dispatch({ type: 'SET_UNPLANNED_ORDERS', payload: unplannedOrders });
-
-      } else {
-        //console.log('Es la misma solución');
       }
 
       // Actualizar el índice para procesar la siguiente respuesta
