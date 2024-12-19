@@ -77,7 +77,7 @@ const OperationView: React.FC = () => {
 
   const fleetSaturation = vehicles.length;
   const trucksInMotion = calculateTrucksInMotion(state.vehicles);
-  console.log("State: ", vehicles.filter((vehicle) => vehicle.position.currentSegmentIndex !== -1) )
+  //console.log("State: ", vehicles.filter((vehicle) => vehicle.position.currentSegmentIndex !== -1) )
   const trucksInMaintenance = fleetSaturation - trucksInMotion;
 
   const totalOffices = oficinas.length - 3;
