@@ -1,45 +1,116 @@
-import React from 'react';
-import { useOperacionData } from '../../../../context/useData';
-import {
-  ExpandMore,
-} from '@mui/icons-material';
-import {
+import React, { useEffect, useState } from 'react';
+import { 
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Typography,
   Box,
 } from '@mui/material';
+import { ExpandMore } from '@mui/icons-material';
 import dayjs from 'dayjs';
+import oficinas from '../../../../data/oficinas';
+import { useOperacion } from '../../../../context/OperacionDia/useOperacion';
+import usePedidos from '../../../../store/hooks/usePedidos';
+import { calculateTrucksInMotion } from '../../../../utils/calculateTrucksInMotion';
 
-const OperacionView: React.FC = () => {
-  const { state } = useOperacionData();
+interface OrderStats {
+  pending: number;
+  planned: number;
+  delivered: number;
+  new: number;
+}
 
-  // Valores hardcodeados para mejor rendimiento
-  const mockData = {
-    totalPedidos: 150,
-    pedidosEntregados: 80,
-    pedidosPendientes: 50,
-    pedidosNuevos: 20,
-    totalCamiones: 30,
-    camionesEnMovimiento: 25,
-    camionesEnMantenimiento: 5,
-    totalOficinas: 45,
-    oficinasBajaSaturacion: 30,
-    oficinasMediSaturacion: 10,
-    oficinasAltaSaturacion: 5,
-    ultimaActualizacion: new Date('2024-01-16T10:30:00'),
-  };
+const OperationView: React.FC = () => {
+  const { state } = useOperacion();
+  const { pedidos, fetchPedidos } = usePedidos();
+  const { currentTime, vehicles, lastPlanificationTime } = state;
+  const [orderStats, setOrderStats] = useState<OrderStats>({
+    pending: 0,
+    planned: 0,
+    delivered: 0,
+    new: 0
+  });
+
+  useEffect(() => {
+    fetchPedidos();
+    const interval = setInterval(fetchPedidos, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [fetchPedidos]);
+
+  useEffect(() => {
+    // Get all orders from vehicles
+    const vehicleOrderIds = new Set(
+      vehicles.flatMap(vehicle => 
+        vehicle.ruta?.pedidos.map(p => p.idPedido.toString()) || []
+      )
+    );
+
+    // Get delivered orders
+    const deliveredOrders = vehicles.flatMap(vehicle => 
+      (vehicle.ruta?.pedidos || []).filter(pedido => {
+        if (!pedido.fechaLlegada) return false;
+        const arrivalTime = new Date(pedido.fechaLlegada);
+        return !isNaN(arrivalTime.getTime()) && currentTime >= arrivalTime;
+      })
+    );
+    const deliveredOrderIds = new Set(deliveredOrders.map(p => p.idPedido.toString()));
+
+    const newStats: OrderStats = {
+      // Orders in pedidos but not in vehicles are pending
+      pending: pedidos.filter(p => !vehicleOrderIds.has(p.pedidoId.toString())).length,
+      // Orders in vehicles but not delivered are planned
+      planned: Array.from(vehicleOrderIds).filter(id => !deliveredOrderIds.has(id)).length,
+      // Delivered orders count
+      delivered: deliveredOrderIds.size,
+      // New orders (registered in last 3 hours)
+      new: pedidos.filter(p => {
+        if (!p.fechaRegistro) return false;
+        const registrationTime = new Date(p.fechaRegistro);
+        if (isNaN(registrationTime.getTime())) return false;
+        const threeHoursAgo = new Date(currentTime.getTime() - 3 * 60 * 60 * 1000);
+        return registrationTime >= threeHoursAgo;
+      }).length
+    };
+
+    setOrderStats(newStats);
+  }, [pedidos, vehicles, currentTime]);
+
+  const fleetSaturation = vehicles.length;
+  const trucksInMotion = calculateTrucksInMotion(state.vehicles);
+  console.log("State: ", vehicles.filter((vehicle) => vehicle.position.currentSegmentIndex !== -1) )
+  const trucksInMaintenance = fleetSaturation - trucksInMotion;
+
+  const totalOffices = oficinas.length - 3;
+  const officeSaturation = oficinas.reduce((acc, oficina) => {
+    if (oficina.isAlmacen) return acc;
+
+    const maxCapacity = oficina.almacen || 0;
+    const currentLoad = vehicles
+      .flatMap(vehicle => vehicle.ruta?.pedidos || [])
+      .reduce((total, pedido) => {
+        const belongsToOffice = pedido.ubigeoDestino === oficina.ubigeo;
+        if (!pedido.fechaLlegada || !belongsToOffice) return total;
+        
+        const arrivalTime = new Date(pedido.fechaLlegada);
+        if (isNaN(arrivalTime.getTime())) return total;
+        
+        const timeLimit = new Date(arrivalTime.getTime() + 4 * 60 * 60 * 1000);
+        const isInRange = currentTime >= arrivalTime && currentTime <= timeLimit;
+        return isInRange ? total + (pedido.cantidad || 0) : total;
+      }, 0);
+
+    const occupancyRate = maxCapacity > 0 ? currentLoad / maxCapacity : 0;
+
+    if (occupancyRate > 0.8) acc.high++;
+    else if (occupancyRate > 0.5) acc.medium++;
+    else acc.low++;
+
+    return acc;
+  }, { low: 0, medium: 0, high: 0 });
 
   return (
     <>
-      <Box
-        sx={{
-          backgroundColor: '#f5f5f5',
-          padding: '8px',
-          borderRadius: '4px 4px 0 0',
-        }}
-      >
+      <Box sx={{ backgroundColor: '#f5f5f5', padding: '8px', borderRadius: '4px 4px 0 0' }}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <div>
             <Typography variant="subtitle1" color="textPrimary">
@@ -48,14 +119,13 @@ const OperacionView: React.FC = () => {
             <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
               <b>Última actualización:</b>{' '}
               <Typography component="span" variant="body2" color="textPrimary">
-                {dayjs(state.lastPlanificationTime).format('DD/MM/YYYY HH:mm:ss')}
+                {lastPlanificationTime ? dayjs(lastPlanificationTime).format('DD/MM/YYYY HH:mm:ss') : 'No hay actualización'}
               </Typography>
             </Typography>
           </div>
         </Box>
       </Box>
 
-      {/* Accordion para Detalles de pedidos */}
       <Accordion defaultExpanded disableGutters>
         <AccordionSummary
           expandIcon={<ExpandMore />}
@@ -64,7 +134,7 @@ const OperacionView: React.FC = () => {
           sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
         >
           <Typography variant="subtitle2" color="textPrimary">
-            <b>Detalles de pedidos (Total: {mockData.totalPedidos})</b>
+            <b>Detalles de pedidos (Total: {orderStats.pending + orderStats.planned + orderStats.delivered})</b>
           </Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
@@ -74,7 +144,7 @@ const OperacionView: React.FC = () => {
                 ✅ Entregados:
               </Typography>
               <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                {mockData.pedidosEntregados}
+                {orderStats.delivered}
               </Typography>
             </Box>
             <Box display="flex">
@@ -82,7 +152,7 @@ const OperacionView: React.FC = () => {
                 ⏳ Pendientes:
               </Typography>
               <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                {mockData.pedidosPendientes}
+                {orderStats.pending + orderStats.planned}
               </Typography>
             </Box>
           </Box>
@@ -91,13 +161,12 @@ const OperacionView: React.FC = () => {
               🆕 Nuevos:
             </Typography>
             <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-              {mockData.pedidosNuevos}
+              {orderStats.new}
             </Typography>
           </Box>
         </AccordionDetails>
       </Accordion>
 
-      {/* Accordion para Detalles de camiones */}
       <Accordion defaultExpanded disableGutters>
         <AccordionSummary
           expandIcon={<ExpandMore />}
@@ -106,7 +175,7 @@ const OperacionView: React.FC = () => {
           sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
         >
           <Typography variant="subtitle2" color="textPrimary">
-            <b>Detalles de camiones (Flota: {mockData.totalCamiones})</b>
+            <b>Detalles de camiones (Flota: {fleetSaturation})</b>
           </Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
@@ -116,7 +185,7 @@ const OperacionView: React.FC = () => {
                 🔄 Movimiento:
               </Typography>
               <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                {mockData.camionesEnMovimiento}
+                {trucksInMotion}
               </Typography>
             </Box>
             <Box display="flex">
@@ -124,14 +193,13 @@ const OperacionView: React.FC = () => {
                 🛠️ Mantenimiento:
               </Typography>
               <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                {mockData.camionesEnMantenimiento}
+                {trucksInMaintenance}
               </Typography>
             </Box>
           </Box>
         </AccordionDetails>
       </Accordion>
 
-      {/* Accordion para Detalles de oficinas */}
       <Accordion defaultExpanded disableGutters>
         <AccordionSummary
           expandIcon={<ExpandMore />}
@@ -140,7 +208,7 @@ const OperacionView: React.FC = () => {
           sx={{ minHeight: '0', padding: '0 16px', margin: 0 }}
         >
           <Typography variant="subtitle2" color="textPrimary">
-            <b>Detalles de oficinas (Sedes: {mockData.totalOficinas})</b>
+            <b>Detalles de oficinas (Sedes: {totalOffices})</b>
           </Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ padding: '8px 16px', pt: 0 }}>
@@ -151,7 +219,7 @@ const OperacionView: React.FC = () => {
                   🟩 Saturación {'<'}50%:
                 </Typography>
                 <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                  {mockData.oficinasBajaSaturacion}
+                  {officeSaturation.low}
                 </Typography>
               </Box>
               <Box display="flex" alignItems="center">
@@ -159,7 +227,7 @@ const OperacionView: React.FC = () => {
                   🟨 Saturación 50%-80%:
                 </Typography>
                 <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                  {mockData.oficinasMediSaturacion}
+                  {officeSaturation.medium}
                 </Typography>
               </Box>
             </Box>
@@ -168,7 +236,7 @@ const OperacionView: React.FC = () => {
                 🟥 Saturación {'>'}80%:
               </Typography>
               <Typography variant="body2" color="textPrimary" sx={{ ml: 0.5 }}>
-                {mockData.oficinasAltaSaturacion}
+                {officeSaturation.high}
               </Typography>
             </Box>
           </Box>
@@ -178,4 +246,4 @@ const OperacionView: React.FC = () => {
   );
 };
 
-export default OperacionView;
+export default OperationView;
