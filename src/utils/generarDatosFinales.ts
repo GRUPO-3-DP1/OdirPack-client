@@ -25,25 +25,29 @@ export function generarDatosFinales(state: SimulationState): { pedidos: OrderRow
   state.vehicles.forEach((vehicle) => {
     const ruta = vehicle.ruta;
 
-    const inicioRuta = ruta.fechaInicio 
-      ? formatDate(ruta.fechaInicio) 
+    const inicioRuta = ruta.fechaInicio
+      ? formatDate(ruta.fechaInicio)
       : formatDate(state.startTime);
     const finRuta = ruta.fechasLlegada.length > 0
-      ? formatDate(ruta.fechasLlegada[ruta.fechasLlegada.length - 1]) 
+      ? formatDate(ruta.fechasLlegada[ruta.fechasLlegada.length - 1])
       : formatDate(state.endTime);
 
-    let origenUbigeo = '150101';
-    let destinoUbigeo = '150101';
+    let origen: string;
+    let destino: string;
 
+    // Determinar origen/destino para camiones
     if (ruta.tramos.length > 0) {
       const primerTramo = ruta.tramos[0];
       const ultimoTramo = ruta.tramos[ruta.tramos.length - 1];
-      origenUbigeo = primerTramo.origen.codigo;
-      destinoUbigeo = ultimoTramo.destino.codigo;
+      const origenUbigeo = primerTramo.origen.codigo;
+      const destinoUbigeo = ultimoTramo.destino.codigo;
+      origen = `${origenUbigeo}-${obtenerProvincia(origenUbigeo)}`;
+      destino = `${destinoUbigeo}-${obtenerProvincia(destinoUbigeo)}`;
+    } else {
+      // Sin tramos: poner N/A directamente
+      origen = 'N/A';
+      destino = 'N/A';
     }
-    
-    const origen = `${origenUbigeo}-${obtenerProvincia(origenUbigeo)}`;
-    const destino = `${destinoUbigeo}-${obtenerProvincia(destinoUbigeo)}`;
 
     // Estado del camión
     const averia = vehicle.averia?.isAveria || false;
@@ -61,7 +65,8 @@ export function generarDatosFinales(state: SimulationState): { pedidos: OrderRow
 
     const horaAveriaText = averia ? 'Desconocida' : 'Sin avería';
 
-    const truckTramos = ruta.tramos.length > 0 
+    // Tramos del camión
+    const truckTramos = ruta.tramos.length > 0
       ? ruta.tramos.map((tramo, i) => {
           const tramoInicio = ruta.fechasSalida[i] ? formatDate(ruta.fechasSalida[i]) : formatDate(state.startTime);
           const tramoFin = ruta.fechasLlegada[i] ? formatDate(ruta.fechasLlegada[i]) : formatDate(endTime);
@@ -80,8 +85,8 @@ export function generarDatosFinales(state: SimulationState): { pedidos: OrderRow
           horaAveria: horaAveriaText,
           inicio: inicioRuta,
           fin: finRuta,
-          origen: '150101 - LIMA',
-          destino: '150101 - LIMA',
+          origen: 'N/A',
+          destino: 'N/A',
           estado: truckEstado
         }];
 
@@ -108,19 +113,44 @@ export function generarDatosFinales(state: SimulationState): { pedidos: OrderRow
         pedidoEstado = 'Retrasado';
       }
 
-      const inicioPedido = pedido.fechaRegistro 
-        ? formatDate(pedido.fechaRegistro) 
-        : inicioRuta; 
-      const finPedido = pedido.fechaLlegada 
-        ? formatDate(pedido.fechaLlegada) 
+      const inicioPedido = pedido.fechaRegistro
+        ? formatDate(pedido.fechaRegistro)
+        : inicioRuta;
+      const finPedido = pedido.fechaLlegada
+        ? formatDate(pedido.fechaLlegada)
         : (pedidoEstado === 'Retrasado' ? formatDate(endTime) : inicioPedido);
 
-      const origenUbigeoPedido = pedido.ubigeoOrigen || '150101';
-      const destinoUbigeoPedido = pedido.ubigeoDestino || '150101';
-      const origenPedidoStr = `${origenUbigeoPedido}-${obtenerProvincia(origenUbigeoPedido)}`;
-      const destinoPedidoStr = `${destinoUbigeoPedido}-${obtenerProvincia(destinoUbigeoPedido)}`;
+      // Para pedidos
+      let origenPedidoStr: string;
+      let destinoPedidoStr: string;
 
-      const pedidoTramos = ruta.tramos.length > 0 
+      // if (pedido.ubigeoOrigen && pedido.ubigeoDestino) {
+      //   // Si hay ubigeos definidos para el pedido
+      //   const origenProv = obtenerProvincia(pedido.ubigeoOrigen);
+      //   const destinoProv = obtenerProvincia(pedido.ubigeoDestino);
+      //   origenPedidoStr = `${pedido.ubigeoOrigen}-${origenProv}`;
+      //   destinoPedidoStr = `${pedido.ubigeoDestino}-${destinoProv}`;
+      // } else {
+      //   // Si no hay ubigeos definidos, usar N/A
+      //   origenPedidoStr = 'N/A';
+      //   destinoPedidoStr = 'N/A';
+      // }
+
+      if (ruta.tramos.length > 0) {
+        const primerTramo = ruta.tramos[0];
+        const ultimoTramo = ruta.tramos[ruta.tramos.length - 1];
+      
+        const origenProv = obtenerProvincia(primerTramo.origen.codigo);
+        const destinoProv = obtenerProvincia(ultimoTramo.destino.codigo);
+      
+        origenPedidoStr = `${primerTramo.origen.codigo} - ${origenProv}`;
+        destinoPedidoStr = `${ultimoTramo.destino.codigo} - ${destinoProv}`;
+      } else {
+        origenPedidoStr = 'N/A';
+        destinoPedidoStr = 'N/A';
+      }
+
+      const pedidoTramos = ruta.tramos.length > 0
         ? ruta.tramos.map((t, j) => {
             const tramoInicio = ruta.fechasSalida[j] ? formatDate(ruta.fechasSalida[j]) : formatDate(state.startTime);
             const tramoFin = ruta.fechasLlegada[j] ? formatDate(ruta.fechasLlegada[j]) : formatDate(endTime);
@@ -138,8 +168,8 @@ export function generarDatosFinales(state: SimulationState): { pedidos: OrderRow
         : [{
             inicio: inicioPedido,
             fin: finPedido,
-            origen: '150101 - LIMA',
-            destino: '150101 - LIMA',
+            origen: 'N/A',
+            destino: 'N/A',
             estado: pedidoEstado,
             camion: vehicle.idVehiculo || 'N/A'
           }];
