@@ -12,7 +12,7 @@ import useBloqueosSimulacion from '../../store/hooks/useBloqueosSimulacion';
 
 const initialState: OperacionState = {
   //isActive: false,
-  speed: 50, // Aquí aumentar velocidad del tiempo simulado
+  speed: 25, // Aquí aumentar velocidad del tiempo simulado
   //simulationTime: new Date(),
   lastPlanificationTime: null, // Comienza sin planificación previa
 
@@ -172,7 +172,7 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode; }> = ({ ch
       const lastPlanTime = stateRef.current.lastPlanificationTime;
       if (lastPlanTime) {
         const hoursElapsed = (currentSimTime.getTime() - lastPlanTime.getTime()) / (1000 * 60 * 60);
-        if (hoursElapsed >= 3) {
+        if (hoursElapsed >= 1) {
           planificar(currentSimTime);
         }
       }
