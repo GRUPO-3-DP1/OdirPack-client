@@ -19,8 +19,6 @@ const BloqueosLayer: React.FC = () => {
 
   const bloqueos = state.currentBloqueos;
 
-  console.log(bloqueos);
-
   if (!visibility.tramosBloqueados || !bloqueos || !state.isPlaying) return null;
 
   const renderBloqueos = () => {
