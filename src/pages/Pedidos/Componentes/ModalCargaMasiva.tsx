@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import styles from './ModalCargaMasiva.module.css';
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button,
+  Snackbar, Alert
 } from '@mui/material';
 import usePedidos from '../../../store/hooks/usePedidos';
 
@@ -9,9 +10,21 @@ interface ModalCargaMasivaProps {
   onClose: () => void;
 }
 
+interface NotificationState {
+  open: boolean;
+  message: string;
+  severity: 'success' | 'error';
+}
+
 const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
   const [parsedData, setParsedData] = useState<{ destinoId: string, cantidadTotal: number, clienteId: string; }[]>([]);
   const [fileLoaded, setFileLoaded] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [notification, setNotification] = useState<NotificationState>({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   const { createPedido } = usePedidos();
 
@@ -29,59 +42,76 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
     }
   };
 
-  // Updated parsing function for the new file format
   const parseFileContent = (lines: string[]) => {
     const parsed = lines.map(line => {
-      // Extract the last part of the line (ubigeo and quantity)
       const lastPart = line.split('=>').pop()?.trim();
 
       if (!lastPart) {
         return null;
       }
 
-      // Split the last part by comma
       const [destinoId, cantidadTotal] = lastPart.split(',').map(item => item.trim());
-
-      // Convert quantity to a number, defaulting to 0 if invalid
       const cantidadTotalParsed = isNaN(Number(cantidadTotal)) ? 0 : Number(cantidadTotal);
 
       return {
         destinoId: destinoId,
         cantidadTotal: cantidadTotalParsed,
-        clienteId: '' // Left empty as not present in new format
+        clienteId: ''
       };
     }).filter(item => item !== null) as { destinoId: string, cantidadTotal: number, clienteId: string; }[];
 
     setParsedData(parsed);
   };
 
-  // Rest of the component remains the same as in the original code...
   const handleButtonClick = () => {
     const fileInput = document.getElementById('fileInput') as HTMLInputElement;
     fileInput.click();
   };
 
+  const handleCloseNotification = () => {
+    setNotification(prev => ({ ...prev, open: false }));
+  };
+
+  const showNotification = (message: string, severity: 'success' | 'error') => {
+    setNotification({
+      open: true,
+      message,
+      severity
+    });
+  };
+
   const handleUploadToDatabase = async () => {
+    setIsLoading(true);
     try {
       for (const pedido of parsedData) {
         await createPedido(pedido);
       }
-      alert('Todos los pedidos han sido subidos exitosamente');
+      showNotification('Todos los pedidos han sido subidos exitosamente', 'success');
       setFileLoaded(false);
-      onClose();
+      // Esperamos un momento antes de cerrar para que el usuario pueda ver la notificación
+      setTimeout(() => {
+        onClose();
+      }, 1500);
     } catch (error) {
       console.error('Error al subir los pedidos:', error);
-      alert('Hubo un error al subir los pedidos');
+      showNotification('Hubo un error al subir los pedidos', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className={styles.modalOverlay}>
-      {/* Rest of the render method remains the same */}
       <div className={styles.modalContent}>
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>Carga Masiva de Archivos</h2>
-          <button onClick={onClose} className={styles.closeButton}>&times;</button>
+          <button
+            onClick={onClose}
+            className={styles.closeButton}
+            disabled={isLoading}
+          >
+            &times;
+          </button>
         </div>
         <div className={styles.modalSeparator}></div>
 
@@ -93,13 +123,17 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
                 className={styles.button}
                 variant="outlined"
                 onClick={handleButtonClick}
-              >Seleccionar Archivo</Button>
+                disabled={isLoading}
+              >
+                Seleccionar Archivo
+              </Button>
               <input
                 id="fileInput"
                 type="file"
                 accept=".txt, .csv"
                 style={{ display: 'none' }}
                 onChange={handleFileUpload}
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -131,6 +165,7 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
                 className={styles.button}
                 variant="outlined"
                 onClick={() => setFileLoaded(false)}
+                disabled={isLoading}
               >
                 Subir Otro Archivo
               </Button>
@@ -138,12 +173,27 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
                 className={styles.button}
                 variant="contained"
                 onClick={handleUploadToDatabase}
+                disabled={isLoading}
               >
-                Guardar Pedidos
+                {isLoading ? 'Guardando...' : 'Guardar Pedidos'}
               </Button>
             </div>
           </div>
         )}
+
+        <Snackbar
+          open={notification.open}
+          autoHideDuration={8000}
+          onClose={handleCloseNotification}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <Alert
+            onClose={handleCloseNotification}
+            severity={notification.severity}
+          >
+            {notification.message}
+          </Alert>
+        </Snackbar>
       </div>
     </div>
   );
