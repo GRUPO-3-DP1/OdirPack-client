@@ -10,6 +10,7 @@ interface ModalCargaMasivaProps {
 }
 
 const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [parsedData, setParsedData] = useState<{ destinoId: string, cantidadTotal: number, clienteId: string; }[]>([]);
   const [fileLoaded, setFileLoaded] = useState<boolean>(false);
 
@@ -62,6 +63,7 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
   };
 
   const handleUploadToDatabase = async () => {
+    setIsLoading(true);
     try {
       for (const pedido of parsedData) {
         await createPedido(pedido);
@@ -72,6 +74,8 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
     } catch (error) {
       console.error('Error al subir los pedidos:', error);
       alert('Hubo un error al subir los pedidos');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -131,6 +135,7 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
                 className={styles.button}
                 variant="outlined"
                 onClick={() => setFileLoaded(false)}
+                disabled={isLoading}
               >
                 Subir Otro Archivo
               </Button>
@@ -138,8 +143,9 @@ const ModalCargaMasiva: React.FC<ModalCargaMasivaProps> = ({ onClose }) => {
                 className={styles.button}
                 variant="contained"
                 onClick={handleUploadToDatabase}
+                disabled={isLoading}
               >
-                Guardar Pedidos
+                {isLoading ? 'Guardando...' : 'Guardar Pedidos'}
               </Button>
             </div>
           </div>
