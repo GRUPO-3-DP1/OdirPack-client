@@ -80,13 +80,12 @@ const operacionReducer = (state: OperacionState, action: OperacionAction): Opera
 
 export const OperacionContext = createContext<OperacionContextType | null>(null);
 
-export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const OperacionProvider: React.FC<{ children: React.ReactNode; }> = ({ children }) => {
   const [state, dispatch] = useReducer(operacionReducer, initialState);
 
   // Ref para acceso seguro al estado más reciente dentro del intervalo
   const stateRef = useRef(state);
   stateRef.current = state;
-
 
   useEffect(() => {
     if (!state.isPlaying) return;
@@ -149,7 +148,7 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                   }
                 },
               };
-            }       
+            }
           }
           // Si no estamos en un segmento válido, mantener la posición actual del vehículo
           return {
@@ -168,8 +167,7 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [state.isPlaying]);
-
+  }, [state.isPlaying, state.vehicles]);
 
   const planificar = async (currentSimTime: Date) => {
     try {
@@ -202,8 +200,10 @@ export const OperacionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       // Procesar la respuesta y actualizar vehículos
       const newVehicles = convertSolutionToVehicles(response.data);
-      console.log("Nuevos vehículos:", newVehicles)
+      // console.log("Nuevos vehículos:", newVehicles)
       dispatch({ type: 'SET_VEHICLES', payload: newVehicles });
+
+      console.log(state.vehicles);
 
       // Actualiza el tiempo de la última planificación
       dispatch({ type: 'SET_LAST_PLANIFICATION', payload: currentSimTime });
