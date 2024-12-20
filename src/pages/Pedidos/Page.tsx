@@ -23,6 +23,13 @@ const Page: React.FC = () => {
     setPedidoId(event.target.value);
   };
 
+  // Filtrar pedidos por pedidoId y estado (tipo)
+  const pedidosFiltrados = pedidos.filter((pedido) =>
+    (pedidoId ? pedido.pedidoId?.toString().includes(pedidoId.toString()) : true) &&
+    (tipo ? pedido.estado === tipo : true)
+  );
+
+
   const handleChange = (event: SelectChangeEvent) => {
     setTipo(event.target.value);
   };
@@ -59,8 +66,9 @@ const Page: React.FC = () => {
             label="Estado"
             onChange={handleChange}
           >
-            <MenuItem value="pendiente">Pending</MenuItem>
-            <MenuItem value="entregado">Delivered</MenuItem>
+            <MenuItem value="PROCESSING">PROCESSING</MenuItem>
+            <MenuItem value="PENDING">PENDING</MenuItem>
+            <MenuItem value="DELIVERED">DELIVERED</MenuItem>
           </Select>
         </FormControl>
         {/* Botón Nuevo Pedido */}
@@ -93,7 +101,7 @@ const Page: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {pedidos.map((pedido, i) => (
+            {pedidosFiltrados.map((pedido, i) => (
               <TableRow key={i}>
                 <TableCell>{pedido.pedidoId}</TableCell>
                 <TableCell>{pedido.cantidadTotal}</TableCell>

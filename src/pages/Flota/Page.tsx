@@ -19,6 +19,11 @@ const Page: React.FC = () => {
     setPlaca(event.target.value);
   };
 
+  // Filtrar camiones según la placa
+  const camionesFiltrados = camiones.filter((camion) =>
+    camion.placa.toLowerCase().includes(placa.toLowerCase())
+  );
+
   return (
     <div className={styles.contenedor}>
       <Box display="flex" justifyContent="center" alignItems="center" gap={2} mb={2}>
@@ -69,7 +74,7 @@ const Page: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {camiones.map((camion) => (
+            {camionesFiltrados.map((camion) => (
               <TableRow key={camion.camionId}>
                 <TableCell>{camion.camionId}</TableCell>
                 <TableCell>{camion.placa}</TableCell>
