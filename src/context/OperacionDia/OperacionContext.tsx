@@ -15,6 +15,7 @@ const initialState: OperacionState = {
   speed: 25, // Aquí aumentar velocidad del tiempo simulado
   //simulationTime: new Date(),
   lastPlanificationTime: null, // Comienza sin planificación previa
+  //
 
   isPlaying: false,
   startTime: new Date(),
