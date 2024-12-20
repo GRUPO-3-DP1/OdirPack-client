@@ -81,7 +81,7 @@ const Page: React.FC = () => {
                 <TableCell>{camion.almacenId || 'N/A'}</TableCell>
                 <TableCell>{camion.tipo}</TableCell>
                 <TableCell>{camion.capacidad}</TableCell>
-                <TableCell>{formatDate(camion.fechaLibre || '')}</TableCell>
+                <TableCell>{camion.fechaLibre ? formatDate(camion.fechaLibre) : ''}</TableCell>
               </TableRow>
             ))}
           </TableBody>
