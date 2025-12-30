@@ -2,7 +2,8 @@
 
 <div align="center">
 
-![OdirPack Logo](./public/vite.svg)
+![OdirPack Logo](https://github.com/user-attachments/assets/3358f706-08f9-4df9-849f-39444c698845)
+
 
 **Aplicación web para la gestión integral de operaciones logísticas y optimización de rutas de distribución**
 
@@ -13,6 +14,46 @@
 [![License](https://img.shields.io/badge/License-Private-red)]()
 
 </div>
+
+---
+
+## 🎯 Funcionalidades Principales
+
+### 🗺️ Operaciones Día a Día
+![Operaciones Día a Día](https://github.com/user-attachments/assets/d038e537-f1e9-4cf2-808a-bc8223f485ee)
+
+Visualización en tiempo real de: 
+- Rutas activas en el mapa
+- Estado de entregas
+- Ubicación de vehículos
+- Alertas y notificaciones
+
+### 🎮 Simulaciones
+![Simulaciones](https://github.com/user-attachments/assets/01d2ce44-471f-45a5-b1c9-16b9432ea5b1)
+
+
+- Crear escenarios de distribución
+- Optimizar rutas antes de ejecutarlas
+- Comparar diferentes estrategias
+- Análisis de eficiencia
+
+### 🚛 Gestión de Flota
+<!-- Aquí incluirás un screenshot o GIF -->
+![Flota](https://github.com/user-attachments/assets/1af9bbcf-63f0-47e8-a2ef-c5d067ebff08)
+
+- Registro de vehículos
+- Estado de mantenimiento
+- Asignación de conductores
+- Historial de rutas
+
+### 📦 Pedidos
+<!-- Aquí incluirás un screenshot o GIF -->
+![Pedidos](https://github.com/user-attachments/assets/1ae1271b-f925-4765-8bac-cb8d15606f7e)
+
+- Listado de pedidos
+- Estados de entrega
+- Asignación a rutas
+- Historial completo
 
 ---
 
@@ -193,47 +234,6 @@ OdirPack-client/
 ├── vite.config.ts
 └── README.md
 ```
-
----
-
-## 🎯 Funcionalidades Principales
-
-### 🗺️ Operaciones Día a Día
-<!-- Aquí incluirás un screenshot o GIF -->
-![Operaciones](./docs/screenshots/operaciones. png)
-
-Visualización en tiempo real de: 
-- Rutas activas en el mapa
-- Estado de entregas
-- Ubicación de vehículos
-- Alertas y notificaciones
-
-### 🎮 Simulaciones
-<!-- Aquí incluirás un screenshot o GIF -->
-![Simulaciones](./docs/screenshots/simulaciones.gif)
-
-- Crear escenarios de distribución
-- Optimizar rutas antes de ejecutarlas
-- Comparar diferentes estrategias
-- Análisis de eficiencia
-
-### 🚛 Gestión de Flota
-<!-- Aquí incluirás un screenshot o GIF -->
-![Flota](https://github.com/user-attachments/assets/1af9bbcf-63f0-47e8-a2ef-c5d067ebff08)
-
-- Registro de vehículos
-- Estado de mantenimiento
-- Asignación de conductores
-- Historial de rutas
-
-### 📦 Pedidos
-<!-- Aquí incluirás un screenshot o GIF -->
-![Pedidos](https://github.com/user-attachments/assets/1ae1271b-f925-4765-8bac-cb8d15606f7e)
-
-- Listado de pedidos
-- Estados de entrega
-- Asignación a rutas
-- Historial completo
 
 ---
 
