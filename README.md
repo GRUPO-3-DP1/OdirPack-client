@@ -171,7 +171,7 @@ yarn install
 
 ### 3. Configurar variables de entorno
 
-Crea un archivo `.env` en la raíz del proyecto (si es necesario):
+Crea un archivo `.env` en la raíz del proyecto:
 
 ```env
 VITE_API_URL=http://localhost:8080/api
@@ -317,13 +317,3 @@ Este proyecto es privado y está protegido por derechos de autor.
 ## ❤️ Soporte
 
 Para reportar bugs o solicitar features, abre un [issue](https://github.com/GRUPO-3-DP1/OdirPack-client/issues).
-
----
-
-<div align="center">
-
-Hecho con ❤️ por el equipo GRUPO-3-DP1
-
-⭐ ¡No olvides dar una estrella si te gusta el proyecto! 
-
-</div>
