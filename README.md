@@ -219,7 +219,7 @@ Visualización en tiempo real de:
 
 ### 🚛 Gestión de Flota
 <!-- Aquí incluirás un screenshot o GIF -->
-![Flota](<img width="1581" height="780" alt="image" src="https://github.com/user-attachments/assets/1af9bbcf-63f0-47e8-a2ef-c5d067ebff08" />)
+![Flota](https://github.com/user-attachments/assets/1af9bbcf-63f0-47e8-a2ef-c5d067ebff08)
 
 - Registro de vehículos
 - Estado de mantenimiento
@@ -228,7 +228,7 @@ Visualización en tiempo real de:
 
 ### 📦 Pedidos
 <!-- Aquí incluirás un screenshot o GIF -->
-![Pedidos](<img width="1584" height="782" alt="image" src="https://github.com/user-attachments/assets/1ae1271b-f925-4765-8bac-cb8d15606f7e" />)
+![Pedidos](https://github.com/user-attachments/assets/1ae1271b-f925-4765-8bac-cb8d15606f7e)
 
 - Listado de pedidos
 - Estados de entrega
